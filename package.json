@@ -1,0 +1,32 @@
+{
+  "name": "node-fetch-cache",
+  "version": "1.0.0",
+  "description": "node-fetch with a persistent cache.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "./node_modules/.bin/eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mistval/node-fetch-cache.git"
+  },
+  "keywords": [
+    "node",
+    "fetch",
+    "node-fetch",
+    "cache",
+    "cached"
+  ],
+  "author": "mistval",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mistval/node-fetch-cache/issues"
+  },
+  "homepage": "https://github.com/mistval/node-fetch-cache#readme",
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2"
+  }
+}

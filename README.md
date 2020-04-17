@@ -6,7 +6,7 @@ The first request will result in an HTTP request and any subsequent requests wit
 
 ## Usage
 
-Use it the same way you would use fetch.
+Require it with a path to cache in, and then use it the same way you would use fetch.
 
 ```js
 const fetch = require('node-fetch-cache')('./path/to/cache/dir');
@@ -22,7 +22,7 @@ Note that this is not the full fetch API. Headers and some other things are not 
 
 ### async fetch(resource [, init])
 
-Same calling conventions as [browser fetch](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch).
+Same arguments as [browser fetch](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch).
 
 Returns a **CachedResponse**.
 

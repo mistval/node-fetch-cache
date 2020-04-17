@@ -55,7 +55,7 @@ function createFetch(cacheDirPath) {
   return async (...args) => {
     if (!madeDir) {
       try {
-        await fs.promises.mkdir(cacheDirPath);
+        await fs.promises.mkdir(cacheDirPath, { recursive: true });
       } catch (err) {
         // Ignore.
       }

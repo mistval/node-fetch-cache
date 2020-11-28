@@ -80,6 +80,22 @@ describe('Cache tests', function() {
     res = await fetch(TWO_HUNDRED_URL);
     assert.strictEqual(res.fromCache, true);
   });
+
+  it('Can eject from cache', async function() {
+    res = await fetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, true);
+
+    await res.ejectFromCache();
+
+    res = await fetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, true);
+  });
 }).timeout(10000);
 
 describe('Data tests', function() {

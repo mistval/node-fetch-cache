@@ -1,3 +1,4 @@
+const fs = require('fs');
 const assert = require('assert');
 const rimraf = require('rimraf');
 const path = require('path');
@@ -139,6 +140,27 @@ describe('Cache tests', function() {
     assert.strictEqual(res.fromCache, false);
 
     res = await fetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
+    assert.strictEqual(res.fromCache, true);
+  });
+
+  it('Gives different read streams different cache keys', async function() {
+    const s1 = fs.createReadStream(__filename);
+    const s2 = fs.createReadStream(path.join(__dirname, '..', 'index.js'));
+
+    res = await fetch(TWO_HUNDRED_URL, post(s1));
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL, post(s2));
+    assert.strictEqual(res.fromCache, false);
+  });
+
+  it('Gives the same read streams the same cache key', async function() {
+    const s1 = fs.createReadStream(__filename);
+
+    res = await fetch(TWO_HUNDRED_URL, post(s1));
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL, post(s1));
     assert.strictEqual(res.fromCache, true);
   });
 }).timeout(10000);

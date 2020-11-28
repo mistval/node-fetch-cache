@@ -7,9 +7,48 @@ function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
 
-async function getResponse(cacheDirPath, requestArguments, bodyFunctionName) {
+class Response {
+  constructor(raw, cacheFilePath) {
+    Object.assign(this, raw);
+    this.cacheFilePath = cacheFilePath;
+  }
+
+  text() {
+    return this.bodyBuffer.toString();
+  }
+
+  json() {
+    return JSON.parse(this.bodyBuffer.toString());
+  }
+
+  buffer() {
+    return this.bodyBuffer;
+  }
+
+  ejectFromCache() {
+    return fs.promises.unlink(this.cacheFilePath);
+  }
+}
+
+async function createRawResponse(fetchRes) {
+  const buffer = await fetchRes.buffer();
+
+  return {
+    status: fetchRes.status,
+    statusText: fetchRes.statusText,
+    type: fetchRes.type,
+    url: fetchRes.url,
+    useFinalURL: fetchRes.useFinalURL,
+    ok: fetchRes.ok,
+    headers: fetchRes.headers,
+    redirected: fetchRes.redirected,
+    bodyBuffer: buffer,
+  };
+}
+
+async function getResponse(cacheDirPath, requestArguments) {
   const [url, requestInit, ...rest] = requestArguments;
-  const requestParams = requestInit && requestInit.body
+  const requestParams = requestInit.body
     ? ({ ...requestInit, body: typeof requestInit.body === 'object' ? requestInit.body.toString() : requestInit.body })
     : requestInit;
 
@@ -17,40 +56,13 @@ async function getResponse(cacheDirPath, requestArguments, bodyFunctionName) {
   const cachedFilePath = path.join(cacheDirPath, `${cacheHash}.json`);
 
   try {
-    const body = JSON.parse(await fs.promises.readFile(cachedFilePath));
-    if (bodyFunctionName === 'buffer') {
-      return Buffer.from(body);
-    }
-
-    return body;
+    const rawResponse = JSON.parse(await fs.promises.readFile(cachedFilePath));
+    return new Response(rawResponse);
   } catch (err) {
     const fetchResponse = await fetch(...requestArguments);
-    const bodyResponse = await fetchResponse[bodyFunctionName]();
-    await fs.promises.writeFile(cachedFilePath, JSON.stringify(bodyResponse));
-    return bodyResponse;
-  }
-}
-
-class ResponseWrapper {
-  constructor(cacheDirPath, requestArguments) {
-    this.cacheDirPath = cacheDirPath;
-    this.requestArguments = requestArguments;
-  }
-
-  text() {
-    return getResponse(this.cacheDirPath, this.requestArguments, this.text.name);
-  }
-
-  json() {
-    return getResponse(this.cacheDirPath, this.requestArguments, this.json.name);
-  }
-
-  buffer() {
-    return getResponse(this.cacheDirPath, this.requestArguments, this.buffer.name);
-  }
-
-  textConverted() {
-    return getResponse(this.cacheDirPath, this.requestArguments, this.textConverted.name);
+    const rawResponse = createRawResponse(fetchResponse);
+    await fs.promises.writeFile(cachedFilePath, JSON.stringify(rawResponse));
+    return new Response(rawResponse);
   }
 }
 
@@ -59,16 +71,11 @@ function createFetch(cacheDirPath) {
 
   return async (...args) => {
     if (!madeDir) {
-      try {
-        await fs.promises.mkdir(cacheDirPath, { recursive: true });
-      } catch (err) {
-        // Ignore.
-      }
-
+      await fs.promises.mkdir(cacheDirPath, { recursive: true });
       madeDir = true;
     }
 
-    return new ResponseWrapper(cacheDirPath, args);
+    return getResponse(cacheDirPath, args);
   };
 }
 

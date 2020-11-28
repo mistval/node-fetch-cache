@@ -6,6 +6,8 @@ const path = require('path');
 
 const Response = require('./classes/response.js');
 
+const CACHE_VERSION = 2;
+
 function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
@@ -63,7 +65,7 @@ function getCacheKey(requestArguments) {
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);
   initCacheKeyJson.body = getBodyCacheKeyJson(initCacheKeyJson.body);
 
-  return md5(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson]));
+  return md5(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson, CACHE_VERSION]));
 }
 
 async function createRawResponse(fetchRes) {

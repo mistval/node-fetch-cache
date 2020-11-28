@@ -25,8 +25,14 @@ class Response {
     return this.bodyBuffer;
   }
 
-  ejectFromCache() {
-    return fs.promises.unlink(this.cacheFilePath);
+  async ejectFromCache() {
+    try {
+      await fs.promises.unlink(this.cacheFilePath);
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+    }
   }
 }
 

@@ -9,7 +9,7 @@ function md5(str) {
 
 async function getResponse(cacheDirPath, requestArguments, bodyFunctionName) {
   const [url, requestInit, ...rest] = requestArguments;
-  const requestParams = requestInit.body
+  const requestParams = requestInit && requestInit.body
     ? ({ ...requestInit, body: typeof requestInit.body === 'object' ? requestInit.body.toString() : requestInit.body })
     : requestInit;
 

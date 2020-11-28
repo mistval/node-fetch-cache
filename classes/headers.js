@@ -22,6 +22,10 @@ class Headers {
   has(name) {
     return !!this.get(name);
   }
+
+  raw() {
+    return this.rawHeaders;
+  }
 }
 
 module.exports = Headers;

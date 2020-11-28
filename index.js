@@ -3,69 +3,10 @@ const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
 
+const Response = require('./classes/response.js');
+
 function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
-}
-
-class Headers {
-  constructor(rawHeaders) {
-    this.rawHeaders = rawHeaders;
-  }
-
-  * entries() {
-    for (let entry of Object.entries(this.rawHeaders)) {
-      yield entry;
-    }
-  }
-
-  * keys() {
-    for (let key of Object.keys(this.rawHeaders)) {
-      yield key;
-    }
-  }
-
-  * values() {
-    for (let value of Object.values(this.rawHeaders)) {
-      yield value;
-    }
-  }
-
-  get(name) {
-    return this.rawHeaders[name.toLowerCase()] || null;
-  }
-
-  has(name) {
-    return !!this.get(name);
-  }
-}
-
-class Response {
-  constructor(raw, cacheFilePath, fromCache) {
-    Object.assign(this, raw);
-    this.cacheFilePath = cacheFilePath;
-    this.headers = new Headers(raw.headers);
-    this.fromCache = fromCache;
-
-    if (this.bodyBuffer.type === 'Buffer') {
-      this.bodyBuffer = Buffer.from(this.bodyBuffer);
-    }
-  }
-
-  text() {
-    return this.bodyBuffer.toString();
-  }
-
-  json() {
-    return JSON.parse(this.bodyBuffer.toString());
-  }
-
-  buffer() {
-    return this.bodyBuffer;
-  }
-
-  ejectFromCache() {
-    return fs.promises.unlink(this.cacheFilePath);
-  }
 }
 
 async function createRawResponse(fetchRes) {

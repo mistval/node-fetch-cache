@@ -2,6 +2,7 @@ const assert = require('assert');
 const rimraf = require('rimraf');
 const path = require('path');
 const FetchCache = require('../index.js');
+const { URLSearchParams } = require('url');
 
 const CACHE_PATH = path.join(__dirname, '..', '.cache');
 
@@ -14,6 +15,10 @@ const TEXT_BODY_EXPECTED = 'User-agent: *\nDisallow: /deny\n';
 let fetch;
 let res;
 let body;
+
+function post(body) {
+  return { method: 'POST', body };
+}
 
 beforeEach(async function() {
   rimraf.sync(CACHE_PATH);
@@ -103,6 +108,38 @@ describe('Cache tests', function() {
 
     await res.ejectFromCache();
     await res.ejectFromCache();
+  });
+
+  it('Gives different string bodies different cache keys', async function() {
+    res = await fetch(TWO_HUNDRED_URL, post('a'));
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL, post('b'));
+    assert.strictEqual(res.fromCache, false);
+  });
+
+  it('Gives same string bodies same cache keys', async function() {
+    res = await fetch(TWO_HUNDRED_URL, post('a'));
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL, post('a'));
+    assert.strictEqual(res.fromCache, true);
+  });
+
+  it('Gives different URLSearchParams different cache keys', async function() {
+    res = await fetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=b')));
+    assert.strictEqual(res.fromCache, false);
+  });
+
+  it('Gives same URLSearchParams same cache keys', async function() {
+    res = await fetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
+    assert.strictEqual(res.fromCache, true);
   });
 }).timeout(10000);
 

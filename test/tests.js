@@ -96,6 +96,14 @@ describe('Cache tests', function() {
     res = await fetch(TWO_HUNDRED_URL);
     assert.strictEqual(res.fromCache, true);
   });
+
+  it('Does not error if rejecting from cache twice', async function() {
+    res = await fetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, false);
+
+    await res.ejectFromCache();
+    await res.ejectFromCache();
+  });
 }).timeout(10000);
 
 describe('Data tests', function() {

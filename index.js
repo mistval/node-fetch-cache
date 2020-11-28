@@ -11,13 +11,17 @@ function md5(str) {
 }
 
 function getBodyCacheKeyJson(body) {
-  if (typeof body === 'string') {
+  if (!body) {
+    return body;
+  } if (typeof body === 'string') {
     return body;
   } if (body instanceof URLSearchParams) {
     return body.toString();
+  } if (body instanceof fs.ReadStream) {
+    return body.path;
   }
 
-  return body;
+  throw new Error('Unsupported body type');
 }
 
 function getCacheKey(requestArguments) {

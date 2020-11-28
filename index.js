@@ -10,6 +10,33 @@ function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
 
+function getFormDataCacheKey(formData) {
+  const cacheKey = { ...formData };
+
+  if (typeof formData.getBoundary === 'function') {
+    const boundary = formData.getBoundary();
+
+    // eslint-disable-next-line no-underscore-dangle
+    delete cacheKey._boundary;
+
+    // eslint-disable-next-line no-underscore-dangle
+    if (Array.isArray(cacheKey._streams)) {
+      const boundaryReplaceRegex = new RegExp(boundary, 'g');
+
+      // eslint-disable-next-line no-underscore-dangle
+      cacheKey._streams = cacheKey._streams.map((s) => {
+        if (typeof s === 'string') {
+          return s.replace(boundaryReplaceRegex, '');
+        }
+
+        return s;
+      });
+    }
+  }
+
+  return cacheKey;
+}
+
 function getBodyCacheKeyJson(body) {
   if (!body) {
     return body;
@@ -19,6 +46,8 @@ function getBodyCacheKeyJson(body) {
     return body.toString();
   } if (body instanceof fs.ReadStream) {
     return body.path;
+  } if (body.toString && body.toString() === '[object FormData]') {
+    return getFormDataCacheKey(body);
   }
 
   throw new Error('Unsupported body type');

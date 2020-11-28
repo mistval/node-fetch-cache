@@ -1,4 +1,5 @@
 const fs = require('fs');
+const FormData = require('form-data');
 const assert = require('assert');
 const rimraf = require('rimraf');
 const path = require('path');
@@ -161,6 +162,34 @@ describe('Cache tests', function() {
     assert.strictEqual(res.fromCache, false);
 
     res = await fetch(TWO_HUNDRED_URL, post(s1));
+    assert.strictEqual(res.fromCache, true);
+  });
+
+  it('Gives different form data different cache keys', async function() {
+    const data1 = new FormData();
+    data1.append('a', 'a');
+
+    const data2 = new FormData();
+    data2.append('b', 'b');
+
+    res = await fetch(TWO_HUNDRED_URL, post(data1));
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL, post(data2));
+    assert.strictEqual(res.fromCache, false);
+  });
+
+  it('Gives same form data same cache keys', async function() {
+    const data1 = new FormData();
+    data1.append('a', 'a');
+
+    const data2 = new FormData();
+    data2.append('a', 'a');
+
+    res = await fetch(TWO_HUNDRED_URL, post(data1));
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TWO_HUNDRED_URL, post(data2));
     assert.strictEqual(res.fromCache, true);
   });
 }).timeout(10000);

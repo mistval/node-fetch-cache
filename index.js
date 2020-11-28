@@ -8,7 +8,12 @@ function md5(str) {
 }
 
 async function getResponse(cacheDirPath, requestArguments, bodyFunctionName) {
-  const cacheHash = md5(JSON.stringify(requestArguments) + bodyFunctionName);
+  const [url, requestInit, ...rest] = requestArguments;
+  const requestParams = requestInit.body
+    ? Object.assign({}, requestInit, {body: typeof requestInit.body === 'object' ? requestInit.body.toString() : requestInit.body})
+    : requestInit;
+
+  const cacheHash = md5(JSON.stringify([url, requestParams, ...rest]) + bodyFunctionName);
   const cachedFilePath = path.join(cacheDirPath, `${cacheHash}.json`);
 
   try {

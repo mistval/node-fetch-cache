@@ -22,69 +22,69 @@ This module aims to expose the same API as `node-fetch` does for the most common
 
 ### async fetch(resource [, init])
 
-Same arguments as [browser fetch](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch).
+Same arguments as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 Returns a **CachedResponse**.
 
 ### async CachedResponse.text()
 
-Returns the body as a string, same as node-fetch.
+Returns the body as a string, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### async CachedResponse.json()
 
-Returns the body as a JavaScript object, parsed from JSON, same as node-fetch.
+Returns the body as a JavaScript object, parsed from JSON, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### async CachedResponse.buffer()
 
-Returns the body as a Buffer, same as node-fetch.
+Returns the body as a Buffer, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### CachedResponse.status
 
-Returns the HTTP status code of the response, same as node-fetch.
+Returns the HTTP status code of the response, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### CachedResponse.statusText
 
-Returns a text represention of the response status, same as node-fetch.
+Returns a text represention of the response status, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### CachedResponse.ok
 
-Returns true if the request returned a successful response status, false otherwise, same as node-fetch.
+Returns true if the request returned a successful response status, false otherwise, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### CachedResponse.redirected
 
-Returns true if the request was redirected, false otherwise, same as node-fetch.
+Returns true if the request was redirected, false otherwise, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### CachedResponse.headers
 
-Returns a **ResponseHeaders** object representing the headers of the response, same as node-fetch.
+Returns a **ResponseHeaders** object representing the headers of the response, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### ResponseHeaders.entries()
 
-Returns the raw headers as an array of `[key, value]` pairs, same as node-fetch.
+Returns the raw headers as an array of `[key, value]` pairs, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### ResponseHeaders.keys()
 
-Returns an array of all header keys, same as node-fetch.
+Returns an array of all header keys, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### ResponseHeaders.values()
 
-Returns an array of all header values, same as node-fetch.
+Returns an array of all header values, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### ResponseHeaders.get(key)
 
-Returns the value of the header with the given key, same as node-fetch.
+Returns the value of the header with the given key, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### ResponseHeaders.has(key)
 
-Returns true if the headers has a value for the given key, same as node-fetch.
+Returns true if the headers has a value for the given key, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ### ResponseHeaders.raw
 
-Returns the headers as an object of `{ "key": "value" }` pairs, same as node-fetch.
+Returns the headers as an object of `{ "key": "value" }` pairs, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 ## Streaming
 
-This module supports streams like `node-fetch` does, but with a couple of caveats you should be aware of if you want to use streams.
+This module supports streams like [node-fetch](https://www.npmjs.com/package/node-fetch) does, but with a couple of caveats you should be aware of if you want to use streams.
 
 1. Response bodies are always read into memory even if you stream them to disk. That means if you need to stream large responses that don't fit into RAM, this module may be unsuitable.
 2. When streaming a request body with fs.ReadStream, the cache key is generated based only on the path of the stream, not its content. That means if you stream `image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**. This module may be unsuitable if you need to stream files in requests and the content of those files can change.

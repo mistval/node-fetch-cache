@@ -7,11 +7,15 @@ const FetchCache = require('../index.js');
 const { URLSearchParams } = require('url');
 
 const CACHE_PATH = path.join(__dirname, '..', '.cache');
+const expectedPngBuffer = fs.readFileSync(path.join(__dirname, 'expected_png.png'));
 
 const TWO_HUNDRED_URL = 'https://httpbin.org/status/200';
 const FOUR_HUNDRED_URL = 'https://httpbin.org/status/400';
 const THREE_HUNDRED_TWO_URL = 'https://httpbin.org/status/302';
 const TEXT_BODY_URL = 'https://httpbin.org/robots.txt';
+const JSON_BODY_URL = 'https://httpbin.org/json';
+const PNG_BODY_URL = 'https://httpbin.org/image/png';
+
 const TEXT_BODY_EXPECTED = 'User-agent: *\nDisallow: /deny\n';
 
 let fetch;
@@ -195,13 +199,51 @@ describe('Cache tests', function() {
 }).timeout(10000);
 
 describe('Data tests', function() {
+  it('Refuses to consume body twice', async function() {
+    res = await fetch(TEXT_BODY_URL);
+    await res.text();
+
+    try {
+      await res.text();
+      throw new Error('The above line should have thrown.');
+    } catch (err) {
+      // It threw
+    }
+  });
+
   it('Can get text body', async function() {
     res = await fetch(TEXT_BODY_URL);
     body = await res.text();
     assert.strictEqual(body, TEXT_BODY_EXPECTED);
+    assert.strictEqual(res.fromCache, false);
 
     res = await fetch(TEXT_BODY_URL);
     body = await res.text();
     assert.strictEqual(body, TEXT_BODY_EXPECTED);
+    assert.strictEqual(res.fromCache, true);
+  });
+
+  it('Can get JSON body', async function() {
+    res = await fetch(JSON_BODY_URL);
+    body = await res.json();
+    assert(body.slideshow);
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(JSON_BODY_URL);
+    body = await res.json();
+    assert(body.slideshow);
+    assert.strictEqual(res.fromCache, true);
+  });
+
+  it('Can get PNG buffer body', async function() {
+    res = await fetch(PNG_BODY_URL);
+    body = await res.buffer();
+    assert.strictEqual(expectedPngBuffer.equals(body), true);
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(PNG_BODY_URL);
+    body = await res.buffer();
+    assert.strictEqual(expectedPngBuffer.equals(body), true);
+    assert.strictEqual(res.fromCache, true);
   });
 }).timeout(10000);

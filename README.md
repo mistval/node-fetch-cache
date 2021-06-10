@@ -129,7 +129,7 @@ Supported options:
 
 ```js
 {
-  ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, objects are never automatically ejected from the cache.
+  ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, responses are never automatically ejected from the cache.
   global: true, // If true, uses the global cache, which is shared together by all MemoryCaches that specify this option. If false, every MemoryCache uses a separate cache.
 }
 ```
@@ -147,7 +147,7 @@ const fetch = createNodeFetchCache(new MemoryCache(options));
 
 ```js
 {
-  ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, objects are never automatically ejected from the cache.
+  ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, responses are never automatically ejected from the cache.
 }
 ```
 

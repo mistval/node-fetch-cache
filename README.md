@@ -20,6 +20,10 @@ fetch('http://google.com')
 
 This module aims to expose the same API as `node-fetch` does for the most common use cases, but may not support some of the less common use cases.
 
+### const fetch = require('node-fetch-cache')('./path/to/cache/dir')
+
+Load the module and specify the directory to cache respones in.
+
 ### async fetch(resource [, init])
 
 Same arguments as [node-fetch](https://www.npmjs.com/package/node-fetch).
@@ -57,6 +61,12 @@ Returns true if the request was redirected, false otherwise, same as [node-fetch
 ### CachedResponse.headers
 
 Returns a **ResponseHeaders** object representing the headers of the response, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
+
+### async CachedResponse.ejectFromCache()
+
+Eject the response from the cache, so that the next request will perform a true HTTP request rather than returning a cached response.
+
+Keep in mind that this module caches **all** responses, even if they return error status codes. You might want to use this function when `!response.ok`, so that you can retry requests.
 
 ### ResponseHeaders.entries()
 

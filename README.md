@@ -1,8 +1,10 @@
 # node-fetch-cache
 
-node-fetch with caching to a directory on disk.
+node-fetch with caching of responses.
 
-The first usage with any given arguments will result in an HTTP request and any subsequent usage with the same arguments and body function (text, json, buffer, or textConverted) will read the response body from the cache on disk.
+The first fetch with any given arguments will result in an HTTP request and any subsequent fetch with the same arguments will read the response body from the cache.
+
+By default responses are cached in memory, but you can also cache to files on disk, or implement your own cache. See the **Cache Customization** section for more info.
 
 ## Usage
 
@@ -107,6 +109,78 @@ This module supports streams like [node-fetch](https://www.npmjs.com/package/nod
 
 1. Response bodies are always read into memory even if you stream them to disk. That means if you need to stream large responses that don't fit into RAM, this module may be unsuitable.
 2. When streaming a request body with fs.ReadStream, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**. This module may be unsuitable if you need to stream files in requests and the content of those files can change.
+
+## Cache Customization
+
+By default responses are cached in memory, but you can also cache to files on disk, or implement your own cache.
+
+### MemoryCache
+
+This is the default cache delegate. It caches responses in-process in a POJO.
+
+Usage:
+
+```js
+const createNodeFetchCache, { MemoryCache } = require('node-fetch-cache');
+const fetch = createNodeFetchCache(new MemoryCache(options));
+```
+
+Supported options:
+
+```js
+{
+  ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, objects are never automatically ejected from the cache.
+  global: true, // If true, uses the global cache, which is shared together by all MemoryCaches that specify this option. If false, every MemoryCache uses a separate cache.
+}
+```
+
+### FileSystemCache
+
+Cache to a directory on disk. This allows the cache to survive process restarts, reboots, etc.
+
+Usage:
+
+```js
+const createNodeFetchCache, { FileSystemCache } = require('node-fetch-cache');
+const fetch = createNodeFetchCache(new MemoryCache(options));
+```
+
+```js
+{
+  ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, objects are never automatically ejected from the cache.
+}
+```
+
+### Provide Your Own
+
+You can implement a caching layer yourself. The cache simply needs to be an object that has `get(key)` and `set(key, value)` functions.
+
+The set function must accept a key and a value (which will be a JSON-serializable JS object) and store them.
+
+The get function should accept a key and return whatever value was set for that key (or `undefined`/`null` if there is no value for that key).
+
+Both functions can be async.
+
+For example you could make and use your own simple memory cache like this:
+
+```js
+const createNodeFetchCache = require('node-fetch-cache');
+
+class MyMemoryCache {
+  set(key, value) {
+    this[key] = value;
+  }
+
+  get(key) {
+    return this[key];
+  }
+}
+
+fetch = createNodeFetchCache(new MyMemoryCache());
+fetch('http://google.com')
+  .then(response => response.text())
+  .then(text => console.log(text));
+```
 
 ## Bugs / Help / Feature Requests / Contributing
 

@@ -22,7 +22,7 @@ This module aims to expose the same API as `node-fetch` does for the most common
 
 ### const fetch = require('node-fetch-cache')('./path/to/cache/dir')
 
-Load the module and specify the directory to cache respones in.
+Load the module and specify the directory to cache responses in.
 
 If this syntax looks at all foreign to you, you can do this:
 

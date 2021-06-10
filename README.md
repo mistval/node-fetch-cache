@@ -62,23 +62,23 @@ Returns a **ResponseHeaders** object representing the headers of the response, s
 
 Returns the raw headers as an array of `[key, value]` pairs, same as node-fetch.
 
-## ResponseHeaders.keys()
+### ResponseHeaders.keys()
 
 Returns an array of all header keys, same as node-fetch.
 
-## ResponseHeaders.values()
+### ResponseHeaders.values()
 
 Returns an array of all header values, same as node-fetch.
 
-## ResponseHeaders.get(key)
+### ResponseHeaders.get(key)
 
 Returns the value of the header with the given key, same as node-fetch.
 
-## ResponseHeaders.has(key)
+### ResponseHeaders.has(key)
 
 Returns true if the headers has a value for the given key, same as node-fetch.
 
-## ResponseHeaders.raw
+### ResponseHeaders.raw
 
 Returns the headers as an object of `{ "key": "value" }` pairs, same as node-fetch.
 

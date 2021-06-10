@@ -130,7 +130,7 @@ Supported options:
 ```js
 {
   ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, responses are never automatically ejected from the cache.
-  global: true, // If true, uses the global cache, which is shared together by all MemoryCaches that specify this option. If false, every MemoryCache uses a separate cache.
+  global: true, // If true, uses the global cache, which is shared together by all MemoryCaches that specify this option. If false (or undefined), every MemoryCache uses a separate cache.
 }
 ```
 
@@ -142,7 +142,7 @@ Usage:
 
 ```js
 const createNodeFetchCache, { FileSystemCache } = require('node-fetch-cache');
-const fetch = createNodeFetchCache(new MemoryCache(options));
+const fetch = createNodeFetchCache(new FileSystemCache(options));
 ```
 
 ```js

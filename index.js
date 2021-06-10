@@ -3,7 +3,6 @@ const fs = require('fs');
 const { URLSearchParams } = require('url');
 const crypto = require('crypto');
 const path = require('path');
-
 const Response = require('./classes/response.js');
 
 const CACHE_VERSION = 2;
@@ -12,6 +11,9 @@ function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
 
+// Since the bounday in FormData is random,
+// we ignore it for purposes of calculating
+// the cache key.
 function getFormDataCacheKey(formData) {
   const cacheKey = { ...formData };
 

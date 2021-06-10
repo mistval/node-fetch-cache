@@ -8,32 +8,25 @@ By default responses are cached in memory, but you can also cache to files on di
 
 ## Usage
 
-Require it with a directory path to cache in, and then use it the same way you would use fetch.
+Require it and use it the same way you would use node-fetch:
 
 ```js
-const fetch = require('node-fetch-cache')('./path/to/cache/dir');
+const fetch = require('node-fetch-cache');
 
 fetch('http://google.com')
   .then(response => response.text())
   .then(text => console.log(text));
 ```
 
+The next time you `fetch('http://google.com')`, the response will be returned from the cache. No HTTP request will be made.
+
 ## API
 
-This module aims to expose the same API as `node-fetch` does for the most common use cases, but may not support some of the less common use cases.
+This module aims to expose the same API as `node-fetch` does for the most common use cases, but may not support some of the less common functions and use cases.
 
-### const fetch = require('node-fetch-cache')('./path/to/cache/dir')
+### const fetch = require('node-fetch-cache');
 
-Load the module and specify the directory to cache responses in.
-
-If this syntax looks at all foreign to you, you can do this instead:
-
-```js
-const createNodeFetchCache = require('node-fetch-cache');
-const fetch = createNodeFetchCache('./path/to/cache/dir');
-```
-
-Same thing.
+Load the module.
 
 ### async fetch(resource [, init])
 
@@ -121,8 +114,8 @@ This is the default cache delegate. It caches responses in-process in a POJO.
 Usage:
 
 ```js
-const createNodeFetchCache, { MemoryCache } = require('node-fetch-cache');
-const fetch = createNodeFetchCache(new MemoryCache(options));
+const fetchBuilder, { MemoryCache } = require('node-fetch-cache');
+const fetch = fetchBuilder.withCache(new MemoryCache(options));
 ```
 
 Supported options:
@@ -136,13 +129,13 @@ Supported options:
 
 ### FileSystemCache
 
-Cache to a directory on disk. This allows the cache to survive process restarts, reboots, etc.
+Cache to a directory on disk. This allows the cache to survive the process exiting.
 
 Usage:
 
 ```js
-const createNodeFetchCache, { FileSystemCache } = require('node-fetch-cache');
-const fetch = createNodeFetchCache(new FileSystemCache(options));
+const fetchBuilder, { FileSystemCache } = require('node-fetch-cache');
+const fetch = fetchBuilder.withCache(new FileSystemCache(options));
 ```
 
 ```js
@@ -164,7 +157,7 @@ Both functions can be async.
 For example you could make and use your own simple memory cache like this:
 
 ```js
-const createNodeFetchCache = require('node-fetch-cache');
+const fetchBuilder = require('node-fetch-cache');
 
 class MyMemoryCache {
   set(key, value) {
@@ -176,7 +169,8 @@ class MyMemoryCache {
   }
 }
 
-fetch = createNodeFetchCache(new MyMemoryCache());
+fetch = fetchBuilder.withCache(new MyMemoryCache());
+
 fetch('http://google.com')
   .then(response => response.text())
   .then(text => console.log(text));

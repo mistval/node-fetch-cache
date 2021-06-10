@@ -24,7 +24,7 @@ This module aims to expose the same API as `node-fetch` does for the most common
 
 Load the module and specify the directory to cache responses in.
 
-If this syntax looks at all foreign to you, you can do this:
+If this syntax looks at all foreign to you, you can do this instead:
 
 ```js
 const createNodeFetchCache = require('node-fetch-cache');

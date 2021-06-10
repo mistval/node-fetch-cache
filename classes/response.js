@@ -1,4 +1,5 @@
 const fs = require('fs');
+const stream = require('stream');
 const Headers = require('./headers.js');
 
 class Response {
@@ -7,19 +8,23 @@ class Response {
     this.cacheFilePath = cacheFilePath;
     this.headers = new Headers(raw.headers);
     this.fromCache = fromCache;
-    this.consumed = false;
+    this.bodyUsed = false;
 
     if (this.bodyBuffer.type === 'Buffer') {
       this.bodyBuffer = Buffer.from(this.bodyBuffer);
     }
   }
 
+  get body() {
+    return stream.Readable.from(this.bodyBuffer);
+  }
+
   consumeBody() {
-    if (this.consumed) {
+    if (this.bodyUsed) {
       throw new Error('Error: body used already');
     }
 
-    this.consumed = true;
+    this.bodyUsed = true;
     return this.bodyBuffer;
   }
 

@@ -246,4 +246,26 @@ describe('Data tests', function() {
     assert.strictEqual(expectedPngBuffer.equals(body), true);
     assert.strictEqual(res.fromCache, true);
   });
+
+  it('Can stream a body', async function() {
+    res = await fetch(TEXT_BODY_URL);
+    body = '';
+
+    for await (const chunk of res.body) {
+      body += chunk.toString();
+    }
+
+    assert.strictEqual(TEXT_BODY_EXPECTED, body);
+    assert.strictEqual(res.fromCache, false);
+
+    res = await fetch(TEXT_BODY_URL);
+    body = '';
+
+    for await (const chunk of res.body) {
+      body += chunk.toString();
+    }
+
+    assert.strictEqual(TEXT_BODY_EXPECTED, body);
+    assert.strictEqual(res.fromCache, true);
+  });
 }).timeout(10000);

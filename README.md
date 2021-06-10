@@ -24,6 +24,15 @@ This module aims to expose the same API as `node-fetch` does for the most common
 
 Load the module and specify the directory to cache respones in.
 
+If this syntax looks at all foreign to you, you can do this:
+
+```js
+const createNodeFetchCache = require('node-fetch-cache');
+const fetch = createNodeFetchCache('./path/to/cache/dir');
+```
+
+Same thing.
+
 ### async fetch(resource [, init])
 
 Same arguments as [node-fetch](https://www.npmjs.com/package/node-fetch).

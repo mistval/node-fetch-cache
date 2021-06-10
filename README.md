@@ -155,7 +155,7 @@ const fetch = createNodeFetchCache(new FileSystemCache(options));
 
 You can implement a caching layer yourself. The cache simply needs to be an object that has `get(key)` and `set(key, value)` functions.
 
-The set function must accept a key and a value (which will be a JSON-serializable JS object) and store them.
+The set function must accept a key (which will be a string) and a value (which will be a JSON-serializable JS object) and store them.
 
 The get function should accept a key and return whatever value was set for that key (or `undefined`/`null` if there is no value for that key).
 

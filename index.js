@@ -97,6 +97,7 @@ async function getResponse(cache, requestArguments) {
   if (cachedValue) {
     return new Response(cachedValue, ejectSelfFromCache, true);
   }
+
   const fetchResponse = await fetch(...requestArguments);
   const rawResponse = await createRawResponse(fetchResponse);
   await cache.set(cacheKey, rawResponse);

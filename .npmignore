@@ -1,3 +1,4 @@
 .eslintrc.js
 test
 .cache
+.nyc_output

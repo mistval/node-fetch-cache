@@ -16,27 +16,21 @@ function md5(str) {
 // the cache key.
 function getFormDataCacheKey(formData) {
   const cacheKey = { ...formData };
+  const boundary = formData.getBoundary();
 
-  if (typeof formData.getBoundary === 'function') {
-    const boundary = formData.getBoundary();
+  // eslint-disable-next-line no-underscore-dangle
+  delete cacheKey._boundary;
 
-    // eslint-disable-next-line no-underscore-dangle
-    delete cacheKey._boundary;
+  const boundaryReplaceRegex = new RegExp(boundary, 'g');
 
-    // eslint-disable-next-line no-underscore-dangle
-    if (Array.isArray(cacheKey._streams)) {
-      const boundaryReplaceRegex = new RegExp(boundary, 'g');
-
-      // eslint-disable-next-line no-underscore-dangle
-      cacheKey._streams = cacheKey._streams.map((s) => {
-        if (typeof s === 'string') {
-          return s.replace(boundaryReplaceRegex, '');
-        }
-
-        return s;
-      });
+  // eslint-disable-next-line no-underscore-dangle
+  cacheKey._streams = cacheKey._streams.map((s) => {
+    if (typeof s === 'string') {
+      return s.replace(boundaryReplaceRegex, '');
     }
-  }
+
+    return s;
+  });
 
   return cacheKey;
 }
@@ -54,14 +48,18 @@ function getBodyCacheKeyJson(body) {
     return getFormDataCacheKey(body);
   }
 
-  throw new Error('Unsupported body type');
+  throw new Error('Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, fs.ReadStream, FormData');
 }
 
 function getCacheKey(requestArguments) {
   const resource = requestArguments[0];
   const init = requestArguments[1] || {};
 
-  const resourceCacheKeyJson = typeof resource === 'string' ? { url: resource } : { ...resource };
+  if (typeof resource !== 'string') {
+    throw new Error('The first argument must be a string (fetch.Request is not supported).');
+  }
+
+  const resourceCacheKeyJson = { url: resource };
   const initCacheKeyJson = { ...init };
 
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);

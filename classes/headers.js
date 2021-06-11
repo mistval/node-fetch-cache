@@ -18,7 +18,7 @@ class Headers {
   }
 
   get(name) {
-    return (this.rawHeaders[name.toLowerCase()] || [])[0];
+    return (this.rawHeaders[name.toLowerCase()] || [])[0] || null;
   }
 
   has(name) {

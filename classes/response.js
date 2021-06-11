@@ -1,4 +1,3 @@
-const fs = require('fs');
 const stream = require('stream');
 const Headers = require('./headers.js');
 

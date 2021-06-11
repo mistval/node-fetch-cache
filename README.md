@@ -123,9 +123,10 @@ Options:
 ```js
 {
   ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, responses are never automatically ejected from the cache.
-  global: true, // If true, uses the global cache, which is shared together by all MemoryCaches that specify this option. If false (or undefined), every MemoryCache uses a separate cache.
 }
 ```
+
+Note that by default (if you don't use `withCache()`) a **shared** MemoryCache will be used (you can import this module in multiple files and they will all share the same cache). If you instantiate and provide a `new MemoryCache()` as shown above however, the cache is *NOT* shared unless you explicitly pass it around and pass it into `withCache()` in each of your source files.
 
 ### FileSystemCache
 
@@ -147,13 +148,17 @@ const fetch = fetchBuilder.withCache(new FileSystemCache(options));
 
 ### Provide Your Own
 
-You can implement a caching layer yourself. The cache simply needs to be an object that has `get(key)` and `set(key, value)` functions.
+You can implement a caching delegate yourself. The cache simply needs to be an object that has `set(key, value)`, `get(key)`, and `remove(key)` functions.
 
 The set function must accept a key (which will be a string) and a value (which will be a JSON-serializable JS object) and store them.
 
 The get function should accept a key and return whatever value was set for that key (or `undefined`/`null` if there is no value for that key).
 
+The remove function should accept a key and remove the cached value associated with that key, if any.
+
 Both functions can be async.
+
+It is safe to remove values from the cache arbitrarily (for example if you implement a TTL in the caching delegate).
 
 For example you could make and use your own simple memory cache like this:
 

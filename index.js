@@ -2,7 +2,6 @@ const fetch = require('node-fetch');
 const fs = require('fs');
 const { URLSearchParams } = require('url');
 const crypto = require('crypto');
-const path = require('path');
 const Response = require('./classes/response.js');
 const MemoryCache = require('./classes/caching/memory_cache.js');
 
@@ -97,19 +96,18 @@ async function getResponse(cache, requestArguments) {
 
   if (cachedValue) {
     return new Response(cachedValue, ejectSelfFromCache, true);
-  } else {
-    const fetchResponse = await fetch(...requestArguments);
-    const rawResponse = await createRawResponse(fetchResponse);
-    await cache.set(cacheKey, rawResponse);
-    return new Response(rawResponse, ejectSelfFromCache, false);
   }
+  const fetchResponse = await fetch(...requestArguments);
+  const rawResponse = await createRawResponse(fetchResponse);
+  await cache.set(cacheKey, rawResponse);
+  return new Response(rawResponse, ejectSelfFromCache, false);
 }
 
 function createFetchWithCache(cache) {
-  const fetch = (...args) => getResponse(cache, args);
-  fetch.withCache = createFetchWithCache;
+  const fetchCache = (...args) => getResponse(cache, args);
+  fetchCache.withCache = createFetchWithCache;
 
-  return fetch;
+  return fetchCache;
 }
 
 module.exports = createFetchWithCache(new MemoryCache());

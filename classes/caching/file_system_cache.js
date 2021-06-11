@@ -26,4 +26,4 @@ module.exports = class FileSystemCache {
       this.keyTimeout.updateTimeout(key, this.ttl, () => this.remove(key));
     }
   }
-}
+};

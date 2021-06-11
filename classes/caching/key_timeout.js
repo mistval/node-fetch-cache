@@ -13,4 +13,4 @@ module.exports = class KeyTimeout {
       callback();
     }, durationMs);
   }
-}
+};

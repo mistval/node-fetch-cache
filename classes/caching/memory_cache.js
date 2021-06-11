@@ -4,14 +4,7 @@ module.exports = class MemoryCache {
   constructor(options = {}) {
     this.ttl = options.ttl;
     this.keyTimeout = new KeyTimeout();
-
-    if (options.global && !globalThis.nodeFetchCache) {
-      globalThis.nodeFetchCache = {};
-    }
-
-    this.cache = options.global
-      ? globalThis.nodeFetchCache
-      : {};
+    this.cache = {};
   }
 
   get(key) {
@@ -30,4 +23,4 @@ module.exports = class MemoryCache {
       this.keyTimeout.updateTimeout(key, this.ttl, () => this.remove(key));
     }
   }
-}
+};

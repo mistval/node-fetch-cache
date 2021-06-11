@@ -46,6 +46,10 @@ Returns the body as a JavaScript object, parsed from JSON, same as [node-fetch](
 
 Returns the body as a Buffer, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
+### async CachedResponse.blob()
+
+Returns the body as a Blob, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
+
 ### CachedResponse.status
 
 Returns the HTTP status code of the response, same as [node-fetch](https://www.npmjs.com/package/node-fetch).

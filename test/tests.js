@@ -390,11 +390,13 @@ describe('Data tests', function() {
     let standardBody = await standardFetchResponse.blob();
     assert.strictEqual(cachedBody.size, standardBody.size);
     assert.strictEqual(cachedBody.type, standardBody.type);
+    assert.strictEqual(await cachedBody.text(), await standardBody.text());
 
     cachedFetchResponse = await cachedFetch(PNG_BODY_URL);
     cachedBody = await cachedFetchResponse.blob();
     assert.strictEqual(cachedBody.size, standardBody.size);
     assert.strictEqual(cachedBody.type, standardBody.type);
+    assert.strictEqual(await cachedBody.text(), await standardBody.text());
   });
 
   it('Errors if the body type is not supported', async function() {

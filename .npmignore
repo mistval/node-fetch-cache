@@ -2,3 +2,6 @@
 test
 .cache
 .nyc_output
+.github
+.eslintignore
+.vscode

@@ -4,19 +4,21 @@ class Headers {
   }
 
   entries() {
-    return Object.entries(this.rawHeaders);
+    return Object.entries(this.rawHeaders)
+      .sort((e1, e2) => e1[0].localeCompare(e2[0]))
+      .map(([key, val]) => [key, val[0]]);
   }
 
   keys() {
-    return Object.keys(this.rawHeaders);
+    return this.entries().map((e) => e[0]);
   }
 
   values() {
-    return Object.values(this.rawHeaders);
+    return this.entries().map((e) => e[1]);
   }
 
   get(name) {
-    return this.rawHeaders[name.toLowerCase()] || null;
+    return (this.rawHeaders[name.toLowerCase()] || [])[0];
   }
 
   has(name) {

@@ -73,16 +73,13 @@ function getCacheKey(requestArguments) {
 async function createRawResponse(fetchRes) {
   const buffer = await fetchRes.buffer();
 
-  const rawHeaders = Array.from(fetchRes.headers.entries())
-    .reduce((aggregate, entry) => ({ ...aggregate, [entry[0]]: entry[1] }), {});
-
   return {
     status: fetchRes.status,
     statusText: fetchRes.statusText,
     type: fetchRes.type,
     url: fetchRes.url,
     ok: fetchRes.ok,
-    headers: rawHeaders,
+    headers: fetchRes.headers.raw(),
     redirected: fetchRes.redirected,
     bodyBuffer: buffer,
   };

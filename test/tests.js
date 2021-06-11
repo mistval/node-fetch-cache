@@ -5,6 +5,7 @@ const rimraf = require('rimraf');
 const path = require('path');
 const FetchCache = require('../index.js');
 const { URLSearchParams } = require('url');
+const MemoryCache = require('../classes/caching/memory_cache.js');
 
 const CACHE_PATH = path.join(__dirname, '..', '.cache');
 const expectedPngBuffer = fs.readFileSync(path.join(__dirname, 'expected_png.png'));
@@ -28,7 +29,7 @@ function post(body) {
 
 beforeEach(async function() {
   rimraf.sync(CACHE_PATH);
-  fetch = FetchCache(CACHE_PATH);
+  fetch = FetchCache.withCache(new MemoryCache());
 });
 
 describe('Basic property tests', function() {

@@ -1,4 +1,5 @@
 const stream = require('stream');
+const Blob = require('./blob.js');
 const Headers = require('./headers.js');
 
 class Response {
@@ -27,16 +28,21 @@ class Response {
     return this.bodyBuffer;
   }
 
-  text() {
+  async text() {
     return this.consumeBody().toString();
   }
 
-  json() {
+  async json() {
     return JSON.parse(this.consumeBody().toString());
   }
 
-  buffer() {
+  async buffer() {
     return this.consumeBody();
+  }
+
+  async blob() {
+    const type = this.headers.get('content-type');
+    return new Blob([this.consumeBody()], { type });
   }
 
   ejectFromCache() {

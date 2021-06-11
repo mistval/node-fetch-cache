@@ -7,6 +7,7 @@ const { URLSearchParams } = require('url');
 const standardFetch = require('node-fetch');
 const FetchCache = require('../index.js');
 const MemoryCache = require('../classes/caching/memory_cache.js');
+const FileSystemCache = require('../classes/caching/file_system_cache.js');
 
 const CACHE_PATH = path.join(__dirname, '..', '.cache');
 const expectedPngBuffer = fs.readFileSync(path.join(__dirname, 'expected_png.png'));
@@ -35,7 +36,11 @@ function removeDates(arrOrObj) {
   }
 
   if (Array.isArray(arrOrObj)) {
-    return [...arrOrObj].filter(e => !Date.parse(e));
+    if (Array.isArray(arrOrObj[0])) {
+      return arrOrObj.filter(e => e[0] !== 'date');
+    }
+
+    return arrOrObj.filter(e => !Date.parse(e));
   }
 
   return arrOrObj;
@@ -142,10 +147,16 @@ describe('Header tests', function() {
 
   it('Gets correct header entries', async function() {
     let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(cachedFetchResponse.headers.entries(), [...standardFetchResponse.headers.entries()]);
+    assert.deepStrictEqual(
+      removeDates(cachedFetchResponse.headers.entries()),
+      removeDates([...standardFetchResponse.headers.entries()]),
+    );
 
     cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(cachedFetchResponse.headers.entries(), [...standardFetchResponse.headers.entries()]);
+    assert.deepStrictEqual(
+      removeDates(cachedFetchResponse.headers.entries()),
+      removeDates([...standardFetchResponse.headers.entries()]),
+    );
   });
 
   it('Can get a header by value', async function() {
@@ -371,6 +382,19 @@ describe('Data tests', function() {
 
     assert.strictEqual(TEXT_BODY_EXPECTED, body);
     assert.strictEqual(res.fromCache, true);
+  });
+
+  it('Can get PNG blob body', async function() {
+    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(PNG_BODY_URL);
+    let cachedBody = await cachedFetchResponse.blob();
+    let standardBody = await standardFetchResponse.blob();
+    assert.strictEqual(cachedBody.size, standardBody.size);
+    assert.strictEqual(cachedBody.type, standardBody.type);
+
+    cachedFetchResponse = await cachedFetch(PNG_BODY_URL);
+    cachedBody = await cachedFetchResponse.blob();
+    assert.strictEqual(cachedBody.size, standardBody.size);
+    assert.strictEqual(cachedBody.type, standardBody.type);
   });
 
   it('Errors if the body type is not supported', async function() {

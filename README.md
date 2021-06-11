@@ -2,7 +2,7 @@
 
 node-fetch with caching of responses.
 
-The first fetch with any given arguments will result in an HTTP request and any subsequent fetch with the same arguments will read the response body from the cache.
+The first fetch with any given arguments will result in an HTTP request and any subsequent fetch with the same arguments will read the response from the cache.
 
 By default responses are cached in memory, but you can also cache to files on disk, or implement your own cache. See the **Cache Customization** section for more info.
 

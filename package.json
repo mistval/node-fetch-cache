@@ -4,7 +4,8 @@
   "description": "node-fetch with a persistent cache.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -- --timeout 10000",
+    "test": "mocha --timeout 10000 --exit",
+    "coverage": "nyc npm test",
     "lint": "./node_modules/.bin/eslint .",
     "lintfix": "./node_modules/.bin/eslint . --fix"
   },
@@ -32,6 +33,7 @@
     "form-data": "^3.0.0",
     "husky": "^4.3.0",
     "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2"
   },
   "dependencies": {

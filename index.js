@@ -4,6 +4,7 @@ const { URLSearchParams } = require('url');
 const crypto = require('crypto');
 const path = require('path');
 const Response = require('./classes/response.js');
+const MemoryCache = require('./classes/caching/memory_cache.js');
 
 const CACHE_VERSION = 2;
 
@@ -88,32 +89,27 @@ async function createRawResponse(fetchRes) {
   };
 }
 
-async function getResponse(cacheDirPath, requestArguments) {
+async function getResponse(cache, requestArguments) {
   const cacheKey = getCacheKey(requestArguments);
-  const cachedFilePath = path.join(cacheDirPath, `${cacheKey}.json`);
+  const cachedValue = await cache.get(cacheKey);
 
-  try {
-    const rawResponse = JSON.parse(await fs.promises.readFile(cachedFilePath));
-    return new Response(rawResponse, cachedFilePath, true);
-  } catch (err) {
+  const ejectSelfFromCache = () => cache.remove(cacheKey);
+
+  if (cachedValue) {
+    return new Response(cachedValue, ejectSelfFromCache, true);
+  } else {
     const fetchResponse = await fetch(...requestArguments);
     const rawResponse = await createRawResponse(fetchResponse);
-    await fs.promises.writeFile(cachedFilePath, JSON.stringify(rawResponse));
-    return new Response(rawResponse, cachedFilePath, false);
+    await cache.set(cacheKey, rawResponse);
+    return new Response(rawResponse, ejectSelfFromCache, false);
   }
 }
 
-function createFetch(cacheDirPath) {
-  let madeDir = false;
+function createFetchWithCache(cache) {
+  const fetch = (...args) => getResponse(cache, args);
+  fetch.withCache = createFetchWithCache;
 
-  return async (...args) => {
-    if (!madeDir) {
-      await fs.promises.mkdir(cacheDirPath, { recursive: true });
-      madeDir = true;
-    }
-
-    return getResponse(cacheDirPath, args);
-  };
+  return fetch;
 }
 
-module.exports = createFetch;
+module.exports = createFetchWithCache(new MemoryCache());

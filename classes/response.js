@@ -3,9 +3,9 @@ const stream = require('stream');
 const Headers = require('./headers.js');
 
 class Response {
-  constructor(raw, cacheFilePath, fromCache) {
+  constructor(raw, ejectSelfFromCache, fromCache) {
     Object.assign(this, raw);
-    this.cacheFilePath = cacheFilePath;
+    this.ejectSelfFromCache = ejectSelfFromCache;
     this.headers = new Headers(raw.headers);
     this.fromCache = fromCache;
     this.bodyUsed = false;
@@ -40,14 +40,8 @@ class Response {
     return this.consumeBody();
   }
 
-  async ejectFromCache() {
-    try {
-      await fs.promises.unlink(this.cacheFilePath);
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        throw err;
-      }
-    }
+  ejectFromCache() {
+    return this.ejectSelfFromCache();
   }
 }
 

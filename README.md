@@ -118,7 +118,7 @@ const fetchBuilder, { MemoryCache } = require('node-fetch-cache');
 const fetch = fetchBuilder.withCache(new MemoryCache(options));
 ```
 
-Supported options:
+Options:
 
 ```js
 {
@@ -140,6 +140,7 @@ const fetch = fetchBuilder.withCache(new FileSystemCache(options));
 
 ```js
 {
+  cacheDirectory: '/my/cache/directory/path', // Specify where to keep the cache. If undefined, '.cache' is used by default. If this directory does not exist, it will be created.
   ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, responses are never automatically ejected from the cache.
 }
 ```

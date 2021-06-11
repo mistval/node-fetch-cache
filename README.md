@@ -22,7 +22,7 @@ The next time you `fetch('http://google.com')`, the response will be returned fr
 
 ## API
 
-This module aims to expose the same API as `node-fetch` does for the most common use cases, but may not support some of the less common functions and use cases.
+This module aims to expose the same API as `node-fetch` does for the most common use cases, but may not support some of the less common functions, properties, and use cases.
 
 ### const fetch = require('node-fetch-cache');
 
@@ -160,11 +160,9 @@ Both functions can be async.
 
 It is safe to remove values from the cache arbitrarily (for example if you implement a TTL in the caching delegate).
 
-For example you could make and use your own simple memory cache like this:
+Example: you could make and use your own simple memory cache like this:
 
 ```js
-const fetchBuilder = require('node-fetch-cache');
-
 class MyMemoryCache {
   set(key, value) {
     this[key] = value;
@@ -173,8 +171,13 @@ class MyMemoryCache {
   get(key) {
     return this[key];
   }
+
+  remove(key) {
+    delete this[key];
+  }
 }
 
+const fetchBuilder = require('node-fetch-cache');
 fetch = fetchBuilder.withCache(new MyMemoryCache());
 
 fetch('http://google.com')

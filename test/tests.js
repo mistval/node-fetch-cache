@@ -384,21 +384,6 @@ describe('Data tests', function() {
     assert.strictEqual(res.fromCache, true);
   });
 
-  it('Can get PNG blob body', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(PNG_BODY_URL);
-    let cachedBody = await cachedFetchResponse.blob();
-    let standardBody = await standardFetchResponse.blob();
-    assert.strictEqual(cachedBody.size, standardBody.size);
-    assert.strictEqual(cachedBody.type, standardBody.type);
-    assert.strictEqual(await cachedBody.text(), await standardBody.text());
-
-    cachedFetchResponse = await cachedFetch(PNG_BODY_URL);
-    cachedBody = await cachedFetchResponse.blob();
-    assert.strictEqual(cachedBody.size, standardBody.size);
-    assert.strictEqual(cachedBody.type, standardBody.type);
-    assert.strictEqual(await cachedBody.text(), await standardBody.text());
-  });
-
   it('Errors if the body type is not supported', async function() {
     try {
       await cachedFetch(TEXT_BODY_URL, { body: {} });
@@ -423,3 +408,31 @@ describe('Memory cache tests', function() {
     assert.strictEqual(res.fromCache, false);
   });
 }).timeout(10000);
+
+describe('File system cache tests', function() {
+  it('Supports TTL', async function() {
+    cachedFetch = FetchCache.withCache(new FileSystemCache({ ttl: 100 }));
+    let res = await cachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, false);
+    res = await cachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, true);
+
+    await wait(200);
+
+    res = await cachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, false);
+  });
+
+  it('Can get PNG buffer body', async function() {
+    cachedFetch = FetchCache.withCache(new FileSystemCache());
+    res = await cachedFetch(PNG_BODY_URL);
+    body = await res.buffer();
+    assert.strictEqual(expectedPngBuffer.equals(body), true);
+    assert.strictEqual(res.fromCache, false);
+
+    res = await cachedFetch(PNG_BODY_URL);
+    body = await res.buffer();
+    assert.strictEqual(expectedPngBuffer.equals(body), true);
+    assert.strictEqual(res.fromCache, true);
+  });
+});

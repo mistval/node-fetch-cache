@@ -28,21 +28,27 @@ This module aims to expose the same API as `node-fetch` does for the most common
 
 Load the module.
 
-### async fetch(resource [, init])
+### await fetch(resource [, init])
 
 Same arguments as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
 Returns a **CachedResponse**.
 
-### async CachedResponse.text()
+### await CachedResponse.ejectFromCache()
+
+Eject the response from the cache, so that the next request will perform a true HTTP request rather than returning a cached response.
+
+Keep in mind that this module caches **all** responses, even if they return errors. You might want to use this function in certain cases like receiving a 5xx response status, so that you can retry requests.
+
+### await CachedResponse.text()
 
 Returns the body as a string, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
-### async CachedResponse.json()
+### await CachedResponse.json()
 
 Returns the body as a JavaScript object, parsed from JSON, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
-### async CachedResponse.buffer()
+### await CachedResponse.buffer()
 
 Returns the body as a Buffer, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
 
@@ -65,12 +71,6 @@ Returns true if the request was redirected, false otherwise, same as [node-fetch
 ### CachedResponse.headers
 
 Returns a **ResponseHeaders** object representing the headers of the response, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### async CachedResponse.ejectFromCache()
-
-Eject the response from the cache, so that the next request will perform a true HTTP request rather than returning a cached response.
-
-Keep in mind that this module caches **all** responses, even if they return error status codes. You might want to use this function when `!response.ok`, so that you can retry requests.
 
 ### ResponseHeaders.entries()
 
@@ -114,7 +114,7 @@ This is the default cache delegate. It caches responses in-process in a POJO.
 Usage:
 
 ```js
-const fetchBuilder, { MemoryCache } = require('node-fetch-cache');
+const { fetchBuilder, MemoryCache } = require('node-fetch-cache');
 const fetch = fetchBuilder.withCache(new MemoryCache(options));
 ```
 
@@ -135,7 +135,7 @@ Cache to a directory on disk. This allows the cache to survive the process exiti
 Usage:
 
 ```js
-const fetchBuilder, { FileSystemCache } = require('node-fetch-cache');
+const  { fetchBuilder, FileSystemCache } = require('node-fetch-cache');
 const fetch = fetchBuilder.withCache(new FileSystemCache(options));
 ```
 

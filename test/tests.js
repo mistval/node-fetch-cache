@@ -6,8 +6,6 @@ const path = require('path');
 const { URLSearchParams } = require('url');
 const standardFetch = require('node-fetch');
 const FetchCache = require('../index.js');
-const MemoryCache = require('../classes/caching/memory_cache.js');
-const FileSystemCache = require('../classes/caching/file_system_cache.js');
 
 const CACHE_PATH = path.join(__dirname, '..', '.cache');
 const expectedPngBuffer = fs.readFileSync(path.join(__dirname, 'expected_png.png'));
@@ -61,7 +59,7 @@ async function dualFetch(...args) {
 
 beforeEach(async function() {
   rimraf.sync(CACHE_PATH);
-  cachedFetch = FetchCache.withCache(new MemoryCache());
+  cachedFetch = FetchCache.withCache(new FetchCache.MemoryCache());
 });
 
 describe('Basic property tests', function() {
@@ -396,7 +394,7 @@ describe('Data tests', function() {
 
 describe('Memory cache tests', function() {
   it('Supports TTL', async function() {
-    cachedFetch = FetchCache.withCache(new MemoryCache({ ttl: 100 }));
+    cachedFetch = FetchCache.withCache(new FetchCache.MemoryCache({ ttl: 100 }));
     let res = await cachedFetch(TWO_HUNDRED_URL);
     assert.strictEqual(res.fromCache, false);
     res = await cachedFetch(TWO_HUNDRED_URL);
@@ -411,7 +409,7 @@ describe('Memory cache tests', function() {
 
 describe('File system cache tests', function() {
   it('Supports TTL', async function() {
-    cachedFetch = FetchCache.withCache(new FileSystemCache({ ttl: 100 }));
+    cachedFetch = FetchCache.withCache(new FetchCache.FileSystemCache({ ttl: 100 }));
     let res = await cachedFetch(TWO_HUNDRED_URL);
     assert.strictEqual(res.fromCache, false);
     res = await cachedFetch(TWO_HUNDRED_URL);
@@ -424,7 +422,7 @@ describe('File system cache tests', function() {
   });
 
   it('Can get PNG buffer body', async function() {
-    cachedFetch = FetchCache.withCache(new FileSystemCache());
+    cachedFetch = FetchCache.withCache(new FetchCache.FileSystemCache());
     res = await cachedFetch(PNG_BODY_URL);
     body = await res.buffer();
     assert.strictEqual(expectedPngBuffer.equals(body), true);

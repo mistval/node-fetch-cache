@@ -4,6 +4,7 @@ const { URLSearchParams } = require('url');
 const crypto = require('crypto');
 const Response = require('./classes/response.js');
 const MemoryCache = require('./classes/caching/memory_cache.js');
+const FileSystemCache = require('./classes/caching/file_system_cache.js');
 
 const CACHE_VERSION = 2;
 
@@ -106,4 +107,9 @@ function createFetchWithCache(cache) {
   return fetchCache;
 }
 
-module.exports = createFetchWithCache(new MemoryCache());
+const defaultFetch = createFetchWithCache(new MemoryCache());
+
+module.exports = defaultFetch;
+module.exports.fetchBuilder = defaultFetch;
+module.exports.MemoryCache = MemoryCache;
+module.exports.FileSystemCache = FileSystemCache;

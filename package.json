@@ -1,10 +1,11 @@
 {
   "name": "node-fetch-cache",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "description": "node-fetch with a persistent cache.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --timeout 10000 --exit",
+    "coverage": "nyc --reporter=lcov --reporter=text npm test",
     "lint": "./node_modules/.bin/eslint .",
     "lintfix": "./node_modules/.bin/eslint . --fix"
   },
@@ -28,9 +29,20 @@
   "devDependencies": {
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.2"
+    "eslint-plugin-import": "^2.20.2",
+    "form-data": "^3.0.0",
+    "husky": "^4.3.0",
+    "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2"
   },
   "dependencies": {
+    "fpersist": "^1.0.5",
     "node-fetch": "*"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm test"
+    }
   }
 }

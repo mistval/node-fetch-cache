@@ -30,7 +30,7 @@ Load the module.
 
 ### await fetch(resource [, init])
 
-Same arguments as [node-fetch](https://www.npmjs.com/package/node-fetch).
+Same arguments as [node-fetch](https://www.npmjs.com/package/node-fetch), except using the [Request class](https://www.npmjs.com/package/node-fetch#new-requestinput-options) is not supported.
 
 Returns a **CachedResponse**.
 
@@ -139,6 +139,8 @@ const  { fetchBuilder, FileSystemCache } = require('node-fetch-cache');
 const fetch = fetchBuilder.withCache(new FileSystemCache(options));
 ```
 
+Options:
+
 ```js
 {
   cacheDirectory: '/my/cache/directory/path', // Specify where to keep the cache. If undefined, '.cache' is used by default. If this directory does not exist, it will be created.
@@ -160,7 +162,7 @@ Both functions can be async.
 
 It is safe to remove values from the cache arbitrarily (for example if you implement a TTL in the caching delegate).
 
-Example: you could make and use your own simple memory cache like this:
+For example, you could make and use your own simple memory cache like this:
 
 ```js
 class MyMemoryCache {

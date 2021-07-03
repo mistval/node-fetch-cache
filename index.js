@@ -66,6 +66,9 @@ function getCacheKey(requestArguments) {
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);
   initCacheKeyJson.body = getBodyCacheKeyJson(initCacheKeyJson.body);
 
+  delete resourceCacheKeyJson.agent;
+  delete initCacheKeyJson.agent;
+
   return md5(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson, CACHE_VERSION]));
 }
 

@@ -6,6 +6,7 @@ const path = require('path');
 const { URLSearchParams } = require('url');
 const standardFetch = require('node-fetch');
 const FetchCache = require('../index.js');
+const { Agent } = require('http');
 
 const CACHE_PATH = path.join(__dirname, '..', '.cache');
 const expectedPngBuffer = fs.readFileSync(path.join(__dirname, 'expected_png.png'));
@@ -299,6 +300,13 @@ describe('Cache tests', function() {
     res = await cachedFetch(TWO_HUNDRED_URL, post(data2));
     assert.strictEqual(res.fromCache, true);
   });
+
+  it('Does not error with custom agent with circular properties', async function() {
+    const agent = new Agent();
+    agent.agent = agent;
+
+    await cachedFetch('http://httpbin.org/status/200', { agent });
+  })
 }).timeout(10000);
 
 describe('Data tests', function() {

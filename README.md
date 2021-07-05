@@ -158,7 +158,7 @@ The get function should accept a key and return whatever value was set for that 
 
 The remove function should accept a key and remove the cached value associated with that key, if any. It is also safe for your caching delegate to remove values from the cache arbitrarily if desired (for example if you want to implement a TTL in the caching delegate).
 
-Both functions can be async.
+All three functions may be async.
 
 For example, you could make and use your own simple memory cache like this:
 

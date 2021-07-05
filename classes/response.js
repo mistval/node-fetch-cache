@@ -1,7 +1,7 @@
-const stream = require('stream');
-const Headers = require('./headers.js');
+import stream from 'stream';
+import { Headers } from './headers.js';
 
-class Response {
+export class Response {
   constructor(raw, ejectSelfFromCache, fromCache) {
     Object.assign(this, raw);
     this.ejectSelfFromCache = ejectSelfFromCache;
@@ -43,5 +43,3 @@ class Response {
     return this.ejectSelfFromCache();
   }
 }
-
-module.exports = Response;

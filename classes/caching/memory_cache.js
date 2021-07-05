@@ -1,6 +1,6 @@
-const KeyTimeout = require('./key_timeout.js');
+import { KeyTimeout } from './key_timeout.js';
 
-module.exports = class MemoryCache {
+export class MemoryCache {
   constructor(options = {}) {
     this.ttl = options.ttl;
     this.keyTimeout = new KeyTimeout();
@@ -23,4 +23,4 @@ module.exports = class MemoryCache {
       this.keyTimeout.updateTimeout(key, this.ttl, () => this.remove(key));
     }
   }
-};
+}

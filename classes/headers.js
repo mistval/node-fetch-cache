@@ -1,4 +1,4 @@
-class Headers {
+export class Headers {
   constructor(rawHeaders) {
     this.rawHeaders = rawHeaders;
   }
@@ -29,5 +29,3 @@ class Headers {
     return this.rawHeaders;
   }
 }
-
-module.exports = Headers;

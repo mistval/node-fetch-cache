@@ -1,7 +1,7 @@
-const FPersist = require('fpersist');
-const KeyTimeout = require('./key_timeout.js');
+import FPersist from 'fpersist';
+import { KeyTimeout } from './key_timeout.js';
 
-module.exports = class FileSystemCache {
+export class FileSystemCache {
   constructor(options = {}) {
     this.ttl = options.ttl;
     this.keyTimeout = new KeyTimeout();
@@ -26,4 +26,4 @@ module.exports = class FileSystemCache {
       this.keyTimeout.updateTimeout(key, this.ttl, () => this.remove(key));
     }
   }
-};
+}

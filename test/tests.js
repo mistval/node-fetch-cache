@@ -1,12 +1,16 @@
-const fs = require('fs');
-const FormData = require('form-data');
-const assert = require('assert');
-const rimraf = require('rimraf');
-const path = require('path');
-const { URLSearchParams } = require('url');
-const standardFetch = require('node-fetch');
-const FetchCache = require('../index.js');
-const { Agent } = require('http');
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import FormData from 'form-data';
+import assert from 'assert';
+import rimraf from 'rimraf';
+import path from 'path';
+import { URLSearchParams } from 'url';
+import standardFetch from 'node-fetch';
+import FetchCache, { MemoryCache, FileSystemCache } from '../index.js';
+import { Agent } from 'http';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const CACHE_PATH = path.join(__dirname, '..', '.cache');
 const expectedPngBuffer = fs.readFileSync(path.join(__dirname, 'expected_png.png'));
@@ -60,8 +64,10 @@ async function dualFetch(...args) {
 
 beforeEach(async function() {
   rimraf.sync(CACHE_PATH);
-  cachedFetch = FetchCache.withCache(new FetchCache.MemoryCache());
+  cachedFetch = FetchCache.withCache(new MemoryCache());
 });
+
+let res;
 
 describe('Basic property tests', function() {
   it('Has a status property', async function() {
@@ -253,7 +259,7 @@ describe('Cache tests', function() {
   });
 
   it('Gives different read streams different cache keys', async function() {
-    const s1 = fs.createReadStream(__filename);
+    const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
     const s2 = fs.createReadStream(path.join(__dirname, '..', 'index.js'));
 
     res = await cachedFetch(TWO_HUNDRED_URL, post(s1));
@@ -264,7 +270,7 @@ describe('Cache tests', function() {
   });
 
   it('Gives the same read streams the same cache key', async function() {
-    const s1 = fs.createReadStream(__filename);
+    const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
 
     res = await cachedFetch(TWO_HUNDRED_URL, post(s1));
     assert.strictEqual(res.fromCache, false);
@@ -402,7 +408,7 @@ describe('Data tests', function() {
 
 describe('Memory cache tests', function() {
   it('Supports TTL', async function() {
-    cachedFetch = FetchCache.withCache(new FetchCache.MemoryCache({ ttl: 100 }));
+    cachedFetch = FetchCache.withCache(new MemoryCache({ ttl: 100 }));
     let res = await cachedFetch(TWO_HUNDRED_URL);
     assert.strictEqual(res.fromCache, false);
     res = await cachedFetch(TWO_HUNDRED_URL);
@@ -417,7 +423,7 @@ describe('Memory cache tests', function() {
 
 describe('File system cache tests', function() {
   it('Supports TTL', async function() {
-    cachedFetch = FetchCache.withCache(new FetchCache.FileSystemCache({ ttl: 100 }));
+    cachedFetch = FetchCache.withCache(new FileSystemCache({ ttl: 100 }));
     let res = await cachedFetch(TWO_HUNDRED_URL);
     assert.strictEqual(res.fromCache, false);
     res = await cachedFetch(TWO_HUNDRED_URL);
@@ -430,7 +436,7 @@ describe('File system cache tests', function() {
   });
 
   it('Can get PNG buffer body', async function() {
-    cachedFetch = FetchCache.withCache(new FetchCache.FileSystemCache());
+    cachedFetch = FetchCache.withCache(new FileSystemCache());
     res = await cachedFetch(PNG_BODY_URL);
     body = await res.buffer();
     assert.strictEqual(expectedPngBuffer.equals(body), true);

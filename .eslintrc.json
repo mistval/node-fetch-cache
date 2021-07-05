@@ -1,4 +1,4 @@
-module.exports = {
+{
     "env": {
         "commonjs": true,
         "es6": true,
@@ -15,5 +15,7 @@ module.exports = {
         "ecmaVersion": 2018
     },
     "rules": {
+        "import/extensions": "off",
+        "import/prefer-default-export": "off"
     }
-};
+}

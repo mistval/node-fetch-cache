@@ -1,4 +1,4 @@
-module.exports = class KeyTimeout {
+export class KeyTimeout {
   constructor() {
     this.timeoutHandleForKey = {};
   }
@@ -13,4 +13,4 @@ module.exports = class KeyTimeout {
       callback();
     }, durationMs);
   }
-};
+}

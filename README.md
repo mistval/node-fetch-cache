@@ -156,11 +156,9 @@ The set function must accept a key (which will be a string) and a value (which w
 
 The get function should accept a key and return whatever value was set for that key (or `undefined`/`null` if there is no value for that key).
 
-The remove function should accept a key and remove the cached value associated with that key, if any.
+The remove function should accept a key and remove the cached value associated with that key, if any. It is also safe for your caching delegate to remove values from the cache arbitrarily if desired (for example if you want to implement a TTL in the caching delegate).
 
 Both functions can be async.
-
-It is safe to remove values from the cache arbitrarily (for example if you implement a TTL in the caching delegate).
 
 For example, you could make and use your own simple memory cache like this:
 
@@ -180,7 +178,31 @@ class MyMemoryCache {
 }
 
 const fetchBuilder = require('node-fetch-cache');
-fetch = fetchBuilder.withCache(new MyMemoryCache());
+const fetch = fetchBuilder.withCache(new MyMemoryCache());
+
+fetch('http://google.com')
+  .then(response => response.text())
+  .then(text => console.log(text));
+```
+
+## Importing as an ES Module
+
+You can import this library as an ES module:
+
+```js
+import fetch from 'node-fetch-cache';
+
+fetch('http://google.com')
+  .then(response => response.text())
+  .then(text => console.log(text));
+```
+
+The default import also doubles as a `fetchBuilder`, so you can use it like so if you want to customize the caching:
+
+```js
+import fetchBuilder from 'node-fetch-cache';
+
+const fetch = fetchBuilder.withCache(new fetchBuilder.MemoryCache({ ttl: 10000 }));
 
 fetch('http://google.com')
   .then(response => response.text())

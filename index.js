@@ -2,10 +2,10 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import { URLSearchParams } from 'url';
 import crypto from 'crypto';
-import { Response } from './classes/response.js';
+import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 
 function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
@@ -71,21 +71,6 @@ function getCacheKey(requestArguments) {
   return md5(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson, CACHE_VERSION]));
 }
 
-async function createRawResponse(fetchRes) {
-  const buffer = await fetchRes.buffer();
-
-  return {
-    status: fetchRes.status,
-    statusText: fetchRes.statusText,
-    type: fetchRes.type,
-    url: fetchRes.url,
-    ok: fetchRes.ok,
-    headers: fetchRes.headers.raw(),
-    redirected: fetchRes.redirected,
-    bodyBuffer: buffer,
-  };
-}
-
 async function getResponse(cache, requestArguments) {
   const cacheKey = getCacheKey(requestArguments);
   const cachedValue = await cache.get(cacheKey);
@@ -93,13 +78,22 @@ async function getResponse(cache, requestArguments) {
   const ejectSelfFromCache = () => cache.remove(cacheKey);
 
   if (cachedValue) {
-    return new Response(cachedValue, ejectSelfFromCache, true);
+    if (cachedValue.bodyStream.readableEnded) {
+      throw new Error('Cache returned a body stream that has already been read to end.');
+    }
+
+    return NFCResponse.fromCachedResponse(
+      cachedValue.bodyStream,
+      cachedValue.metaData,
+      ejectSelfFromCache,
+    );
   }
 
   const fetchResponse = await fetch(...requestArguments);
-  const rawResponse = await createRawResponse(fetchResponse);
-  await cache.set(cacheKey, rawResponse);
-  return new Response(rawResponse, ejectSelfFromCache, false);
+  const nfcResponse = NFCResponse.fromNodeFetchResponse(fetchResponse, ejectSelfFromCache);
+  const nfcResponseSerialized = nfcResponse.serialize();
+  await cache.set(cacheKey, nfcResponseSerialized.bodyStream, nfcResponseSerialized.metaData);
+  return nfcResponse;
 }
 
 function createFetchWithCache(cache) {

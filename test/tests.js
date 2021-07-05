@@ -130,22 +130,22 @@ describe('Header tests', function() {
 
   it('Gets correct header keys', async function() {
     let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(cachedFetchResponse.headers.keys(), [...standardFetchResponse.headers.keys()]);
+    assert.deepStrictEqual([...cachedFetchResponse.headers.keys()], [...standardFetchResponse.headers.keys()]);
 
     cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(cachedFetchResponse.headers.keys(), [...standardFetchResponse.headers.keys()]);
+    assert.deepStrictEqual([...cachedFetchResponse.headers.keys()], [...standardFetchResponse.headers.keys()]);
   });
 
   it('Gets correct header values', async function() {
     let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
     assert.deepStrictEqual(
-      removeDates(cachedFetchResponse.headers.values()),
+      removeDates([...cachedFetchResponse.headers.values()]),
       removeDates([...standardFetchResponse.headers.values()]),
     );
 
     cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
     assert.deepStrictEqual(
-      removeDates(cachedFetchResponse.headers.values()),
+      removeDates([...cachedFetchResponse.headers.values()]),
       removeDates([...standardFetchResponse.headers.values()]),
     );
   });
@@ -153,13 +153,13 @@ describe('Header tests', function() {
   it('Gets correct header entries', async function() {
     let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
     assert.deepStrictEqual(
-      removeDates(cachedFetchResponse.headers.entries()),
+      removeDates([...cachedFetchResponse.headers.entries()]),
       removeDates([...standardFetchResponse.headers.entries()]),
     );
 
     cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
     assert.deepStrictEqual(
-      removeDates(cachedFetchResponse.headers.entries()),
+      removeDates([...cachedFetchResponse.headers.entries()]),
       removeDates([...standardFetchResponse.headers.entries()]),
     );
   });
@@ -334,7 +334,7 @@ describe('Data tests', function() {
       await res.text();
       throw new Error('The above line should have thrown.');
     } catch (err) {
-      assert(err.message.includes('Error: body used already'));
+      assert(err.message.includes('body used already for:'));
     }
   });
 

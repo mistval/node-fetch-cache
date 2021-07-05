@@ -1,42 +1,54 @@
-import stream from 'stream';
-import { Headers } from './headers.js';
+import { Response } from 'node-fetch';
+import { PassThrough } from 'stream';
 
-export class Response {
-  constructor(raw, ejectSelfFromCache, fromCache) {
-    Object.assign(this, raw);
-    this.ejectSelfFromCache = ejectSelfFromCache;
-    this.headers = new Headers(raw.headers);
+const responseInternalSymbol = Object.getOwnPropertySymbols(new Response())[1];
+
+export class NFCResponse extends Response {
+  constructor(bodyStream, metaData, ejectFromCache, fromCache) {
+    const stream1 = new PassThrough();
+    const stream2 = new PassThrough();
+
+    bodyStream.pipe(stream1);
+    bodyStream.pipe(stream2);
+
+    super(stream1, metaData);
+    this.ejectFromCache = ejectFromCache;
     this.fromCache = fromCache;
-    this.bodyUsed = false;
-
-    if (this.bodyBuffer.type === 'Buffer') {
-      this.bodyBuffer = Buffer.from(this.bodyBuffer);
-    }
+    this.serializationStream = stream2;
   }
 
-  get body() {
-    return stream.Readable.from(this.bodyBuffer);
+  static fromNodeFetchResponse(res, ejectFromCache) {
+    const bodyStream = res.body;
+    const metaData = {
+      url: res.url,
+      status: res.status,
+      statusText: res.statusText,
+      headers: res.headers.raw(),
+      size: res.size,
+      timeout: res.timeout,
+      counter: res[responseInternalSymbol].counter,
+    };
+
+    return new NFCResponse(bodyStream, metaData, ejectFromCache, false);
   }
 
-  consumeBody() {
-    if (this.bodyUsed) {
-      throw new Error('Error: body used already');
-    }
-
-    this.bodyUsed = true;
-    return this.bodyBuffer;
+  static fromCachedResponse(bodyStream, rawMetaData, ejectSelfFromCache) {
+    return new NFCResponse(bodyStream, rawMetaData, ejectSelfFromCache, true);
   }
 
-  async text() {
-    return this.consumeBody().toString();
-  }
-
-  async json() {
-    return JSON.parse(this.consumeBody().toString());
-  }
-
-  async buffer() {
-    return this.consumeBody();
+  serialize() {
+    return {
+      bodyStream: this.serializationStream,
+      metaData: {
+        url: this.url,
+        status: this.status,
+        statusText: this.statusText,
+        headers: this.headers.raw(),
+        size: this.size,
+        timeout: this.timeout,
+        counter: this[responseInternalSymbol].counter,
+      },
+    };
   }
 
   ejectFromCache() {

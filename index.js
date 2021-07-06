@@ -91,8 +91,16 @@ async function getResponse(cache, requestArguments) {
 
   const fetchResponse = await fetch(...requestArguments);
   const nfcResponse = NFCResponse.fromNodeFetchResponse(fetchResponse, ejectSelfFromCache);
+  const contentLength = Number.parseInt(nfcResponse.headers.get('content-length'), 10) || 0;
   const nfcResponseSerialized = nfcResponse.serialize();
-  await cache.set(cacheKey, nfcResponseSerialized.bodyStream, nfcResponseSerialized.metaData);
+
+  await cache.set(
+    cacheKey,
+    nfcResponseSerialized.bodyStream,
+    nfcResponseSerialized.metaData,
+    contentLength,
+  );
+
   return nfcResponse;
 }
 

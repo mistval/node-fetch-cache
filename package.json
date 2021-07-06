@@ -38,6 +38,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
+    "cacache": "^15.2.0",
     "node-fetch": "2.6.1"
   },
   "husky": {

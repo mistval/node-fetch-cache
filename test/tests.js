@@ -447,4 +447,22 @@ describe('File system cache tests', function() {
     assert.strictEqual(expectedPngBuffer.equals(body), true);
     assert.strictEqual(res.fromCache, true);
   });
+
+  it('Can eject from cache', async function() {
+    cachedFetch = FetchCache.withCache(new FileSystemCache());
+
+    res = await cachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, false);
+
+    res = await cachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, true);
+
+    await res.ejectFromCache();
+
+    res = await cachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, false);
+
+    res = await cachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(res.fromCache, true);
+  });
 });

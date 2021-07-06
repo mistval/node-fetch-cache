@@ -404,6 +404,16 @@ describe('Data tests', function() {
       assert(err.message.includes('Unsupported body type'));
     }
   });
+
+  it('Uses cache even if you make multiple requests at the same time', async function() {
+    const [res1, res2] = await Promise.all([
+      cachedFetch('http://httpbin.org/status/200'),
+      cachedFetch('http://httpbin.org/status/200'),
+    ]);
+
+    // One should be false, the other should be true
+    assert(res1.fromCache !== res2.fromCache);
+  });
 }).timeout(10000);
 
 describe('Memory cache tests', function() {
@@ -466,3 +476,4 @@ describe('File system cache tests', function() {
     assert.strictEqual(res.fromCache, true);
   });
 });
+console.log(process.cwd())

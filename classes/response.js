@@ -33,6 +33,10 @@ export class NFCResponse extends Response {
   }
 
   static fromCachedResponse(bodyStream, rawMetaData, ejectSelfFromCache) {
+    if (bodyStream.readableEnded) {
+      throw new Error('Cache returned a body stream that has already been read to end.');
+    }
+
     return new NFCResponse(bodyStream, rawMetaData, ejectSelfFromCache, true);
   }
 

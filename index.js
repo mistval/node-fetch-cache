@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import { URLSearchParams } from 'url';
 import crypto from 'crypto';
+import locko from 'locko';
 import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 
@@ -73,15 +74,11 @@ function getCacheKey(requestArguments) {
 
 async function getResponse(cache, requestArguments) {
   const cacheKey = getCacheKey(requestArguments);
-  const cachedValue = await cache.get(cacheKey);
+  let cachedValue = await cache.get(cacheKey);
 
   const ejectSelfFromCache = () => cache.remove(cacheKey);
 
   if (cachedValue) {
-    if (cachedValue.bodyStream.readableEnded) {
-      throw new Error('Cache returned a body stream that has already been read to end.');
-    }
-
     return NFCResponse.fromCachedResponse(
       cachedValue.bodyStream,
       cachedValue.metaData,
@@ -89,19 +86,33 @@ async function getResponse(cache, requestArguments) {
     );
   }
 
-  const fetchResponse = await fetch(...requestArguments);
-  const nfcResponse = NFCResponse.fromNodeFetchResponse(fetchResponse, ejectSelfFromCache);
-  const contentLength = Number.parseInt(nfcResponse.headers.get('content-length'), 10) || 0;
-  const nfcResponseSerialized = nfcResponse.serialize();
+  await locko.lock(cacheKey);
+  try {
+    cachedValue = await cache.get(cacheKey);
+    if (cachedValue) {
+      return NFCResponse.fromCachedResponse(
+        cachedValue.bodyStream,
+        cachedValue.metaData,
+        ejectSelfFromCache,
+      );
+    }
 
-  await cache.set(
-    cacheKey,
-    nfcResponseSerialized.bodyStream,
-    nfcResponseSerialized.metaData,
-    contentLength,
-  );
+    const fetchResponse = await fetch(...requestArguments);
+    const nfcResponse = NFCResponse.fromNodeFetchResponse(fetchResponse, ejectSelfFromCache);
+    const contentLength = Number.parseInt(nfcResponse.headers.get('content-length'), 10) || 0;
+    const nfcResponseSerialized = nfcResponse.serialize();
 
-  return nfcResponse;
+    await cache.set(
+      cacheKey,
+      nfcResponseSerialized.bodyStream,
+      nfcResponseSerialized.metaData,
+      contentLength,
+    );
+
+    return nfcResponse;
+  } finally {
+    locko.unlock(cacheKey);
+  }
 }
 
 function createFetchWithCache(cache) {

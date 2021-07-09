@@ -476,4 +476,3 @@ describe('File system cache tests', function() {
     assert.strictEqual(res.fromCache, true);
   });
 });
-console.log(process.cwd())

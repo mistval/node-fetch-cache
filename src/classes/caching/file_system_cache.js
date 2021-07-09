@@ -24,13 +24,13 @@ export class FileSystemCache {
 
     const metaBuffer = await cacache.get.byDigest(this.cacheDirectory, metaInfo.integrity);
     const metaData = JSON.parse(metaBuffer);
-    const { bodyStreamIntegrity, bodyStreamLength } = metaData;
+    const { bodyStreamIntegrity, empty } = metaData;
     delete metaData.bodyStreamIntegrity;
-    delete metaData.bodyStreamLength;
+    delete metaData.empty;
 
-    const bodyStream = bodyStreamLength > 0
-      ? cacache.get.stream.byDigest(this.cacheDirectory, bodyStreamIntegrity)
-      : Readable.from(Buffer.alloc(0));
+    const bodyStream = empty
+      ? Readable.from(Buffer.alloc(0))
+      : cacache.get.stream.byDigest(this.cacheDirectory, bodyStreamIntegrity);
 
     return {
       bodyStream,
@@ -49,13 +49,13 @@ export class FileSystemCache {
     ]);
   }
 
-  async set(key, bodyStream, metaData, bodyStreamLength) {
+  async set(key, bodyStream, metaData) {
     const [bodyKey, metaKey] = getBodyAndMetaKeys(key);
-    const metaCopy = { ...metaData, bodyStreamLength };
+    const metaCopy = { ...metaData };
 
     this.keyTimeout.clearTimeout(key);
 
-    if (bodyStreamLength > 0) {
+    try {
       metaCopy.bodyStreamIntegrity = await new Promise((fulfill, reject) => {
         bodyStream.pipe(cacache.put.stream(this.cacheDirectory, bodyKey))
           .on('integrity', (i) => fulfill(i))
@@ -63,13 +63,22 @@ export class FileSystemCache {
             reject(e);
           });
       });
+    } catch (err) {
+      if (err.code !== 'ENODATA') {
+        throw err;
+      }
+
+      metaCopy.empty = true;
     }
 
     const metaBuffer = Buffer.from(JSON.stringify(metaCopy));
     await cacache.put(this.cacheDirectory, metaKey, metaBuffer);
+    const cachedData = await this.get(key);
 
     if (typeof this.ttl === 'number') {
       this.keyTimeout.updateTimeout(key, this.ttl, () => this.remove(key));
     }
+
+    return cachedData;
   }
 }

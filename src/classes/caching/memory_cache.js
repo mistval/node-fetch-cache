@@ -41,5 +41,7 @@ export class MemoryCache {
     if (typeof this.ttl === 'number') {
       this.keyTimeout.updateTimeout(key, this.ttl, () => this.remove(key));
     }
+
+    return this.get(key);
   }
 }

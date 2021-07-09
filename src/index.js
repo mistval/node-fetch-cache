@@ -95,10 +95,11 @@ async function getResponse(cache, requestArguments) {
   const ejectSelfFromCache = () => cache.remove(cacheKey);
 
   if (cachedValue) {
-    return NFCResponse.fromCachedResponse(
+    return new NFCResponse(
       cachedValue.bodyStream,
       cachedValue.metaData,
       ejectSelfFromCache,
+      true,
     );
   }
 
@@ -106,26 +107,29 @@ async function getResponse(cache, requestArguments) {
   try {
     cachedValue = await cache.get(cacheKey);
     if (cachedValue) {
-      return NFCResponse.fromCachedResponse(
+      return new NFCResponse(
         cachedValue.bodyStream,
         cachedValue.metaData,
         ejectSelfFromCache,
+        true,
       );
     }
 
     const fetchResponse = await fetch(...requestArguments);
-    const nfcResponse = NFCResponse.fromNodeFetchResponse(fetchResponse, ejectSelfFromCache);
-    const contentLength = Number.parseInt(nfcResponse.headers.get('content-length'), 10) || 0;
-    const nfcResponseSerialized = nfcResponse.serialize();
+    const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
 
-    await cache.set(
+    const newlyCachedData = await cache.set(
       cacheKey,
-      nfcResponseSerialized.bodyStream,
-      nfcResponseSerialized.metaData,
-      contentLength,
+      fetchResponse.body,
+      serializedMeta,
     );
 
-    return nfcResponse;
+    return new NFCResponse(
+      newlyCachedData.bodyStream,
+      newlyCachedData.metaData,
+      ejectSelfFromCache,
+      false,
+    );
   } finally {
     locko.unlock(cacheKey);
   }

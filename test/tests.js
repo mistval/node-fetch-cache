@@ -7,7 +7,7 @@ import rimraf from 'rimraf';
 import path from 'path';
 import { URLSearchParams } from 'url';
 import standardFetch from 'node-fetch';
-import FetchCache, { MemoryCache, FileSystemCache } from '../index.js';
+import FetchCache, { MemoryCache, FileSystemCache } from '../src/index.js';
 import { Agent } from 'http';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -260,7 +260,7 @@ describe('Cache tests', function() {
 
   it('Gives different read streams different cache keys', async function() {
     const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
-    const s2 = fs.createReadStream(path.join(__dirname, '..', 'index.js'));
+    const s2 = fs.createReadStream(path.join(__dirname, '..', 'src', 'index.js'));
 
     res = await cachedFetch(TWO_HUNDRED_URL, post(s1));
     assert.strictEqual(res.fromCache, false);

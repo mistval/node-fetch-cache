@@ -22,86 +22,35 @@ The next time you `fetch('http://google.com')`, the response will be returned fr
 
 ## API
 
-This module aims to expose the same API as `node-fetch` does for the most common use cases, but may not support some of the less common functions, properties, and use cases.
+This module's fetch function has almost the exact same API as node-fetch, and you should consult [the node-fetch documentation](https://www.npmjs.com/package/node-fetch) for how to use it.
 
-### const fetch = require('node-fetch-cache');
+This module just adds one extra function to the response object:
 
-Load the module.
+### res.ejectFromCache(): Promise<void>
 
-### await fetch(resource [, init])
+This function can be used to eject the response from the cache, so that the next request will perform a true HTTP request rather than returning a cached response.
 
-Same arguments as [node-fetch](https://www.npmjs.com/package/node-fetch), except using the [Request class](https://www.npmjs.com/package/node-fetch#new-requestinput-options) is not supported.
+This module caches ALL responses, even those with 4xx and 5xx response statuses. You can use this function to uncache such responses if desired. For example:
 
-Returns a **CachedResponse**.
+```js
+const fetch = require('node-fetch-cache');
 
-### await CachedResponse.ejectFromCache()
-
-Eject the response from the cache, so that the next request will perform a true HTTP request rather than returning a cached response.
-
-Keep in mind that this module caches **all** responses, even if they return errors. You might want to use this function in certain cases like receiving a 5xx response status, so that you can retry requests.
-
-### await CachedResponse.text()
-
-Returns the body as a string, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### await CachedResponse.json()
-
-Returns the body as a JavaScript object, parsed from JSON, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### await CachedResponse.buffer()
-
-Returns the body as a Buffer, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### CachedResponse.status
-
-Returns the HTTP status code of the response, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### CachedResponse.statusText
-
-Returns a text represention of the response status, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### CachedResponse.ok
-
-Returns true if the request returned a successful response status, false otherwise, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### CachedResponse.redirected
-
-Returns true if the request was redirected, false otherwise, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### CachedResponse.headers
-
-Returns a **ResponseHeaders** object representing the headers of the response, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### ResponseHeaders.entries()
-
-Returns the raw headers as an array of `[key, value]` pairs, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### ResponseHeaders.keys()
-
-Returns an array of all header keys, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### ResponseHeaders.values()
-
-Returns an array of all header values, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### ResponseHeaders.get(key)
-
-Returns the value of the header with the given key, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### ResponseHeaders.has(key)
-
-Returns true if the headers has a value for the given key, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
-
-### ResponseHeaders.raw
-
-Returns the headers as an object of `{ "key": "value" }` pairs, same as [node-fetch](https://www.npmjs.com/package/node-fetch).
+fetch('http://google.com')
+  .then(async response => {
+    if (!response.ok) {
+      await response.ejectFromCache();
+      throw new Error('Non-okay response from google.com');
+    } else {
+      return response.text();
+    }
+  }).then(text => console.log(text));
+```
 
 ## Streaming
 
-This module supports streams like [node-fetch](https://www.npmjs.com/package/node-fetch) does, but with a couple of caveats you should be aware of if you want to use streams.
+This module does not support Stream bodies, except for fs.ReadStream. And when using fs.ReadStream, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**.
 
-1. Response bodies are always read into memory even if you stream them to disk. That means if you need to stream large responses that don't fit into RAM, this module may be unsuitable.
-2. When streaming a request body with fs.ReadStream, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**. This module may be unsuitable if you need to stream files in requests and the content of those files can change.
+Streams don't quite play nice with the concept of caching based on request characteristics, because we would have to read the stream to the end to find out what's in it and hash it into a proper cache key.
 
 ## Cache Customization
 

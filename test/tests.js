@@ -316,14 +316,14 @@ describe('Cache tests', function() {
 }).timeout(10000);
 
 describe('Data tests', function() {
-  it('Does not support Request objects', async function() {
-    try {
-      const request = new standardFetch.Request('https://google.com');
-      await cachedFetch(request);
-      throw new Error('The above line should have thrown.');
-    } catch (err) {
-      assert(err.message.includes('The first argument must be a string (fetch.Request is not supported).'));
-    }
+  it('Supports request objects', async function() {
+    let request = new standardFetch.Request('https://google.com', { body: 'test', method: 'POST' });
+    res = await cachedFetch(request);
+    assert.strictEqual(res.fromCache, false);
+
+    request = new standardFetch.Request('https://google.com', { body: 'test', method: 'POST' });
+    res = await cachedFetch(request);
+    assert.strictEqual(res.fromCache, true);
   });
 
   it('Refuses to consume body twice', async function() {

@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import fetch, { Request } from 'node-fetch';
 import fs from 'fs';
 import { URLSearchParams } from 'url';
 import crypto from 'crypto';
@@ -47,26 +47,42 @@ function getBodyCacheKeyJson(body) {
     return body.path;
   } if (body.toString && body.toString() === '[object FormData]') {
     return getFormDataCacheKey(body);
+  } if (body instanceof Buffer) {
+    return body.toString();
   }
 
   throw new Error('Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, fs.ReadStream, FormData');
+}
+
+function getRequestCacheKey(req) {
+  return {
+    cache: req.cache,
+    credentials: req.credentials,
+    destination: req.destination,
+    headers: req.headers,
+    integrity: req.integrity,
+    method: req.method,
+    redirect: req.redirect,
+    referrer: req.referrer,
+    referrerPolicy: req.referrerPolicy,
+    url: req.url,
+    body: getBodyCacheKeyJson(req.body),
+  };
 }
 
 function getCacheKey(requestArguments) {
   const resource = requestArguments[0];
   const init = requestArguments[1] || {};
 
-  if (typeof resource !== 'string') {
-    throw new Error('The first argument must be a string (fetch.Request is not supported).');
-  }
+  const resourceCacheKeyJson = resource instanceof Request
+    ? getRequestCacheKey(resource)
+    : { url: resource };
 
-  const resourceCacheKeyJson = { url: resource };
   const initCacheKeyJson = { ...init };
 
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);
   initCacheKeyJson.body = getBodyCacheKeyJson(initCacheKeyJson.body);
 
-  delete resourceCacheKeyJson.agent;
   delete initCacheKeyJson.agent;
 
   return md5(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson, CACHE_VERSION]));

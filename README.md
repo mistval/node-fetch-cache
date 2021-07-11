@@ -11,7 +11,7 @@ By default responses are cached in memory, but you can also cache to files on di
 Require it and use it the same way you would use node-fetch:
 
 ```js
-const fetch = require('node-fetch-cache');
+import fetch from 'node-fetch-cache';
 
 fetch('http://google.com')
   .then(response => response.text())
@@ -33,7 +33,7 @@ This function can be used to eject the response from the cache, so that the next
 This module caches ALL responses, even those with 4xx and 5xx response statuses. You can use this function to uncache such responses if desired. For example:
 
 ```js
-const fetch = require('node-fetch-cache');
+import fetch from 'node-fetch-cache';
 
 fetch('http://google.com')
   .then(async response => {
@@ -63,7 +63,7 @@ This is the default cache delegate. It caches responses in-process in a POJO.
 Usage:
 
 ```js
-const { fetchBuilder, MemoryCache } = require('node-fetch-cache');
+import { fetchBuilder, MemoryCache } from'node-fetch-cache';
 const fetch = fetchBuilder.withCache(new MemoryCache(options));
 ```
 
@@ -84,7 +84,7 @@ Cache to a directory on disk. This allows the cache to survive the process exiti
 Usage:
 
 ```js
-const  { fetchBuilder, FileSystemCache } = require('node-fetch-cache');
+import { fetchBuilder, FileSystemCache } from 'node-fetch-cache';
 const fetch = fetchBuilder.withCache(new FileSystemCache(options));
 ```
 

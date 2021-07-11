@@ -26,7 +26,7 @@ This module's fetch function has almost the exact same API as node-fetch, and yo
 
 This module just adds one extra function to the response object:
 
-### res.ejectFromCache(): Promise<void>
+### res.ejectFromCache(): Promise\<void\>
 
 This function can be used to eject the response from the cache, so that the next request will perform a true HTTP request rather than returning a cached response.
 

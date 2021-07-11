@@ -1,6 +1,6 @@
 {
   "name": "node-fetch-cache",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "node-fetch with a persistent cache.",
   "main": "src/index.js",
   "type": "module",

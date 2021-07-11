@@ -48,7 +48,7 @@ fetch('http://google.com')
 
 ## Streaming
 
-This module does not support Stream bodies, except for fs.ReadStream. And when using fs.ReadStream, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**.
+This module does not support Stream request bodies, except for fs.ReadStream. And when using fs.ReadStream, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**.
 
 Streams don't quite play nice with the concept of caching based on request characteristics, because we would have to read the stream to the end to find out what's in it and hash it into a proper cache key.
 
@@ -99,64 +99,15 @@ Options:
 
 ### Provide Your Own
 
-You can implement a caching delegate yourself. The cache simply needs to be an object that has `set(key, value)`, `get(key)`, and `remove(key)` functions.
+You can implement a caching delegate yourself. The cache simply needs to be an object that has `set(key, bodyStream, bodyMeta)`, `get(key)`, and `remove(key)` functions.
 
-The set function must accept a key (which will be a string) and a value (which will be a JSON-serializable JS object) and store them.
+The set function must accept a key (which will be a string), a body stream, and a metadata object (which will be a JSON-serializable JS object). It must return an object with a `bodyStream` property, containing a fresh, unread stream of the body content, as well as a `metaData` property, containing the same metaData that was passed in.
 
-The get function should accept a key and return whatever value was set for that key (or `undefined`/`null` if there is no value for that key).
+The get function should accept a key and return undefined if no cached value is found, or else an object with a `bodyStream` property, containing a stream of the body content, as well as a `metaData` property, containing the metadata that was stored via the `set(key, bodyStream, bodyMeta)` function.
 
 The remove function should accept a key and remove the cached value associated with that key, if any. It is also safe for your caching delegate to remove values from the cache arbitrarily if desired (for example if you want to implement a TTL in the caching delegate).
 
 All three functions may be async.
-
-For example, you could make and use your own simple memory cache like this:
-
-```js
-class MyMemoryCache {
-  set(key, value) {
-    this[key] = value;
-  }
-
-  get(key) {
-    return this[key];
-  }
-
-  remove(key) {
-    delete this[key];
-  }
-}
-
-const fetchBuilder = require('node-fetch-cache');
-const fetch = fetchBuilder.withCache(new MyMemoryCache());
-
-fetch('http://google.com')
-  .then(response => response.text())
-  .then(text => console.log(text));
-```
-
-## Importing as an ES Module
-
-You can import this library as an ES module:
-
-```js
-import fetch from 'node-fetch-cache';
-
-fetch('http://google.com')
-  .then(response => response.text())
-  .then(text => console.log(text));
-```
-
-The default import also doubles as a `fetchBuilder`, so you can use it like so if you want to customize the caching:
-
-```js
-import fetchBuilder from 'node-fetch-cache';
-
-const fetch = fetchBuilder.withCache(new fetchBuilder.MemoryCache({ ttl: 10000 }));
-
-fetch('http://google.com')
-  .then(response => response.text())
-  .then(text => console.log(text));
-```
 
 ## Bugs / Help / Feature Requests / Contributing
 

@@ -101,7 +101,7 @@ Options:
 
 You can implement a caching delegate yourself. The cache simply needs to be an object that has `set(key, bodyStream, bodyMeta)`, `get(key)`, and `remove(key)` functions.
 
-Check the built-in [MemoryCache](src/classes/caching/memory_cache.js) and [FileSystemCache](src/classes/caching/file_system_cache.js) for examples.
+Check the built-in [MemoryCache](https://github.com/mistval/node-fetch-cache/blob/master/src/classes/caching/memory_cache.js) and [FileSystemCache](https://github.com/mistval/node-fetch-cache/blob/master/src/classes/caching/file_system_cache.js) for examples.
 
 The set function must accept a key (which will be a string), a body stream, and a metadata object (which will be a JSON-serializable JS object). It must store these, and then return an object with a `bodyStream` property, containing a fresh, unread stream of the body content, as well as a `metaData` property, containing the same metaData that was passed in.
 

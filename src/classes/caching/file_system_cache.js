@@ -1,6 +1,5 @@
 import cacache from 'cacache';
 import { Readable } from 'stream';
-import { KeyTimeout } from './key_timeout.js';
 
 function getBodyAndMetaKeys(key) {
   return [`${key}body`, `${key}meta`];
@@ -9,7 +8,6 @@ function getBodyAndMetaKeys(key) {
 export class FileSystemCache {
   constructor(options = {}) {
     this.ttl = options.ttl;
-    this.keyTimeout = new KeyTimeout();
     this.cacheDirectory = options.cacheDirectory || '.cache';
   }
 
@@ -24,9 +22,15 @@ export class FileSystemCache {
 
     const metaBuffer = await cacache.get.byDigest(this.cacheDirectory, metaInfo.integrity);
     const metaData = JSON.parse(metaBuffer);
-    const { bodyStreamIntegrity, empty } = metaData;
+    const { bodyStreamIntegrity, empty, expiration } = metaData;
+
     delete metaData.bodyStreamIntegrity;
     delete metaData.empty;
+    delete metaData.expiration;
+
+    if (expiration && expiration < Date.now()) {
+      return undefined;
+    }
 
     const bodyStream = empty
       ? Readable.from(Buffer.alloc(0))
@@ -41,8 +45,6 @@ export class FileSystemCache {
   remove(key) {
     const [bodyKey, metaKey] = getBodyAndMetaKeys(key);
 
-    this.keyTimeout.clearTimeout(key);
-
     return Promise.all([
       cacache.rm.entry(this.cacheDirectory, bodyKey),
       cacache.rm.entry(this.cacheDirectory, metaKey),
@@ -53,7 +55,9 @@ export class FileSystemCache {
     const [bodyKey, metaKey] = getBodyAndMetaKeys(key);
     const metaCopy = { ...metaData };
 
-    this.keyTimeout.clearTimeout(key);
+    if (typeof this.ttl === 'number') {
+      metaCopy.expiration = Date.now() + this.ttl;
+    }
 
     try {
       metaCopy.bodyStreamIntegrity = await new Promise((fulfill, reject) => {
@@ -74,10 +78,6 @@ export class FileSystemCache {
     const metaBuffer = Buffer.from(JSON.stringify(metaCopy));
     await cacache.put(this.cacheDirectory, metaKey, metaBuffer);
     const cachedData = await this.get(key);
-
-    if (typeof this.ttl === 'number') {
-      this.keyTimeout.updateTimeout(key, this.ttl, () => this.remove(key));
-    }
 
     return cachedData;
   }

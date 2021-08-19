@@ -63,7 +63,7 @@ This is the default cache delegate. It caches responses in-process in a POJO.
 Usage:
 
 ```js
-import { fetchBuilder, MemoryCache } from'node-fetch-cache';
+import { fetchBuilder, MemoryCache } from 'node-fetch-cache';
 const fetch = fetchBuilder.withCache(new MemoryCache(options));
 ```
 

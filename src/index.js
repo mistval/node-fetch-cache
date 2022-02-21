@@ -1,6 +1,5 @@
 import fetch, { Request } from 'node-fetch';
 import fs from 'fs';
-import { URLSearchParams } from 'url';
 import crypto from 'crypto';
 import locko from 'locko';
 import { NFCResponse } from './classes/response.js';

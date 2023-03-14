@@ -1,6 +1,6 @@
 {
   "name": "node-fetch-cache",
-  "version": "3.0.5",
+  "version": "3.1.0",
   "description": "node-fetch with caching.",
   "main": "src/index.js",
   "type": "module",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "buildcjs": "rollup src/index.js --file commonjs/index.cjs --format cjs",
-    "test": "npm run buildcjs && mocha --timeout 10000 --exit",
+    "test": "npm run lintfix && npm run buildcjs && mocha --timeout 10000 --exit",
     "coverage": "nyc --reporter=lcov --reporter=text npm test",
     "lint": "./node_modules/.bin/eslint .",
     "lintfix": "./node_modules/.bin/eslint . --fix",

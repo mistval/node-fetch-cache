@@ -5,7 +5,7 @@ import locko from 'locko';
 import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 4;
 
 function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');
@@ -35,6 +35,14 @@ function getFormDataCacheKey(formData) {
   return cacheKey;
 }
 
+function getHeadersCacheKeyJson(headersObj) {
+  return Object.fromEntries(
+    Object.entries(headersObj)
+      .map(([key, value]) => [key.toLowerCase(), value])
+      .filter(([key, value]) => key !== 'cache-control' || value !== 'only-if-cached'),
+  );
+}
+
 function getBodyCacheKeyJson(body) {
   if (!body) {
     return body;
@@ -54,11 +62,13 @@ function getBodyCacheKeyJson(body) {
 }
 
 function getRequestCacheKey(req) {
+  const headersPojo = Object.fromEntries([...req.headers.entries()]);
+
   return {
     cache: req.cache,
     credentials: req.credentials,
     destination: req.destination,
-    headers: req.headers,
+    headers: getHeadersCacheKeyJson(headersPojo),
     integrity: req.integrity,
     method: req.method,
     redirect: req.redirect,
@@ -69,15 +79,15 @@ function getRequestCacheKey(req) {
   };
 }
 
-function getCacheKey(requestArguments) {
-  const resource = requestArguments[0];
-  const init = requestArguments[1] || {};
-
+export function getCacheKey(resource, init = {}) {
   const resourceCacheKeyJson = resource instanceof Request
     ? getRequestCacheKey(resource)
     : { url: resource };
 
-  const initCacheKeyJson = { ...init };
+  const initCacheKeyJson = {
+    ...init,
+    headers: getHeadersCacheKeyJson(init.headers || {}),
+  };
 
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);
   initCacheKeyJson.body = getBodyCacheKeyJson(initCacheKeyJson.body);
@@ -87,8 +97,25 @@ function getCacheKey(requestArguments) {
   return md5(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson, CACHE_VERSION]));
 }
 
+function hasOnlyWithCacheOption(resource, init) {
+  if (
+    init
+    && init.headers
+    && Object.entries(init.headers)
+      .some(([key, value]) => key.toLowerCase() === 'cache-control' && value === 'only-if-cached')
+  ) {
+    return true;
+  }
+
+  if (resource instanceof Request && resource.headers.get('Cache-Control') === 'only-if-cached') {
+    return true;
+  }
+
+  return false;
+}
+
 async function getResponse(cache, requestArguments) {
-  const cacheKey = getCacheKey(requestArguments);
+  const cacheKey = getCacheKey(...requestArguments);
   let cachedValue = await cache.get(cacheKey);
 
   const ejectSelfFromCache = () => cache.remove(cacheKey);
@@ -100,6 +127,10 @@ async function getResponse(cache, requestArguments) {
       ejectSelfFromCache,
       true,
     );
+  }
+
+  if (hasOnlyWithCacheOption(...requestArguments)) {
+    return undefined;
   }
 
   await locko.lock(cacheKey);

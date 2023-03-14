@@ -7,7 +7,7 @@ import rimraf from 'rimraf';
 import path from 'path';
 import { URLSearchParams } from 'url';
 import standardFetch from 'node-fetch';
-import FetchCache, { MemoryCache, FileSystemCache } from '../src/index.js';
+import FetchCache, { MemoryCache, FileSystemCache, getCacheKey } from '../src/index.js';
 import { Agent } from 'http';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -326,6 +326,17 @@ describe('Data tests', function() {
     assert.strictEqual(res.fromCache, true);
   });
 
+  it('Supports request objects with custom headers', async function() {
+    const request1 = new standardFetch.Request(TWO_HUNDRED_URL, { headers: { 'XXX': 'YYY' } });
+    const request2 = new standardFetch.Request(TWO_HUNDRED_URL, { headers: { 'XXX': 'ZZZ' } });
+
+    res = await cachedFetch(request1);
+    assert.strictEqual(res.fromCache, false);
+
+    res = await cachedFetch(request2);
+    assert.strictEqual(res.fromCache, false);
+  });
+
   it('Refuses to consume body twice', async function() {
     res = await cachedFetch(TEXT_BODY_URL);
     await res.text();
@@ -474,5 +485,47 @@ describe('File system cache tests', function() {
 
     res = await cachedFetch(TWO_HUNDRED_URL);
     assert.strictEqual(res.fromCache, true);
+  });
+});
+
+describe('Cache mode tests', function() {
+  it('Can use the only-if-cached cache control setting via init', async function() {
+    res = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
+    assert(!res);
+    res = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
+    assert(!res);
+    res = await cachedFetch(TWO_HUNDRED_URL);
+    assert(res && !res.fromCache);
+    res = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
+    assert(res && res.fromCache);
+    await res.ejectFromCache();
+    res = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
+    assert(!res);
+  });
+
+  it('Can use the only-if-cached cache control setting via resource', async function() {
+    res = await cachedFetch(new standardFetch.Request(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }));
+    assert(!res);
+    res = await cachedFetch(new standardFetch.Request(TWO_HUNDRED_URL));
+    assert(res && !res.fromCache);
+    res = await cachedFetch(new standardFetch.Request(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }));
+    assert(res && res.fromCache);
+  });
+});
+
+describe('Cache key tests', function() {
+  it('Can calculate a cache key and check that it exists', async function() {
+    const cache = new MemoryCache();
+    cachedFetch = FetchCache.withCache(cache);
+    await cachedFetch(TWO_HUNDRED_URL);
+
+    const cacheKey = getCacheKey(TWO_HUNDRED_URL);
+    const nonExistentCacheKey = getCacheKey(TEXT_BODY_URL);
+
+    const cacheKeyResult = await cache.get(cacheKey);
+    const nonExistentCacheKeyResult = await cache.get(nonExistentCacheKey);
+
+    assert(cacheKeyResult);
+    assert(!nonExistentCacheKeyResult);
   });
 });

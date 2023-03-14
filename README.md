@@ -46,12 +46,6 @@ fetch('http://google.com')
   }).then(text => console.log(text));
 ```
 
-## Streaming
-
-This module does not support Stream request bodies, except for fs.ReadStream. And when using fs.ReadStream, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**.
-
-Streams don't quite play nice with the concept of caching based on request characteristics, because we would have to read the stream to the end to find out what's in it and hash it into a proper cache key.
-
 ## Cache Customization
 
 By default responses are cached in memory, but you can also cache to files on disk, or implement your own cache.
@@ -110,6 +104,56 @@ The get function should accept a key and return undefined if no cached value is 
 The remove function should accept a key and remove the cached value associated with that key, if any. It is also safe for your caching delegate to remove values from the cache arbitrarily if desired (for example if you want to implement a TTL in the caching delegate).
 
 All three functions may be async.
+
+## Misc Tips
+
+### Streaming
+
+This module does not support Stream request bodies, except for fs.ReadStream. And when using fs.ReadStream, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**.
+
+Streams don't quite play nice with the concept of caching based on request characteristics, because we would have to read the stream to the end to find out what's in it and hash it into a proper cache key.
+
+### Request Concurrency
+
+Requests with the same cache key are queued. For example, you might wonder if making the same request 100 times simultaneously would result in 100 HTTP requests:
+
+```js
+import fetch from 'node-fetch-cache';
+
+await Promise.all(
+  Array(100).fill().map(() => fetch('https://google.com')),
+);
+```
+
+The answer is no. Only one request would be made, and 99 of the `fetch()`s will read the response from the cache.
+
+### Cache-Control: only-if-cached Requests
+
+The HTTP standard describes a [Cache-Control request header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control#request_directives) to control certain aspects of cache behavior. Node-fetch ignores these, but node-fetch-cache respects the `Cache-Control: only-if-cached` directive. When `only-if-cached` is specified, node-fetch-cache will return `undefined` if there is no cached response. No HTTP request will be made. For example:
+
+```js
+import fetch from 'node-fetch-cache';
+
+const response = await fetch('https://google.com', { headers: { 'Cache-Control': 'only-if-cached' } });
+if (response === undefined) {
+  // No response was found in the cache
+}
+```
+
+Note that this is slightly different from browser fetch, which returns a `504 Gateway Timeout` response if no cached response is available.
+
+### Calculating the Cache Key
+
+This module exports a `getCacheKey()` function to calculate a cache key string from request parameters, which may be useful for enabling some advanced use cases (especially if you want to call cache functions directly). Call `getCacheKey()` exactly like you would call `fetch()`.
+
+```js
+import { fetchBuilder, MemoryCache, getCacheKey } from 'node-fetch-cache';
+
+const cache = new MemoryCache();
+const fetch = fetchBuilder.withCache(cache);
+
+const rawCacheData = await cache.get(getCacheKey('https://google.com'));
+```
 
 ## Bugs / Help / Feature Requests / Contributing
 

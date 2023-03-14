@@ -6,12 +6,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [12.x, 18.x, 20.x]
+
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js 18.x
       uses: actions/setup-node@v1
       with:
-        node-version: 18.x
+        node-version: ${{ matrix.node-version }}
     - run: npm ci
     - run: npm run lint
     - run: npm run coverage

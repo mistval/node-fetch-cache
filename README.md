@@ -134,7 +134,10 @@ The HTTP standard describes a [Cache-Control request header](https://developer.m
 ```js
 import fetch from 'node-fetch-cache';
 
-const response = await fetch('https://google.com', { headers: { 'Cache-Control': 'only-if-cached' } });
+const response = await fetch('https://google.com', {
+  headers: { 'Cache-Control': 'only-if-cached' }
+});
+
 if (response === undefined) {
   // No response was found in the cache
 }

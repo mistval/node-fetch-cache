@@ -1,6 +1,6 @@
 {
   "name": "node-fetch-cache",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "node-fetch with caching.",
   "main": "src/index.js",
   "type": "module",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "cacache": "^15.2.0",
-    "locko": "0.0.3",
+    "locko": "^1.0.0",
     "node-fetch": "2.6.7"
   },
   "husky": {

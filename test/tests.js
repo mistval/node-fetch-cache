@@ -347,13 +347,7 @@ describe('Data tests', function() {
   it('Refuses to consume body twice', async function() {
     res = await cachedFetch(TEXT_BODY_URL);
     await res.text();
-
-    try {
-      await res.text();
-      throw new Error('The above line should have thrown.');
-    } catch (err) {
-      assert(err.message.includes('body used already for:'));
-    }
+    await assert.rejects(() => res.text(), /body used already for:/);
   });
 
   it('Can get text body', async function() {
@@ -415,12 +409,7 @@ describe('Data tests', function() {
   });
 
   it('Errors if the body type is not supported', async function() {
-    try {
-      await cachedFetch(TEXT_BODY_URL, { body: {} });
-      throw new Error('It was supposed to throw');
-    } catch (err) {
-      assert(err.message.includes('Unsupported body type'));
-    }
+    await assert.rejects(() => cachedFetch(TEXT_BODY_URL, { body: 1 }), /Unsupported body type/);
   });
 
   it('Uses cache even if you make multiple requests at the same time', async function() {
@@ -534,5 +523,11 @@ describe('Cache key tests', function() {
 
     assert(cacheKeyResult);
     assert(!nonExistentCacheKeyResult);
+  });
+});
+
+describe('Network error tests', function() {
+  it('Bubbles up network errors', async function() {
+    await assert.rejects(() => cachedFetch('http://localhost:1'), /^FetchError:/);
   });
 });

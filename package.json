@@ -11,8 +11,8 @@
   "scripts": {
     "tsc": "tsc",
     "buildcjs": "rollup ./dist/index.js --file ./dist/index.cjs --format cjs && cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
-    "test": "NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit",
-    "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=commonjs/index.cjs npm test",
+    "test": "NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
+    "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test npm test",
     "lint": "xo .",
     "lintfix": "xo . --fix",
     "prepublishOnly": "npm run tsc && npm run buildcjs && npm test",

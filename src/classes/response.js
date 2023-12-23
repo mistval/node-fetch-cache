@@ -22,8 +22,4 @@ export class NFCResponse extends Response {
 
     return metaData;
   }
-
-  ejectFromCache() {
-    return this.ejectSelfFromCache();
-  }
 }

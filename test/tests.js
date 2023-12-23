@@ -1,15 +1,15 @@
 import 'dotenv/config.js';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import {dirname} from 'path';
+import {fileURLToPath} from 'url';
 import fs from 'fs';
 import FormData from 'form-data';
 import assert from 'assert';
-import { rimraf } from 'rimraf';
+import {rimraf} from 'rimraf';
 import path from 'path';
-import { URLSearchParams } from 'url';
+import {URLSearchParams} from 'url';
 import standardFetch from 'node-fetch';
-import FetchCache, { MemoryCache, FileSystemCache, getCacheKey } from '../dist/index.js';
-import { Agent } from 'http';
+import FetchCache, {MemoryCache, FileSystemCache, getCacheKey} from '../dist/index.js';
+import {Agent} from 'http';
 
 const httpBinBaseUrl = process.env.HTTP_BIN_BASE_URL || 'https://httpbin.org';
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,506 +30,506 @@ let cachedFetch;
 let body;
 
 function post(body) {
-  return { method: 'POST', body };
+	return {method: 'POST', body};
 }
 
 function removeDates(arrOrObj) {
-  if (arrOrObj.date) {
-    const copy = { ...arrOrObj };
-    delete copy.date;
-    return copy;
-  }
+	if (arrOrObj.date) {
+		const copy = {...arrOrObj};
+		delete copy.date;
+		return copy;
+	}
 
-  if (Array.isArray(arrOrObj)) {
-    if (Array.isArray(arrOrObj[0])) {
-      return arrOrObj.filter(e => e[0] !== 'date');
-    }
+	if (Array.isArray(arrOrObj)) {
+		if (Array.isArray(arrOrObj[0])) {
+			return arrOrObj.filter(e => e[0] !== 'date');
+		}
 
-    return arrOrObj.filter(e => !Date.parse(e));
-  }
+		return arrOrObj.filter(e => !Date.parse(e));
+	}
 
-  return arrOrObj;
+	return arrOrObj;
 }
 
 function wait(ms) {
-  return new Promise((fulfill) => setTimeout(fulfill, ms));
+	return new Promise(fulfill => setTimeout(fulfill, ms));
 }
 
 async function dualFetch(...args) {
-  const [cachedFetchResponse, standardFetchResponse] = await Promise.all([
-    cachedFetch(...args),
-    standardFetch(...args),
-  ]);
+	const [cachedFetchResponse, standardFetchResponse] = await Promise.all([
+		cachedFetch(...args),
+		standardFetch(...args),
+	]);
 
-  return { cachedFetchResponse, standardFetchResponse };
+	return {cachedFetchResponse, standardFetchResponse};
 }
 
-beforeEach(async function() {
-  rimraf.sync(CACHE_PATH);
-  cachedFetch = FetchCache.withCache(new MemoryCache());
+beforeEach(async () => {
+	rimraf.sync(CACHE_PATH);
+	cachedFetch = FetchCache.withCache(new MemoryCache());
 });
 
 let res;
 
-describe('Basic property tests', function() {
-  it('Has a status property', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(cachedFetchResponse.status, standardFetchResponse.status);
+describe('Basic property tests', () => {
+	it('Has a status property', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(cachedFetchResponse.status, standardFetchResponse.status);
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(cachedFetchResponse.status, standardFetchResponse.status);
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(cachedFetchResponse.status, standardFetchResponse.status);
+	});
 
-  it('Has a statusText property', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(cachedFetchResponse.statusText, standardFetchResponse.statusText);
+	it('Has a statusText property', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(cachedFetchResponse.statusText, standardFetchResponse.statusText);
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(cachedFetchResponse.statusText, standardFetchResponse.statusText);
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(cachedFetchResponse.statusText, standardFetchResponse.statusText);
+	});
 
-  it('Has a url property', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(cachedFetchResponse.url, standardFetchResponse.url);
+	it('Has a url property', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(cachedFetchResponse.url, standardFetchResponse.url);
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(cachedFetchResponse.url, standardFetchResponse.url);
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(cachedFetchResponse.url, standardFetchResponse.url);
+	});
 
-  it('Has an ok property', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(FOUR_HUNDRED_URL);
-    assert.strictEqual(cachedFetchResponse.ok, standardFetchResponse.ok);
-    assert.strictEqual(cachedFetchResponse.status, standardFetchResponse.status);
+	it('Has an ok property', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(FOUR_HUNDRED_URL);
+		assert.strictEqual(cachedFetchResponse.ok, standardFetchResponse.ok);
+		assert.strictEqual(cachedFetchResponse.status, standardFetchResponse.status);
 
-    cachedFetchResponse = await cachedFetch(FOUR_HUNDRED_URL);
-    assert.strictEqual(cachedFetchResponse.ok, standardFetchResponse.ok);
-    assert.strictEqual(cachedFetchResponse.status, standardFetchResponse.status);
-  });
+		cachedFetchResponse = await cachedFetch(FOUR_HUNDRED_URL);
+		assert.strictEqual(cachedFetchResponse.ok, standardFetchResponse.ok);
+		assert.strictEqual(cachedFetchResponse.status, standardFetchResponse.status);
+	});
 
-  it('Has a redirected property', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(THREE_HUNDRED_TWO_URL);
-    assert.strictEqual(cachedFetchResponse.redirected, standardFetchResponse.redirected);
+	it('Has a redirected property', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(THREE_HUNDRED_TWO_URL);
+		assert.strictEqual(cachedFetchResponse.redirected, standardFetchResponse.redirected);
 
-    cachedFetchResponse = await cachedFetch(THREE_HUNDRED_TWO_URL);
-    assert.strictEqual(cachedFetchResponse.redirected, standardFetchResponse.redirected);
-  });
+		cachedFetchResponse = await cachedFetch(THREE_HUNDRED_TWO_URL);
+		assert.strictEqual(cachedFetchResponse.redirected, standardFetchResponse.redirected);
+	});
 }).timeout(10000);
 
-describe('Header tests', function() {
-  it('Gets correct raw headers', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(
-      removeDates(cachedFetchResponse.headers.raw()),
-      removeDates(standardFetchResponse.headers.raw()),
-    );
+describe('Header tests', () => {
+	it('Gets correct raw headers', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual(
+			removeDates(cachedFetchResponse.headers.raw()),
+			removeDates(standardFetchResponse.headers.raw()),
+		);
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(
-      removeDates(cachedFetchResponse.headers.raw()),
-      removeDates(standardFetchResponse.headers.raw()),
-    );
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual(
+			removeDates(cachedFetchResponse.headers.raw()),
+			removeDates(standardFetchResponse.headers.raw()),
+		);
+	});
 
-  it('Gets correct header keys', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual([...cachedFetchResponse.headers.keys()], [...standardFetchResponse.headers.keys()]);
+	it('Gets correct header keys', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual([...cachedFetchResponse.headers.keys()], [...standardFetchResponse.headers.keys()]);
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual([...cachedFetchResponse.headers.keys()], [...standardFetchResponse.headers.keys()]);
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual([...cachedFetchResponse.headers.keys()], [...standardFetchResponse.headers.keys()]);
+	});
 
-  it('Gets correct header values', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(
-      removeDates([...cachedFetchResponse.headers.values()]),
-      removeDates([...standardFetchResponse.headers.values()]),
-    );
+	it('Gets correct header values', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual(
+			removeDates([...cachedFetchResponse.headers.values()]),
+			removeDates([...standardFetchResponse.headers.values()]),
+		);
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(
-      removeDates([...cachedFetchResponse.headers.values()]),
-      removeDates([...standardFetchResponse.headers.values()]),
-    );
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual(
+			removeDates([...cachedFetchResponse.headers.values()]),
+			removeDates([...standardFetchResponse.headers.values()]),
+		);
+	});
 
-  it('Gets correct header entries', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(
-      removeDates([...cachedFetchResponse.headers.entries()]),
-      removeDates([...standardFetchResponse.headers.entries()]),
-    );
+	it('Gets correct header entries', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual(
+			removeDates([...cachedFetchResponse.headers.entries()]),
+			removeDates([...standardFetchResponse.headers.entries()]),
+		);
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(
-      removeDates([...cachedFetchResponse.headers.entries()]),
-      removeDates([...standardFetchResponse.headers.entries()]),
-    );
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual(
+			removeDates([...cachedFetchResponse.headers.entries()]),
+			removeDates([...standardFetchResponse.headers.entries()]),
+		);
+	});
 
-  it('Can get a header by value', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert(standardFetchResponse.headers.get('content-length'));
-    assert.deepStrictEqual(cachedFetchResponse.headers.get('content-length'), standardFetchResponse.headers.get('content-length'));
+	it('Can get a header by value', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert(standardFetchResponse.headers.get('content-length'));
+		assert.deepStrictEqual(cachedFetchResponse.headers.get('content-length'), standardFetchResponse.headers.get('content-length'));
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(cachedFetchResponse.headers.get('content-length'), standardFetchResponse.headers.get('content-length'));
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual(cachedFetchResponse.headers.get('content-length'), standardFetchResponse.headers.get('content-length'));
+	});
 
-  it('Returns undefined for non-existent header', async function() {
-    const headerName = 'zzzz';
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert(!standardFetchResponse.headers.get(headerName));
-    assert.deepStrictEqual(cachedFetchResponse.headers.get(headerName), standardFetchResponse.headers.get(headerName));
+	it('Returns undefined for non-existent header', async () => {
+		const headerName = 'zzzz';
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert(!standardFetchResponse.headers.get(headerName));
+		assert.deepStrictEqual(cachedFetchResponse.headers.get(headerName), standardFetchResponse.headers.get(headerName));
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(cachedFetchResponse.headers.get(headerName), standardFetchResponse.headers.get(headerName));
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual(cachedFetchResponse.headers.get(headerName), standardFetchResponse.headers.get(headerName));
+	});
 
-  it('Can get whether a header is present', async function() {
-    let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
-    assert(standardFetchResponse.headers.has('content-length'));
-    assert.deepStrictEqual(cachedFetchResponse.headers.has('content-length'), standardFetchResponse.headers.has('content-length'));
+	it('Can get whether a header is present', async () => {
+		let {cachedFetchResponse, standardFetchResponse} = await dualFetch(TWO_HUNDRED_URL);
+		assert(standardFetchResponse.headers.has('content-length'));
+		assert.deepStrictEqual(cachedFetchResponse.headers.has('content-length'), standardFetchResponse.headers.has('content-length'));
 
-    cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(cachedFetchResponse.headers.has('content-length'), standardFetchResponse.headers.has('content-length'));
-  });
+		cachedFetchResponse = await cachedFetch(TWO_HUNDRED_URL);
+		assert.deepStrictEqual(cachedFetchResponse.headers.has('content-length'), standardFetchResponse.headers.has('content-length'));
+	});
 }).timeout(10000);
 
-describe('Cache tests', function() {
-  it('Uses cache', async function() {
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
+describe('Cache tests', () => {
+	it('Uses cache', async () => {
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Can eject from cache', async function() {
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
+	it('Can eject from cache', async () => {
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, true);
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, true);
 
-    await res.ejectFromCache();
+		await res.ejectFromCache();
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Does not error if ejecting from cache twice', async function() {
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
+	it('Does not error if ejecting from cache twice', async () => {
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
 
-    await res.ejectFromCache();
-    await res.ejectFromCache();
-  });
+		await res.ejectFromCache();
+		await res.ejectFromCache();
+	});
 
-  it('Gives different string bodies different cache keys', async function() {
-    res = await cachedFetch(TWO_HUNDRED_URL, post('a'));
-    assert.strictEqual(res.fromCache, false);
+	it('Gives different string bodies different cache keys', async () => {
+		res = await cachedFetch(TWO_HUNDRED_URL, post('a'));
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post('b'));
-    assert.strictEqual(res.fromCache, false);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL, post('b'));
+		assert.strictEqual(res.fromCache, false);
+	});
 
-  it('Gives same string bodies same cache keys', async function() {
-    res = await cachedFetch(TWO_HUNDRED_URL, post('a'));
-    assert.strictEqual(res.fromCache, false);
+	it('Gives same string bodies same cache keys', async () => {
+		res = await cachedFetch(TWO_HUNDRED_URL, post('a'));
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post('a'));
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL, post('a'));
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Gives different URLSearchParams different cache keys', async function() {
-    res = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
-    assert.strictEqual(res.fromCache, false);
+	it('Gives different URLSearchParams different cache keys', async () => {
+		res = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=b')));
-    assert.strictEqual(res.fromCache, false);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=b')));
+		assert.strictEqual(res.fromCache, false);
+	});
 
-  it('Gives same URLSearchParams same cache keys', async function() {
-    res = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
-    assert.strictEqual(res.fromCache, false);
+	it('Gives same URLSearchParams same cache keys', async () => {
+		res = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Gives different read streams different cache keys', async function() {
-    const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
-    const s2 = fs.createReadStream(path.join(__dirname, '..', 'src', 'index.ts'));
+	it('Gives different read streams different cache keys', async () => {
+		const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
+		const s2 = fs.createReadStream(path.join(__dirname, '..', 'src', 'index.ts'));
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(s1));
-    assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(TWO_HUNDRED_URL, post(s1));
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(s2));
-    assert.strictEqual(res.fromCache, false);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL, post(s2));
+		assert.strictEqual(res.fromCache, false);
+	});
 
-  it('Gives the same read streams the same cache key', async function() {
-    const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
+	it('Gives the same read streams the same cache key', async () => {
+		const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(s1));
-    assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(TWO_HUNDRED_URL, post(s1));
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(s1));
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL, post(s1));
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Gives different form data different cache keys', async function() {
-    const data1 = new FormData();
-    data1.append('a', 'a');
+	it('Gives different form data different cache keys', async () => {
+		const data1 = new FormData();
+		data1.append('a', 'a');
 
-    const data2 = new FormData();
-    data2.append('b', 'b');
+		const data2 = new FormData();
+		data2.append('b', 'b');
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(data1));
-    assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(TWO_HUNDRED_URL, post(data1));
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(data2));
-    assert.strictEqual(res.fromCache, false);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL, post(data2));
+		assert.strictEqual(res.fromCache, false);
+	});
 
-  it('Gives same form data same cache keys', async function() {
-    const data1 = new FormData();
-    data1.append('a', 'a');
+	it('Gives same form data same cache keys', async () => {
+		const data1 = new FormData();
+		data1.append('a', 'a');
 
-    const data2 = new FormData();
-    data2.append('a', 'a');
+		const data2 = new FormData();
+		data2.append('a', 'a');
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(data1));
-    assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(TWO_HUNDRED_URL, post(data1));
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL, post(data2));
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL, post(data2));
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Does not error with custom agent with circular properties', async function() {
-    const agent = new Agent();
-    agent.agent = agent;
+	it('Does not error with custom agent with circular properties', async () => {
+		const agent = new Agent();
+		agent.agent = agent;
 
-    await cachedFetch('http://httpbin.org/status/200', { agent });
-  });
+		await cachedFetch('http://httpbin.org/status/200', {agent});
+	});
 
-  it('Works with a TTL of 0', async function() {
-    const cachedFetch = FetchCache.withCache(new FileSystemCache({ ttl: 0 }));
+	it('Works with a TTL of 0', async () => {
+		const cachedFetch = FetchCache.withCache(new FileSystemCache({ttl: 0}));
 
-    const res = await cachedFetch(TWO_HUNDRED_URL);
-    assert(res.ok);
-  });
+		const res = await cachedFetch(TWO_HUNDRED_URL);
+		assert(res.ok);
+	});
 }).timeout(10000);
 
-describe('Data tests', function() {
-  it('Supports request objects', async function() {
-    let request = new standardFetch.Request('https://google.com', { body: 'test', method: 'POST' });
-    res = await cachedFetch(request);
-    assert.strictEqual(res.fromCache, false);
+describe('Data tests', () => {
+	it('Supports request objects', async () => {
+		let request = new standardFetch.Request('https://google.com', {body: 'test', method: 'POST'});
+		res = await cachedFetch(request);
+		assert.strictEqual(res.fromCache, false);
 
-    request = new standardFetch.Request('https://google.com', { body: 'test', method: 'POST' });
-    res = await cachedFetch(request);
-    assert.strictEqual(res.fromCache, true);
-  });
+		request = new standardFetch.Request('https://google.com', {body: 'test', method: 'POST'});
+		res = await cachedFetch(request);
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Supports request objects with custom headers', async function() {
-    const request1 = new standardFetch.Request(TWO_HUNDRED_URL, { headers: { 'XXX': 'YYY' } });
-    const request2 = new standardFetch.Request(TWO_HUNDRED_URL, { headers: { 'XXX': 'ZZZ' } });
+	it('Supports request objects with custom headers', async () => {
+		const request1 = new standardFetch.Request(TWO_HUNDRED_URL, {headers: {XXX: 'YYY'}});
+		const request2 = new standardFetch.Request(TWO_HUNDRED_URL, {headers: {XXX: 'ZZZ'}});
 
-    res = await cachedFetch(request1);
-    assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(request1);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(request2);
-    assert.strictEqual(res.fromCache, false);
-  });
+		res = await cachedFetch(request2);
+		assert.strictEqual(res.fromCache, false);
+	});
 
-  it('Refuses to consume body twice', async function() {
-    res = await cachedFetch(TEXT_BODY_URL);
-    await res.text();
-    await assert.rejects(() => res.text(), /body used already for:/);
-  });
+	it('Refuses to consume body twice', async () => {
+		res = await cachedFetch(TEXT_BODY_URL);
+		await res.text();
+		await assert.rejects(() => res.text(), /body used already for:/);
+	});
 
-  it('Can get text body', async function() {
-    res = await cachedFetch(TEXT_BODY_URL);
-    body = await res.text();
-    assert.strictEqual(body, TEXT_BODY_EXPECTED);
-    assert.strictEqual(res.fromCache, false);
+	it('Can get text body', async () => {
+		res = await cachedFetch(TEXT_BODY_URL);
+		body = await res.text();
+		assert.strictEqual(body, TEXT_BODY_EXPECTED);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TEXT_BODY_URL);
-    body = await res.text();
-    assert.strictEqual(body, TEXT_BODY_EXPECTED);
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(TEXT_BODY_URL);
+		body = await res.text();
+		assert.strictEqual(body, TEXT_BODY_EXPECTED);
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Can get JSON body', async function() {
-    res = await cachedFetch(JSON_BODY_URL);
-    body = await res.json();
-    assert(body.slideshow);
-    assert.strictEqual(res.fromCache, false);
+	it('Can get JSON body', async () => {
+		res = await cachedFetch(JSON_BODY_URL);
+		body = await res.json();
+		assert(body.slideshow);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(JSON_BODY_URL);
-    body = await res.json();
-    assert(body.slideshow);
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(JSON_BODY_URL);
+		body = await res.json();
+		assert(body.slideshow);
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Can get PNG buffer body', async function() {
-    res = await cachedFetch(PNG_BODY_URL);
-    body = await res.buffer();
-    assert.strictEqual(expectedPngBuffer.equals(body), true);
-    assert.strictEqual(res.fromCache, false);
+	it('Can get PNG buffer body', async () => {
+		res = await cachedFetch(PNG_BODY_URL);
+		body = await res.buffer();
+		assert.strictEqual(expectedPngBuffer.equals(body), true);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(PNG_BODY_URL);
-    body = await res.buffer();
-    assert.strictEqual(expectedPngBuffer.equals(body), true);
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(PNG_BODY_URL);
+		body = await res.buffer();
+		assert.strictEqual(expectedPngBuffer.equals(body), true);
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Can stream a body', async function() {
-    res = await cachedFetch(TEXT_BODY_URL);
-    body = '';
+	it('Can stream a body', async () => {
+		res = await cachedFetch(TEXT_BODY_URL);
+		body = '';
 
-    for await (const chunk of res.body) {
-      body += chunk.toString();
-    }
+		for await (const chunk of res.body) {
+			body += chunk.toString();
+		}
 
-    assert.strictEqual(TEXT_BODY_EXPECTED, body);
-    assert.strictEqual(res.fromCache, false);
+		assert.strictEqual(TEXT_BODY_EXPECTED, body);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TEXT_BODY_URL);
-    body = '';
+		res = await cachedFetch(TEXT_BODY_URL);
+		body = '';
 
-    for await (const chunk of res.body) {
-      body += chunk.toString();
-    }
+		for await (const chunk of res.body) {
+			body += chunk.toString();
+		}
 
-    assert.strictEqual(TEXT_BODY_EXPECTED, body);
-    assert.strictEqual(res.fromCache, true);
-  });
+		assert.strictEqual(TEXT_BODY_EXPECTED, body);
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Errors if the body type is not supported', async function() {
-    await assert.rejects(() => cachedFetch(TEXT_BODY_URL, { body: 1 }), /Unsupported body type/);
-  });
+	it('Errors if the body type is not supported', async () => {
+		await assert.rejects(() => cachedFetch(TEXT_BODY_URL, {body: 1}), /Unsupported body type/);
+	});
 
-  it('Uses cache even if you make multiple requests at the same time', async function() {
-    const [res1, res2] = await Promise.all([
-      cachedFetch('http://httpbin.org/status/200'),
-      cachedFetch('http://httpbin.org/status/200'),
-    ]);
+	it('Uses cache even if you make multiple requests at the same time', async () => {
+		const [res1, res2] = await Promise.all([
+			cachedFetch('http://httpbin.org/status/200'),
+			cachedFetch('http://httpbin.org/status/200'),
+		]);
 
-    // One should be false, the other should be true
-    assert(res1.fromCache !== res2.fromCache);
-  });
+		// One should be false, the other should be true
+		assert(res1.fromCache !== res2.fromCache);
+	});
 }).timeout(10000);
 
-describe('Memory cache tests', function() {
-  it('Supports TTL', async function() {
-    cachedFetch = FetchCache.withCache(new MemoryCache({ ttl: 100 }));
-    let res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, true);
+describe('Memory cache tests', () => {
+	it('Supports TTL', async () => {
+		cachedFetch = FetchCache.withCache(new MemoryCache({ttl: 100}));
+		let res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, true);
 
-    await wait(200);
+		await wait(200);
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
+	});
 }).timeout(10000);
 
-describe('File system cache tests', function() {
-  it('Supports TTL', async function() {
-    cachedFetch = FetchCache.withCache(new FileSystemCache({ ttl: 100 }));
-    let res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, true);
+describe('File system cache tests', () => {
+	it('Supports TTL', async () => {
+		cachedFetch = FetchCache.withCache(new FileSystemCache({ttl: 100}));
+		let res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, true);
 
-    await wait(200);
+		await wait(200);
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
+	});
 
-  it('Can get PNG buffer body', async function() {
-    cachedFetch = FetchCache.withCache(new FileSystemCache());
-    res = await cachedFetch(PNG_BODY_URL);
-    body = await res.buffer();
-    assert.strictEqual(expectedPngBuffer.equals(body), true);
-    assert.strictEqual(res.fromCache, false);
+	it('Can get PNG buffer body', async () => {
+		cachedFetch = FetchCache.withCache(new FileSystemCache());
+		res = await cachedFetch(PNG_BODY_URL);
+		body = await res.buffer();
+		assert.strictEqual(expectedPngBuffer.equals(body), true);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(PNG_BODY_URL);
-    body = await res.buffer();
-    assert.strictEqual(expectedPngBuffer.equals(body), true);
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(PNG_BODY_URL);
+		body = await res.buffer();
+		assert.strictEqual(expectedPngBuffer.equals(body), true);
+		assert.strictEqual(res.fromCache, true);
+	});
 
-  it('Can eject from cache', async function() {
-    cachedFetch = FetchCache.withCache(new FileSystemCache());
+	it('Can eject from cache', async () => {
+		cachedFetch = FetchCache.withCache(new FileSystemCache());
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, true);
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, true);
 
-    await res.ejectFromCache();
+		await res.ejectFromCache();
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, false);
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, false);
 
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(res.fromCache, true);
-  });
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert.strictEqual(res.fromCache, true);
+	});
 });
 
-describe('Cache mode tests', function() {
-  it('Can use the only-if-cached cache control setting via init', async function() {
-    res = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
-    assert(!res);
-    res = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
-    assert(!res);
-    res = await cachedFetch(TWO_HUNDRED_URL);
-    assert(res && !res.fromCache);
-    res = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
-    assert(res && res.fromCache);
-    await res.ejectFromCache();
-    res = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
-    assert(!res);
-  });
+describe('Cache mode tests', () => {
+	it('Can use the only-if-cached cache control setting via init', async () => {
+		res = await cachedFetch(TWO_HUNDRED_URL, {headers: {'Cache-Control': 'only-if-cached'}});
+		assert(!res);
+		res = await cachedFetch(TWO_HUNDRED_URL, {headers: {'Cache-Control': 'only-if-cached'}});
+		assert(!res);
+		res = await cachedFetch(TWO_HUNDRED_URL);
+		assert(res && !res.fromCache);
+		res = await cachedFetch(TWO_HUNDRED_URL, {headers: {'Cache-Control': 'only-if-cached'}});
+		assert(res && res.fromCache);
+		await res.ejectFromCache();
+		res = await cachedFetch(TWO_HUNDRED_URL, {headers: {'Cache-Control': 'only-if-cached'}});
+		assert(!res);
+	});
 
-  it('Can use the only-if-cached cache control setting via resource', async function() {
-    res = await cachedFetch(new standardFetch.Request(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }));
-    assert(!res);
-    res = await cachedFetch(new standardFetch.Request(TWO_HUNDRED_URL));
-    assert(res && !res.fromCache);
-    res = await cachedFetch(new standardFetch.Request(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }));
-    assert(res && res.fromCache);
-  });
+	it('Can use the only-if-cached cache control setting via resource', async () => {
+		res = await cachedFetch(new standardFetch.Request(TWO_HUNDRED_URL, {headers: {'Cache-Control': 'only-if-cached'}}));
+		assert(!res);
+		res = await cachedFetch(new standardFetch.Request(TWO_HUNDRED_URL));
+		assert(res && !res.fromCache);
+		res = await cachedFetch(new standardFetch.Request(TWO_HUNDRED_URL, {headers: {'Cache-Control': 'only-if-cached'}}));
+		assert(res && res.fromCache);
+	});
 });
 
-describe('Cache key tests', function() {
-  it('Can calculate a cache key and check that it exists', async function() {
-    const cache = new MemoryCache();
-    cachedFetch = FetchCache.withCache(cache);
-    await cachedFetch(TWO_HUNDRED_URL);
+describe('Cache key tests', () => {
+	it('Can calculate a cache key and check that it exists', async () => {
+		const cache = new MemoryCache();
+		cachedFetch = FetchCache.withCache(cache);
+		await cachedFetch(TWO_HUNDRED_URL);
 
-    const cacheKey = getCacheKey(TWO_HUNDRED_URL);
-    const nonExistentCacheKey = getCacheKey(TEXT_BODY_URL);
+		const cacheKey = getCacheKey(TWO_HUNDRED_URL);
+		const nonExistentCacheKey = getCacheKey(TEXT_BODY_URL);
 
-    const cacheKeyResult = await cache.get(cacheKey);
-    const nonExistentCacheKeyResult = await cache.get(nonExistentCacheKey);
+		const cacheKeyResult = await cache.get(cacheKey);
+		const nonExistentCacheKeyResult = await cache.get(nonExistentCacheKey);
 
-    assert(cacheKeyResult);
-    assert(!nonExistentCacheKeyResult);
-  });
+		assert(cacheKeyResult);
+		assert(!nonExistentCacheKeyResult);
+	});
 });
 
-describe('Network error tests', function() {
-  it('Bubbles up network errors', async function() {
-    await assert.rejects(() => cachedFetch('http://localhost:1'), /^FetchError:/);
-  });
+describe('Network error tests', () => {
+	it('Bubbles up network errors', async () => {
+		await assert.rejects(() => cachedFetch('http://localhost:1'), /^FetchError:/);
+	});
 });

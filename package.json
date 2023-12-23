@@ -13,8 +13,8 @@
     "buildcjs": "rollup ./dist/index.js --file ./dist/index.cjs --format cjs && cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
     "test": "mocha --timeout 10000 --exit",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=commonjs/index.cjs npm test",
-    "lint": "./node_modules/.bin/eslint .",
-    "lintfix": "./node_modules/.bin/eslint . --fix",
+    "lint": "xo ./src",
+    "lintfix": "xo ./src --fix",
     "prepublishOnly": "npm run tsc && npm run buildcjs && npm test",
     "prepare": "husky install"
   },
@@ -38,16 +38,16 @@
   "devDependencies": {
     "@types/cacache": "^17.0.2",
     "@types/node-fetch": "^2.6.9",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
     "c8": "^8.0.1",
     "dotenv": "^16.3.1",
-    "eslint": "^8.9.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.25.4",
     "husky": "^8.0.3",
     "mocha": "^10.2.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "xo": "^0.56.0"
   },
   "dependencies": {
     "cacache": "^18.0.1",
@@ -62,5 +62,29 @@
   },
   "engines": {
     "node": ">=14.14.0"
+  },
+  "xo": {
+    "space": true,
+    "rules": {
+      "unicorn/filename-case": [
+        "error",
+        {
+          "case": "snakeCase"
+        }
+      ],
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          "selector": "typeAlias",
+          "format": [
+            "PascalCase"
+          ]
+        }
+      ],
+      "@typescript-eslint/object-curly-spacing": [
+        "error",
+        "always"
+      ]
+    }
   }
 }

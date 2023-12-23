@@ -1,30 +1,34 @@
-import { Readable } from 'stream';
+import { Buffer } from 'node:buffer';
+import { Readable } from 'node:stream';
+import assert from 'node:assert';
 import { KeyTimeout } from './key_timeout.js';
-import { INodeFetchCacheCache } from './cache.js';
-import assert from 'assert';
+import { type INodeFetchCacheCache } from './cache.js';
 
-function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
+async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
   const chunks: Buffer[] = [];
   return new Promise((resolve, reject) => {
-    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-    stream.on('error', (err) => reject(err));
-    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('data', chunk => chunks.push(Buffer.from(chunk as Buffer)));
+    stream.on('error', error => {
+      reject(error);
+    });
+    stream.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
   });
 }
 
 export class MemoryCache implements INodeFetchCacheCache {
   private readonly ttl?: number | undefined;
   private readonly keyTimeout = new KeyTimeout();
-  private readonly cache: Record<string, { bodyBuffer: Buffer; metaData: object; }>;
+  private readonly cache = new Map<string, { bodyBuffer: Buffer; metaData: Record<string, unknown> }>();
 
   constructor(options?: { ttl?: number }) {
     this.ttl = options?.ttl;
     this.keyTimeout = new KeyTimeout();
-    this.cache = {};
   }
 
   async get(key: string) {
-    const cachedValue = this.cache[key];
+    const cachedValue = this.cache.get(key);
     if (cachedValue) {
       return {
         bodyStream: Readable.from(cachedValue.bodyBuffer),
@@ -37,15 +41,15 @@ export class MemoryCache implements INodeFetchCacheCache {
 
   async remove(key: string) {
     this.keyTimeout.clearTimeout(key);
-    delete this.cache[key];
+    this.cache.delete(key);
   }
 
-  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: object) {
+  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: Record<string, unknown>) {
     const bodyBuffer = await streamToBuffer(bodyStream);
-    this.cache[key] = { bodyBuffer, metaData };
+    this.cache.set(key, { bodyBuffer, metaData });
 
     if (typeof this.ttl === 'number') {
-      this.keyTimeout.updateTimeout(key, this.ttl, () => this.remove(key));
+      this.keyTimeout.updateTimeout(key, this.ttl, async () => this.remove(key));
     }
 
     const value = await this.get(key);

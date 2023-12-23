@@ -47,7 +47,7 @@
     "rollup": "^2.53.0"
   },
   "dependencies": {
-    "cacache": "^18.0.1",
+    "cacache": "^16.1.3",
     "locko": "^1.0.0",
     "node-fetch": "2.7.0"
   },

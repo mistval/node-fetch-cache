@@ -126,6 +126,20 @@ function hasOnlyWithCacheOption(resource: FetchResource, init: FetchInit) {
   return false;
 }
 
+function getUrlFromRequestArguments(...args: Parameters<typeof fetch>) {
+  const [resource] = args;
+
+  if (resource instanceof Request) {
+    return resource.url;
+  }
+
+  if (typeof resource === 'string') {
+    return resource;
+  }
+
+  throw new Error('Unsupported resource type. Supported resource types are: string, Request');
+}
+
 async function getResponse(cache: INodeFetchCacheCache, requestArguments: Parameters<typeof fetch>) {
   const cacheKey = getCacheKey(...requestArguments);
   let cachedValue = await cache.get(cacheKey);
@@ -142,7 +156,9 @@ async function getResponse(cache: INodeFetchCacheCache, requestArguments: Parame
   }
 
   if (hasOnlyWithCacheOption(...requestArguments)) {
-    return undefined;
+    return NFCResponse.cacheMissResponse(
+      getUrlFromRequestArguments(...requestArguments),
+    );
   }
 
   return locko.doWithLock(cacheKey, async () => {

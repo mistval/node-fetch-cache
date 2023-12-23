@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import FormData from 'form-data';
 import assert from 'assert';
-import rimraf from 'rimraf';
+import { rimraf } from 'rimraf';
 import path from 'path';
 import { URLSearchParams } from 'url';
 import standardFetch from 'node-fetch';

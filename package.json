@@ -54,5 +54,8 @@
     "hooks": {
       "pre-commit": "npm run lint && npm test"
     }
+  },
+  "engines": {
+    "node": ">=12.22.12"
   }
 }

@@ -10,6 +10,15 @@ jobs:
       matrix:
         node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 21.x]
 
+    services:
+      httpbin:
+        image: kennethreitz/httpbin
+        ports:
+          - 3000:80
+
+    env:
+      HTTP_BIN_BASE_URL: http://localhost:3000
+
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js

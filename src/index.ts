@@ -30,8 +30,6 @@ function getFormDataCacheKey(formData: FormData) {
   const cacheKey = { ...formData } as FormDataInternal;
   const boundary = formData.getBoundary();
 
-  // TODO: Check if this property actually exists
-
   delete cacheKey._boundary;
 
   const boundaryReplaceRegex = new RegExp(boundary, 'g');

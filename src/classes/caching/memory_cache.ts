@@ -1,6 +1,6 @@
-import { Buffer } from 'node:buffer';
-import { Readable } from 'node:stream';
-import assert from 'node:assert';
+import { Buffer } from 'buffer';
+import { Readable } from 'stream';
+import assert from 'assert';
 import { KeyTimeout } from './key_timeout.js';
 import { type INodeFetchCacheCache } from './cache.js';
 

@@ -18,7 +18,12 @@ export class NFCResponse extends Response {
     return metaData;
   }
 
-  constructor(bodyStream: NodeJS.ReadableStream, metaData: Record<string, unknown>, public readonly ejectFromCache: () => Promise<unknown>, public readonly fromCache: boolean) {
+  constructor(
+    bodyStream: NodeJS.ReadableStream,
+    metaData: Record<string, unknown>,
+    public readonly ejectFromCache: () => Promise<unknown>,
+    public readonly fromCache: boolean,
+  ) {
     super(bodyStream, metaData);
   }
 }

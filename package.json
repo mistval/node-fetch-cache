@@ -84,7 +84,8 @@
       "@typescript-eslint/object-curly-spacing": [
         "error",
         "always"
-      ]
+      ],
+      "unicorn/prefer-node-protocol": "off"
     }
   }
 }

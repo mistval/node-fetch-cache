@@ -1,6 +1,6 @@
-import fs from 'node:fs';
-import { Buffer } from 'node:buffer';
-import crypto from 'node:crypto';
+import fs from 'fs';
+import { Buffer } from 'buffer';
+import crypto from 'crypto';
 import fetch, { Request } from 'node-fetch';
 import locko from 'locko';
 import FormData from 'form-data';

@@ -10,11 +10,11 @@
   },
   "scripts": {
     "buildcjs": "rollup src/index.js --file commonjs/index.cjs --format cjs",
-    "test": "npm run lintfix && npm run buildcjs && mocha --timeout 10000 --exit",
+    "test": "mocha --timeout 10000 --exit",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=commonjs/index.cjs npm test",
     "lint": "./node_modules/.bin/eslint .",
     "lintfix": "./node_modules/.bin/eslint . --fix",
-    "prepublishOnly": "npm test",
+    "prepublishOnly": "npm run lint && npm run buildcjs && npm test",
     "prepare": "husky install"
   },
   "repository": {
@@ -53,7 +53,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint && npm test"
+      "pre-commit": "npm run prepublishOnly"
     }
   },
   "engines": {

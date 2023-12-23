@@ -21,10 +21,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 20.x
+    - run: npm ci
+    - run: npm run lint
+    - run: npm run buildcjs
+    - name: Use Node.js Version Under Test
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm ci
-    - run: npm run lint
     - run: npm run coverage

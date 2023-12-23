@@ -11,7 +11,7 @@ export class FileSystemCache {
     this.cacheDirectory = options.cacheDirectory || '.cache';
   }
 
-  async get(key) {
+  async get(key, options) {
     const [, metaKey] = getBodyAndMetaKeys(key);
 
     const metaInfo = await cacache.get.info(this.cacheDirectory, metaKey);
@@ -28,7 +28,9 @@ export class FileSystemCache {
     delete metaData.empty;
     delete metaData.expiration;
 
-    if (expiration && expiration < Date.now()) {
+    const ignoreExpiration = options && options.ignoreExpiration;
+
+    if (!ignoreExpiration && expiration && expiration < Date.now()) {
       return undefined;
     }
 
@@ -77,7 +79,7 @@ export class FileSystemCache {
 
     const metaBuffer = Buffer.from(JSON.stringify(metaCopy));
     await cacache.put(this.cacheDirectory, metaKey, metaBuffer);
-    const cachedData = await this.get(key);
+    const cachedData = await this.get(key, { ignoreExpiration: true });
 
     return cachedData;
   }

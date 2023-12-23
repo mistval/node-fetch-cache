@@ -312,7 +312,14 @@ describe('Cache tests', function() {
     agent.agent = agent;
 
     await cachedFetch('http://httpbin.org/status/200', { agent });
-  })
+  });
+
+  it('Works with a TTL of 0', async function() {
+    const cachedFetch = FetchCache.withCache(new FileSystemCache({ ttl: 0 }));
+
+    const res = await cachedFetch(TWO_HUNDRED_URL);
+    assert(res.ok);
+  });
 }).timeout(10000);
 
 describe('Data tests', function() {

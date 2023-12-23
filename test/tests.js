@@ -1,3 +1,4 @@
+import 'dotenv/config.js';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';

@@ -5,7 +5,7 @@ import locko from 'locko';
 import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 
-const CACHE_VERSION = 4;
+const CACHE_VERSION = 5;
 
 function md5(str) {
   return crypto.createHash('md5').update(str).digest('hex');

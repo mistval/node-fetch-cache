@@ -1,7 +1,9 @@
+require('dotenv').config();
 const assert = require('assert');
 const fetch = require('../commonjs/wrapper.cjs');
 
-const TWO_HUNDRED_URL = 'https://httpbin.org/status/200';
+const httpBinBaseUrl = process.env.HTTP_BIN_BASE_URL || 'https://httpbin.org';
+const TWO_HUNDRED_URL = `${httpBinBaseUrl}/status/200`;
 
 describe('Commonjs module tests', function() {
   it('Can make a request', async function() {

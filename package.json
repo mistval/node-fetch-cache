@@ -47,9 +47,9 @@
     "rollup": "^2.53.0"
   },
   "dependencies": {
-    "cacache": "^15.2.0",
+    "cacache": "^18.0.1",
     "locko": "^1.0.0",
-    "node-fetch": "2.6.11"
+    "node-fetch": "2.7.0"
   },
   "husky": {
     "hooks": {

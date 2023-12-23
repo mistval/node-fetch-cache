@@ -9,6 +9,7 @@
     "require": "./commonjs/wrapper.cjs"
   },
   "scripts": {
+    "tsc": "tsc",
     "buildcjs": "rollup src/index.js --file commonjs/index.cjs --format cjs",
     "test": "mocha --timeout 10000 --exit",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=commonjs/index.cjs npm test",
@@ -35,6 +36,7 @@
   },
   "homepage": "https://github.com/mistval/node-fetch-cache#readme",
   "devDependencies": {
+    "@types/node-fetch": "^2.6.9",
     "c8": "^8.0.1",
     "dotenv": "^16.3.1",
     "eslint": "^8.9.0",
@@ -44,7 +46,8 @@
     "husky": "^8.0.3",
     "mocha": "^10.2.0",
     "rimraf": "^5.0.5",
-    "rollup": "^4.9.1"
+    "rollup": "^4.9.1",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "cacache": "^18.0.1",

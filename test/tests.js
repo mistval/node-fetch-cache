@@ -10,17 +10,18 @@ import standardFetch from 'node-fetch';
 import FetchCache, { MemoryCache, FileSystemCache, getCacheKey } from '../src/index.js';
 import { Agent } from 'http';
 
+const httpBinBaseUrl = process.env.HTTP_BIN_BASE_URL || 'https://httpbin.org';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const CACHE_PATH = path.join(__dirname, '..', '.cache');
 const expectedPngBuffer = fs.readFileSync(path.join(__dirname, 'expected_png.png'));
 
-const TWO_HUNDRED_URL = 'https://httpbin.org/status/200';
-const FOUR_HUNDRED_URL = 'https://httpbin.org/status/400';
-const THREE_HUNDRED_TWO_URL = 'https://httpbin.org/status/302';
-const TEXT_BODY_URL = 'https://httpbin.org/robots.txt';
-const JSON_BODY_URL = 'https://httpbin.org/json';
-const PNG_BODY_URL = 'https://httpbin.org/image/png';
+const TWO_HUNDRED_URL = `${httpBinBaseUrl}/status/200`;
+const FOUR_HUNDRED_URL = `${httpBinBaseUrl}/status/400`;
+const THREE_HUNDRED_TWO_URL = `${httpBinBaseUrl}/status/302`;
+const TEXT_BODY_URL = `${httpBinBaseUrl}/robots.txt`;
+const JSON_BODY_URL = `${httpBinBaseUrl}/json`;
+const PNG_BODY_URL = `${httpBinBaseUrl}/image/png`;
 
 const TEXT_BODY_EXPECTED = 'User-agent: *\nDisallow: /deny\n';
 

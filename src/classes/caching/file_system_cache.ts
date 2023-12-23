@@ -1,17 +1,22 @@
 import cacache from 'cacache';
 import { Readable } from 'stream';
+import { INodeFetchCacheCache } from './cache';
+import assert from 'assert';
 
-function getBodyAndMetaKeys(key) {
-  return [`${key}body`, `${key}meta`];
+function getBodyAndMetaKeys(key: string) {
+  return [`${key}body`, `${key}meta`] as const;
 }
 
-export class FileSystemCache {
-  constructor(options = {}) {
+export class FileSystemCache implements INodeFetchCacheCache {
+  private readonly ttl?: number | undefined;
+  private readonly cacheDirectory: string;
+
+  constructor(options: { ttl?: number; cacheDirectory?: string; } = {}) {
     this.ttl = options.ttl;
     this.cacheDirectory = options.cacheDirectory || '.cache';
   }
 
-  async get(key, options) {
+  async get(key: string, options?: { ignoreExpiration?: boolean; }) {
     const [, metaKey] = getBodyAndMetaKeys(key);
 
     const metaInfo = await cacache.get.info(this.cacheDirectory, metaKey);
@@ -44,7 +49,7 @@ export class FileSystemCache {
     };
   }
 
-  remove(key) {
+  remove(key: string) {
     const [bodyKey, metaKey] = getBodyAndMetaKeys(key);
 
     return Promise.all([
@@ -53,33 +58,40 @@ export class FileSystemCache {
     ]);
   }
 
-  async set(key, bodyStream, metaData) {
+  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: object) {
     const [bodyKey, metaKey] = getBodyAndMetaKeys(key);
-    const metaCopy = { ...metaData };
+
+    const metaToStore = {
+      ...metaData,
+      expiration: undefined as (undefined | number),
+      bodyStreamIntegrity: undefined as (undefined | string),
+      empty: false,
+    };
 
     if (typeof this.ttl === 'number') {
-      metaCopy.expiration = Date.now() + this.ttl;
+      metaToStore.expiration = Date.now() + this.ttl;
     }
 
     try {
-      metaCopy.bodyStreamIntegrity = await new Promise((fulfill, reject) => {
+      metaToStore.bodyStreamIntegrity = await new Promise((fulfill, reject) => {
         bodyStream.pipe(cacache.put.stream(this.cacheDirectory, bodyKey))
           .on('integrity', (i) => fulfill(i))
           .on('error', (e) => {
             reject(e);
           });
       });
-    } catch (err) {
+    } catch (err: any) {
       if (err.code !== 'ENODATA') {
         throw err;
       }
 
-      metaCopy.empty = true;
+      metaToStore.empty = true;
     }
 
-    const metaBuffer = Buffer.from(JSON.stringify(metaCopy));
+    const metaBuffer = Buffer.from(JSON.stringify(metaToStore));
     await cacache.put(this.cacheDirectory, metaKey, metaBuffer);
     const cachedData = await this.get(key, { ignoreExpiration: true });
+    assert(cachedData, 'Cached data should be available after storing it');
 
     return cachedData;
   }

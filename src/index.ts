@@ -2,22 +2,41 @@ import fetch, { Request } from 'node-fetch';
 import fs from 'fs';
 import crypto from 'crypto';
 import locko from 'locko';
+import type FormData from 'form-data';
 import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
+import { INodeFetchCacheCache } from './classes/caching/cache.js';
+
+type FetchResource = Parameters<typeof fetch>[0];
+type FetchInit = Parameters<typeof fetch>[1];
+
+interface FormDataInternal extends FormData {
+  _boundary?: string;
+  _streams: (string | fs.ReadStream)[];
+}
+
+interface RequestInternal extends Request {
+  cache: any;
+  credentials: any;
+  destination: any;
+  integrity: any;
+  referrerPolicy: any;
+}
 
 const CACHE_VERSION = 5;
 
-function md5(str) {
+function md5(str: string) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
 
 // Since the bounday in FormData is random,
 // we ignore it for purposes of calculating
 // the cache key.
-function getFormDataCacheKey(formData) {
-  const cacheKey = { ...formData };
+function getFormDataCacheKey(formData: FormData) {
+  const cacheKey = { ...formData } as FormDataInternal;
   const boundary = formData.getBoundary();
 
+  // TODO: Check if this property actually exists
   // eslint-disable-next-line no-underscore-dangle
   delete cacheKey._boundary;
 
@@ -35,15 +54,13 @@ function getFormDataCacheKey(formData) {
   return cacheKey;
 }
 
-function getHeadersCacheKeyJson(headersObj) {
-  return Object.fromEntries(
-    Object.entries(headersObj)
-      .map(([key, value]) => [key.toLowerCase(), value])
-      .filter(([key, value]) => key !== 'cache-control' || value !== 'only-if-cached'),
-  );
+function getHeadersCacheKeyJson(headers: string[][]): string[][] {
+  return headers
+    .map(([key, value]) => [key!.toLowerCase(), value!])
+    .filter(([key, value]) => key !== 'cache-control' || value !== 'only-if-cached');
 }
 
-function getBodyCacheKeyJson(body) {
+function getBodyCacheKeyJson(body: any): string | FormDataInternal | undefined | null {
   if (!body) {
     return body;
   } if (typeof body === 'string') {
@@ -51,7 +68,7 @@ function getBodyCacheKeyJson(body) {
   } if (body instanceof URLSearchParams) {
     return body.toString();
   } if (body instanceof fs.ReadStream) {
-    return body.path;
+    return body.path.toString();
   } if (body.toString && body.toString() === '[object FormData]') {
     return getFormDataCacheKey(body);
   } if (body instanceof Buffer) {
@@ -61,14 +78,12 @@ function getBodyCacheKeyJson(body) {
   throw new Error('Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, fs.ReadStream, FormData');
 }
 
-function getRequestCacheKey(req) {
-  const headersPojo = Object.fromEntries([...req.headers.entries()]);
-
+function getRequestCacheKey(req: RequestInternal) {
   return {
     cache: req.cache,
     credentials: req.credentials,
     destination: req.destination,
-    headers: getHeadersCacheKeyJson(headersPojo),
+    headers: getHeadersCacheKeyJson([...req.headers.entries()]),
     integrity: req.integrity,
     method: req.method,
     redirect: req.redirect,
@@ -79,14 +94,15 @@ function getRequestCacheKey(req) {
   };
 }
 
-export function getCacheKey(resource, init = {}) {
+export function getCacheKey(resource: FetchResource, init?: FetchInit) {
   const resourceCacheKeyJson = resource instanceof Request
-    ? getRequestCacheKey(resource)
-    : { url: resource };
+    ? getRequestCacheKey(resource as RequestInternal)
+    : { url: resource, body: undefined};
 
   const initCacheKeyJson = {
+    body: undefined as (undefined | null | string | FormDataInternal),
     ...init,
-    headers: getHeadersCacheKeyJson(init.headers || {}),
+    headers: getHeadersCacheKeyJson(Object.entries(init?.headers || {})),
   };
 
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);
@@ -97,7 +113,7 @@ export function getCacheKey(resource, init = {}) {
   return md5(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson, CACHE_VERSION]));
 }
 
-function hasOnlyWithCacheOption(resource, init) {
+function hasOnlyWithCacheOption(resource: FetchResource, init: FetchInit) {
   if (
     init
     && init.headers
@@ -114,7 +130,7 @@ function hasOnlyWithCacheOption(resource, init) {
   return false;
 }
 
-async function getResponse(cache, requestArguments) {
+async function getResponse(cache: INodeFetchCacheCache, requestArguments: Parameters<typeof fetch>) {
   const cacheKey = getCacheKey(...requestArguments);
   let cachedValue = await cache.get(cacheKey);
 
@@ -133,8 +149,7 @@ async function getResponse(cache, requestArguments) {
     return undefined;
   }
 
-  await locko.lock(cacheKey);
-  try {
+  return await locko.doWithLock(cacheKey, async () => {
     cachedValue = await cache.get(cacheKey);
     if (cachedValue) {
       return new NFCResponse(
@@ -160,13 +175,11 @@ async function getResponse(cache, requestArguments) {
       ejectSelfFromCache,
       false,
     );
-  } finally {
-    locko.unlock(cacheKey);
-  }
+  });
 }
 
-function createFetchWithCache(cache) {
-  const fetchCache = (...args) => getResponse(cache, args);
+function createFetchWithCache(cache: INodeFetchCacheCache) {
+  const fetchCache = (...args: Parameters<typeof fetch>) => getResponse(cache, args);
   fetchCache.withCache = createFetchWithCache;
 
   return fetchCache;

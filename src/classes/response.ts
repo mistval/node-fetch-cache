@@ -3,13 +3,11 @@ import { Response } from 'node-fetch';
 const responseInternalSymbol = Object.getOwnPropertySymbols(new Response())[1];
 
 export class NFCResponse extends Response {
-  constructor(bodyStream, metaData, ejectFromCache, fromCache) {
+  constructor(bodyStream: NodeJS.ReadableStream, metaData: object, public readonly ejectFromCache: () => Promise<unknown>, public readonly fromCache: boolean) {
     super(bodyStream, metaData);
-    this.ejectFromCache = ejectFromCache;
-    this.fromCache = fromCache;
   }
 
-  static serializeMetaFromNodeFetchResponse(res) {
+  static serializeMetaFromNodeFetchResponse(res: Response) {
     const metaData = {
       url: res.url,
       status: res.status,
@@ -17,7 +15,7 @@ export class NFCResponse extends Response {
       headers: res.headers.raw(),
       size: res.size,
       timeout: res.timeout,
-      counter: res[responseInternalSymbol].counter,
+      counter: (res as any)[responseInternalSymbol as symbol].counter,
     };
 
     return metaData;

@@ -1,13 +1,11 @@
 export class KeyTimeout {
-  constructor() {
-    this.timeoutHandleForKey = {};
-  }
+  private readonly timeoutHandleForKey: Record<string, NodeJS.Timeout> = {};
 
-  clearTimeout(key) {
+  clearTimeout(key: string) {
     clearTimeout(this.timeoutHandleForKey[key]);
   }
 
-  updateTimeout(key, durationMs, callback) {
+  updateTimeout(key: string, durationMs: number, callback: () => unknown) {
     this.clearTimeout(key);
     this.timeoutHandleForKey[key] = setTimeout(() => {
       callback();

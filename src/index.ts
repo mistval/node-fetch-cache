@@ -69,7 +69,7 @@ function getBodyCacheKeyJson(body: any): string | FormDataInternal | undefined |
     return body.toString();
   } if (body instanceof fs.ReadStream) {
     return body.path.toString();
-  } if (body.toString && body.toString() === '[object FormData]') {
+  } if (body?.toString() === '[object FormData]') {
     return getFormDataCacheKey(body);
   } if (body instanceof Buffer) {
     return body.toString();
@@ -115,9 +115,7 @@ export function getCacheKey(resource: FetchResource, init?: FetchInit) {
 
 function hasOnlyWithCacheOption(resource: FetchResource, init: FetchInit) {
   if (
-    init
-    && init.headers
-    && Object.entries(init.headers)
+    Object.entries(init?.headers ?? {})
       .some(([key, value]) => key.toLowerCase() === 'cache-control' && value === 'only-if-cached')
   ) {
     return true;

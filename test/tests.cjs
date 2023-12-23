@@ -1,6 +1,6 @@
 require('dotenv').config();
 const assert = require('assert');
-const fetch = require('../commonjs/wrapper.cjs');
+const fetch = require('../dist/wrapper.cjs');
 
 const httpBinBaseUrl = process.env.HTTP_BIN_BASE_URL || 'https://httpbin.org';
 const TWO_HUNDRED_URL = `${httpBinBaseUrl}/status/200`;

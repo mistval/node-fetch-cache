@@ -33,7 +33,7 @@ export class FileSystemCache implements INodeFetchCacheCache {
     delete metaData.empty;
     delete metaData.expiration;
 
-    const ignoreExpiration = options && options.ignoreExpiration;
+    const ignoreExpiration = options?.ignoreExpiration;
 
     if (!ignoreExpiration && expiration && expiration < Date.now()) {
       return undefined;

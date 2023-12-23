@@ -5,17 +5,17 @@
   "main": "src/index.js",
   "type": "module",
   "exports": {
-    "import": "./src/index.js",
-    "require": "./commonjs/wrapper.cjs"
+    "import": "./dist/index.js",
+    "require": "./dist/wrapper.cjs"
   },
   "scripts": {
     "tsc": "tsc",
-    "buildcjs": "rollup src/index.js --file commonjs/index.cjs --format cjs",
+    "buildcjs": "rollup ./dist/index.js --file ./dist/index.cjs --format cjs && cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
     "test": "mocha --timeout 10000 --exit",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=commonjs/index.cjs npm test",
     "lint": "./node_modules/.bin/eslint .",
     "lintfix": "./node_modules/.bin/eslint . --fix",
-    "prepublishOnly": "npm run lint && npm run buildcjs && npm test",
+    "prepublishOnly": "npm run tsc && npm run buildcjs && npm test",
     "prepare": "husky install"
   },
   "repository": {

@@ -572,6 +572,24 @@ describe('Cache strategy tests', () => {
     assert.strictEqual(response.returnedFromCache, true);
   });
 
+  it('Can use a custom cache strategy via the call to fetch to cache only OKAY responses', async () => {
+    const customCachedFetch = FetchCache.create({
+      cache: defaultCache,
+    });
+
+    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheOkayOnly });
+    assert.strictEqual(response.returnedFromCache, false);
+
+    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheOkayOnly });
+    assert.strictEqual(response.returnedFromCache, false);
+
+    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheNon5xxOnly });
+    assert.strictEqual(response.returnedFromCache, false);
+
+    response = await customCachedFetch(FOUR_HUNDRED_URL);
+    assert.strictEqual(response.returnedFromCache, true);
+  });
+
   it('Can use the cacheNon5xxOnly built-in strategy', async () => {
     const customCachedFetch = FetchCache.create({
       cache: defaultCache,

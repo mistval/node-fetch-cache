@@ -4,6 +4,7 @@ import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 import type { CacheStrategy, FetchInit, FetchResource, INodeFetchCacheCache } from './types.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';
+import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
 
 type FetchCustomization = {
   cache: INodeFetchCacheCache;
@@ -124,11 +125,15 @@ function create(creationOptions: FetchOptions) {
 }
 
 const defaultFetch = create({});
+const cacheStrategies = {
+  cacheOkayOnly,
+  cacheNon5xxOnly,
+};
 
 export default defaultFetch;
 export { MemoryCache } from './classes/caching/memory_cache.js';
 export { FileSystemCache } from './classes/caching/file_system_cache.js';
-export { cacheOkayOnly, cacheNon5xxOnly } from './helpers/cache_strategies.js';
 export { calculateCacheKey, calculateCacheKey as getCacheKey, CACHE_VERSION } from './helpers/cache_keys.js';
 export type { FetchResource, FetchInit } from './types.js';
 export type { NFCResponse } from './classes/response.js';
+export { cacheStrategies };

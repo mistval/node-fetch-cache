@@ -10,7 +10,7 @@ import { Agent } from 'http';
 import { rimraf } from 'rimraf';
 import FormData from 'form-data';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
-import FetchCache, { MemoryCache, FileSystemCache, cacheOkayOnly, cacheNon5xxOnly, FetchResource, NFCResponse, calculateCacheKey } from '../src/index.js';
+import FetchCache, { MemoryCache, FileSystemCache, cacheStrategies, FetchResource, NFCResponse, calculateCacheKey } from '../src/index.js';
 
 const httpBinBaseUrl = process.env['HTTP_BIN_BASE_URL'] ?? 'https://httpbin.org';
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -575,7 +575,7 @@ describe('Cache strategy tests', () => {
   it('Can use a custom cache strategy to cache only OKAY responses', async () => {
     const customCachedFetch = FetchCache.create({
       cache: defaultCache,
-      shouldCacheResponse: cacheOkayOnly,
+      shouldCacheResponse: cacheStrategies.cacheOkayOnly,
     });
 
     response = await customCachedFetch(FOUR_HUNDRED_URL);
@@ -596,13 +596,13 @@ describe('Cache strategy tests', () => {
       cache: defaultCache,
     });
 
-    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheOkayOnly });
+    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheStrategies.cacheOkayOnly });
     assert.strictEqual(response.returnedFromCache, false);
 
-    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheOkayOnly });
+    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheStrategies.cacheOkayOnly });
     assert.strictEqual(response.returnedFromCache, false);
 
-    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheNon5xxOnly });
+    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheStrategies.cacheNon5xxOnly });
     assert.strictEqual(response.returnedFromCache, false);
 
     response = await customCachedFetch(FOUR_HUNDRED_URL);
@@ -612,7 +612,7 @@ describe('Cache strategy tests', () => {
   it('Can use the cacheNon5xxOnly built-in strategy', async () => {
     const customCachedFetch = FetchCache.create({
       cache: defaultCache,
-      shouldCacheResponse: cacheNon5xxOnly,
+      shouldCacheResponse: cacheStrategies.cacheNon5xxOnly,
     });
 
     response = await customCachedFetch(FOUR_HUNDRED_URL);

@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
+import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types.js';
 import { KeyTimeout } from './key_timeout.js';
-import { type INodeFetchCacheCache } from './cache.js';
 
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
   const chunks: Buffer[] = [];
@@ -19,7 +19,7 @@ async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
 export class MemoryCache implements INodeFetchCacheCache {
   private readonly ttl?: number | undefined;
   private readonly keyTimeout = new KeyTimeout();
-  private readonly cache = new Map<string, { bodyBuffer: Buffer; metaData: Record<string, unknown> }>();
+  private readonly cache = new Map<string, { bodyBuffer: Buffer; metaData: NFCResponseMetadata }>();
 
   constructor(options?: { ttl?: number }) {
     this.ttl = options?.ttl;
@@ -43,7 +43,7 @@ export class MemoryCache implements INodeFetchCacheCache {
     this.cache.delete(key);
   }
 
-  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: Record<string, unknown>) {
+  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: NFCResponseMetadata) {
     const bodyBuffer = await streamToBuffer(bodyStream);
     this.cache.set(key, { bodyBuffer, metaData });
 

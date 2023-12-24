@@ -1,13 +1,13 @@
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
 import cacache from 'cacache';
-import { type INodeFetchCacheCache } from './cache.js';
+import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types';
 
 type ParsedMetadata = {
   bodyStreamIntegrity?: string;
   empty?: boolean;
   expiration?: number;
-} & Record<string, unknown>;
+} & NFCResponseMetadata;
 
 function getBodyAndMetaKeys(key: string) {
   return [`${key}body`, `${key}meta`] as const;

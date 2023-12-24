@@ -12,3 +12,22 @@ export type FormDataInternal = {
 } & FormData;
 
 export { FormData };
+
+export type NFCResponseMetadata = {
+  url: string;
+  status: number;
+  statusText: string;
+  headers: Record<string, string[]>;
+  size: number;
+  timeout: number;
+  counter: any;
+};
+
+export type INodeFetchCacheCache = {
+  get(key: string): Promise<{
+    bodyStream: NodeJS.ReadableStream;
+    metaData: NFCResponseMetadata;
+  } | undefined>;
+  remove(key: string): Promise<void | unknown>;
+  set(key: string, bodyStream: NodeJS.ReadableStream, metaData: Record<string, unknown>): Promise<void | unknown>;
+};

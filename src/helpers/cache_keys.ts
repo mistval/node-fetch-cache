@@ -5,7 +5,7 @@ import { Request } from 'node-fetch';
 import type { FetchInit, FetchResource, FormDataInternal } from '../types.js';
 import { FormData } from '../types.js';
 
-const CACHE_VERSION = 5;
+export const CACHE_VERSION = 5;
 
 function md5(string_: string) {
   return crypto.createHash('md5').update(string_).digest('hex');
@@ -76,7 +76,7 @@ function getRequestCacheKey(request: Request) {
   };
 }
 
-export function getCacheKey(resource: FetchResource, init?: FetchInit) {
+export function calculateCacheKey(resource: FetchResource, init?: FetchInit) {
   const resourceCacheKeyJson = resource instanceof Request
     ? getRequestCacheKey(resource)
     : { url: resource, body: undefined };

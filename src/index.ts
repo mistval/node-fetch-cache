@@ -2,12 +2,12 @@ import fetch, { Request } from 'node-fetch';
 import locko from 'locko';
 import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
-import { type INodeFetchCacheCache } from './classes/caching/cache.js';
-import type { CacheStrategy, FetchInit, FetchResource } from './types.js';
-import { getCacheKey } from './helpers/cache_keys.js';
+import type { CacheStrategy, FetchInit, FetchResource, INodeFetchCacheCache } from './types.js';
+import { calculateCacheKey } from './helpers/cache_keys.js';
 
 type FetchCustomization = {
   cache: INodeFetchCacheCache;
+  calculateCacheKey: typeof calculateCacheKey;
   shouldCacheResponse: CacheStrategy;
 };
 
@@ -36,15 +36,12 @@ function getUrlFromRequestArguments(resource: Request | string) {
   return resource;
 }
 
-async function getResponse(fetchCustomization: FetchCustomization, requestArguments: Parameters<typeof fetch>) {
-  const resource = requestArguments[0];
-  const init = requestArguments[1];
-
+async function getResponse(fetchCustomization: FetchCustomization, resource: FetchResource, init: FetchInit) {
   if (typeof resource !== 'string' && !(resource instanceof Request)) {
     throw new TypeError('The first argument to fetch must be either a string or a node-fetch Request instance');
   }
 
-  const cacheKey = getCacheKey(resource, init);
+  const cacheKey = fetchCustomization.calculateCacheKey(resource, init);
 
   const ejectSelfFromCache = async () => fetchCustomization.cache.remove(cacheKey);
 
@@ -90,13 +87,23 @@ async function getResponse(fetchCustomization: FetchCustomization, requestArgume
 
 const globalMemoryCache = new MemoryCache();
 
-function create(options: FetchOptions) {
+function create(creationOptions: FetchOptions) {
   const fetchOptions = {
-    cache: options.cache ?? globalMemoryCache,
-    shouldCacheResponse: options.shouldCacheResponse ?? (() => true),
+    cache: creationOptions.cache ?? globalMemoryCache,
+    shouldCacheResponse: creationOptions.shouldCacheResponse ?? (() => true),
+    calculateCacheKey: creationOptions.calculateCacheKey ?? calculateCacheKey,
   };
 
-  const fetchCache = async (...args: Parameters<typeof fetch>) => getResponse(fetchOptions, args);
+  const fetchCache = async (
+    resource: FetchResource,
+    init?: FetchInit,
+    perRequestOptions?: FetchOptions,
+  ) => getResponse(
+    { ...fetchOptions, ...perRequestOptions },
+    resource,
+    init,
+  );
+
   fetchCache.create = create;
   fetchCache.options = fetchOptions;
 
@@ -108,4 +115,5 @@ const defaultFetch = create({ cache: globalMemoryCache });
 export default defaultFetch;
 export { MemoryCache } from './classes/caching/memory_cache.js';
 export { FileSystemCache } from './classes/caching/file_system_cache.js';
-export { cacheOKAYOnly, cacheNon5xxOnly } from './helpers/cache_strategies.js';
+export { cacheOkayOnly, cacheNon5xxOnly } from './helpers/cache_strategies.js';
+export { calculateCacheKey, calculateCacheKey as getCacheKey, CACHE_VERSION } from './helpers/cache_keys.js';

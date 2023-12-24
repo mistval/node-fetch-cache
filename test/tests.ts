@@ -10,9 +10,9 @@ import { Agent } from 'http';
 import { rimraf } from 'rimraf';
 import FormData from 'form-data';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
-import FetchCache, { MemoryCache, FileSystemCache, cacheOKAYOnly, cacheNon5xxOnly } from '../src/index.js';
+import FetchCache, { MemoryCache, FileSystemCache, cacheOkayOnly, cacheNon5xxOnly } from '../src/index.js';
 import type { NFCResponse } from '../src/classes/response.js';
-import { getCacheKey } from '../src/helpers/cache_keys.js';
+import { calculateCacheKey } from '../src/helpers/cache_keys.js';
 
 const httpBinBaseUrl = process.env['HTTP_BIN_BASE_URL'] ?? 'https://httpbin.org';
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -56,7 +56,7 @@ function removeDates(arrayOrObject: { date?: unknown } | string[] | string[][]) 
   return arrayOrObject;
 }
 
-async function dualFetch(...args: Parameters<typeof defaultCachedFetch>) {
+async function dualFetch(...args: Parameters<typeof standardFetch>) {
   const [cachedFetchResponse, standardFetchResponse] = await Promise.all([
     defaultCachedFetch(...args),
     standardFetch(...args),
@@ -534,8 +534,8 @@ describe('Cache key tests', () => {
   it('Can calculate a cache key and check that it exists', async () => {
     await defaultCachedFetch(TWO_HUNDRED_URL);
 
-    const cacheKey = getCacheKey(TWO_HUNDRED_URL);
-    const nonExistentCacheKey = getCacheKey(TEXT_BODY_URL);
+    const cacheKey = calculateCacheKey(TWO_HUNDRED_URL);
+    const nonExistentCacheKey = calculateCacheKey(TEXT_BODY_URL);
 
     const cacheKeyResult = await defaultCache.get(cacheKey);
     const nonExistentCacheKeyResult = await defaultCache.get(nonExistentCacheKey);
@@ -549,7 +549,7 @@ describe('Cache strategy tests', () => {
   it('Can use a custom cache strategy to cache only OKAY responses', async () => {
     const customCachedFetch = FetchCache.create({
       cache: defaultCache,
-      shouldCacheResponse: cacheOKAYOnly,
+      shouldCacheResponse: cacheOkayOnly,
     });
 
     response = await customCachedFetch(FOUR_HUNDRED_URL);

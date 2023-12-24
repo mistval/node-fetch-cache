@@ -23,11 +23,11 @@ The next time you `fetch('http://google.com')`, the response will be returned fr
 
 ## Basic API
 
-This module's API is a superset of `node-fetch`'s. You can consult [the node-fetch documentation](https://www.npmjs.com/package/node-fetch) for general usage. Only the extra features provided by `node-fetch-cache` are discussed below.
+This module's API is a superset of `node-fetch`'s. You can consult [the node-fetch documentation](https://www.npmjs.com/package/node-fetch) for general usage. Only the extra features provided by node-fetch-cache are discussed below.
 
 ### Control what's cached
 
-By default `node-fetch-cache` caches all responses, regardless of the status code or any other response characteristics.
+By default node-fetch-cache caches all responses, regardless of the status code or any other response characteristics.
 
 There are two main ways to customize which responses are cached and which are not.
 
@@ -125,7 +125,7 @@ You may bend the rules and implement certain types of custom cache control logic
 
 ### Cache-Control: only-if-cached
 
-The HTTP standard describes a [Cache-Control request header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control#request_directives) to control certain aspects of cache behavior. Node-fetch ignores these, but node-fetch-cache respects the `Cache-Control: only-if-cached` directive. When `only-if-cached` is specified, node-fetch-cache will return a `504 Gateway Timeout` response with an `isCacheMiss` property if there is no cached response. No HTTP request will be made. For example:
+The HTTP standard describes a [Cache-Control request header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control#request_directives) to control aspects of cache behavior. Node-fetch ignores these, but node-fetch-cache respects the `Cache-Control: only-if-cached` directive. When `only-if-cached` is specified, node-fetch-cache will return a `504 Gateway Timeout` response with an `isCacheMiss` property if there is no cached response that can be returned. No HTTP request will be made. For example:
 
 ```js
 import fetch from 'node-fetch-cache';
@@ -143,7 +143,7 @@ if (response.isCacheMiss) {
 
 ### Custom Cache Key Function
 
-You can provide custom cache key generation logic to `node-fetch-cache` by passing a `calculateCacheKey` option to `create()`:
+You can provide custom cache key generation logic to node-fetch-cache by passing a `calculateCacheKey` option to `create()`:
 
 ```js
 import NodeFetchCache, { CACHE_VERSION } from 'node-fetch-cache';
@@ -157,7 +157,7 @@ const fetch = NodeFetchCache.create({
 
 In the above example, all requests to a given URL will hash to the same cache key, so only the very first request with that URL will result in an HTTP request and all subsequent requests will read the response from the cache, even if they have completely different headers, bodies, etc.
 
-It is wise to include `CACHE_VERSION` as part of the cache key so that when `node-fetch-cache` has backwards-incomptible changes in storage format, the obsolete cache entries will be automatically abandoned.
+It is wise to include `CACHE_VERSION` as part of the cache key so that when node-fetch-cache has backwards-incomptible changes in storage format, the obsolete cache entries will be automatically abandoned.
 
 ### Built-In Cache Key Function
 
@@ -174,7 +174,7 @@ const rawCacheData = await cache.get(calculateCacheKey('https://google.com'));
 
 ### Eject responses from the cache
 
-Responses from `node-fetch-cache` have an `ejectFromCache()` function that can be used to eject the response from the cache, so that the next request will perform a true HTTP request rather than returning a cached response. This may be useful for more advanced use cases where you want to dynamically remove a response from the cache at some later time:
+Responses from node-fetch-cache have an `ejectFromCache()` method that can be used to eject the response from the cache, so that the next request will perform a true HTTP request rather than returning a cached response. This may be useful for more advanced use cases where you want to dynamically remove a response from the cache at some later time:
 
 ```js
 import fetch from 'node-fetch-cache';
@@ -190,7 +190,7 @@ await response.ejectFromCache();
 
 The v4 version of this package has several breaking changes and new features. Please review the below details if you are upgrading from v3.
 
-### Node.js v14.14.0 is the lowest supported version
+### Node.js v14.14.0 is now the lowest supported Node.js version
 
 v4 will not work at all on Node.js versions below v14.14.0. Automated tests are run on v14.14.0, and the latest releases of v14, v16, v18, v20, and v21.
 
@@ -212,7 +212,7 @@ const fetch = NodeFetchCache.create({ cache: new FileSystemCache(options) });
 
 ### Cache-Control: only-if-cached
 
-If you are relying on the `Cache-Control: only-if-cached` header feature, that has been changed to better align with the browser fetch API. It no longer returns undefined, but instead returns a `504 Gateway Timeout` response if no cached response is available. The response will also have a `isCacheMiss` property set to true to help you distinguish it from a regular 504 response. You should rewrite code like this:
+If you are relying on the `Cache-Control: only-if-cached` header feature, that has been changed to better align with the browser fetch API. It no longer returns undefined, but instead returns a `504 Gateway Timeout` response if no cached response is available. The response will also have an `isCacheMiss` property set to true to help you distinguish it from a regular 504 response. You should rewrite code like this:
 
 ```js
 import fetch from 'node-fetch-cache';
@@ -246,7 +246,7 @@ If you were using the `@types/node-fetch-cache` package, that is no longer neces
 
 ### ejectFromCache()
 
-While the `ejectFromCache()` function still exists and functions the same way as in v3, you may find the new `shouldCacheResponse` delegate option to be cleaner for many use cases, and it also allows you to keep the response from being cached in the first place which will reduce writes to the cache. So consider rewriting code like this:
+While the `ejectFromCache()` function still exists and functions the same way as in v3, you may find the new `shouldCacheResponse` option to be cleaner for many use cases, and it also allows you to keep the response from being cached in the first place which will reduce writes to the cache. So consider rewriting code like this:
 
 ```js
 fetch('http://google.com')
@@ -273,7 +273,7 @@ fetch('http://google.com', {
 
 ### Streams
 
-This module does not support Stream request bodies, except for fs.ReadStream. And when using fs.ReadStream, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**.
+node-fetch-cache does not support `Stream` request bodies, except for `fs.ReadStream`. And when using `fs.ReadStream`, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**.
 
 Streams don't quite play nice with the concept of caching based on request characteristics, because we would have to read the stream to the end to find out what's in it and hash it into a proper cache key.
 

@@ -44,33 +44,23 @@ function getUrlFromRequestArguments(...args: Parameters<typeof fetch>) {
 
 async function getResponse(fetchCustomization: FetchCustomization, requestArguments: Parameters<typeof fetch>) {
   const cacheKey = getCacheKey(...requestArguments);
-  let cachedValue = await fetchCustomization.cache.get(cacheKey);
 
   const ejectSelfFromCache = async () => fetchCustomization.cache.remove(cacheKey);
 
-  if (cachedValue) {
-    return new NFCResponse(
-      cachedValue.bodyStream,
-      cachedValue.metaData,
-      ejectSelfFromCache,
-      true,
-    );
-  }
-
-  if (hasOnlyWithCacheOption(...requestArguments)) {
-    return NFCResponse.cacheMissResponse(
-      getUrlFromRequestArguments(...requestArguments),
-    );
-  }
-
   return locko.doWithLock(cacheKey, async () => {
-    cachedValue = await fetchCustomization.cache.get(cacheKey);
+    const cachedValue = await fetchCustomization.cache.get(cacheKey);
     if (cachedValue) {
       return new NFCResponse(
         cachedValue.bodyStream,
         cachedValue.metaData,
         ejectSelfFromCache,
         true,
+      );
+    }
+
+    if (hasOnlyWithCacheOption(...requestArguments)) {
+      return NFCResponse.cacheMissResponse(
+        getUrlFromRequestArguments(...requestArguments),
       );
     }
 

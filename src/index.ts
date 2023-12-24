@@ -28,22 +28,23 @@ function hasOnlyWithCacheOption(resource: FetchResource, init: FetchInit) {
   return false;
 }
 
-function getUrlFromRequestArguments(...args: Parameters<typeof fetch>) {
-  const [resource] = args;
-
+function getUrlFromRequestArguments(resource: Request | string) {
   if (resource instanceof Request) {
     return resource.url;
   }
 
-  if (typeof resource === 'string') {
-    return resource;
-  }
-
-  throw new Error('Unsupported resource type. Supported resource types are: string, Request');
+  return resource;
 }
 
 async function getResponse(fetchCustomization: FetchCustomization, requestArguments: Parameters<typeof fetch>) {
-  const cacheKey = getCacheKey(...requestArguments);
+  const resource = requestArguments[0];
+  const init = requestArguments[1];
+
+  if (typeof resource !== 'string' && !(resource instanceof Request)) {
+    throw new TypeError('The first argument to fetch must be either a string or a node-fetch Request instance');
+  }
+
+  const cacheKey = getCacheKey(resource, init);
 
   const ejectSelfFromCache = async () => fetchCustomization.cache.remove(cacheKey);
 
@@ -58,13 +59,13 @@ async function getResponse(fetchCustomization: FetchCustomization, requestArgume
       );
     }
 
-    if (hasOnlyWithCacheOption(...requestArguments)) {
+    if (hasOnlyWithCacheOption(resource, init)) {
       return NFCResponse.cacheMissResponse(
-        getUrlFromRequestArguments(...requestArguments),
+        getUrlFromRequestArguments(resource),
       );
     }
 
-    const fetchResponse = await fetch(...requestArguments);
+    const fetchResponse = await fetch(resource, init);
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
 
     const responseClone = fetchResponse.clone();
@@ -90,13 +91,14 @@ async function getResponse(fetchCustomization: FetchCustomization, requestArgume
 const globalMemoryCache = new MemoryCache();
 
 function create(options: FetchOptions) {
-  const fetchCustomization = {
+  const fetchOptions = {
     cache: options.cache ?? globalMemoryCache,
     shouldCacheResponse: options.shouldCacheResponse ?? (() => true),
   };
 
-  const fetchCache = async (...args: Parameters<typeof fetch>) => getResponse(fetchCustomization, args);
+  const fetchCache = async (...args: Parameters<typeof fetch>) => getResponse(fetchOptions, args);
   fetchCache.create = create;
+  fetchCache.options = fetchOptions;
 
   return fetchCache;
 }
@@ -106,3 +108,4 @@ const defaultFetch = create({ cache: globalMemoryCache });
 export default defaultFetch;
 export { MemoryCache } from './classes/caching/memory_cache.js';
 export { FileSystemCache } from './classes/caching/file_system_cache.js';
+export { cacheOKAYOnly, cacheNon5xxOnly } from './helpers/cache_strategies.js';

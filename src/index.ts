@@ -1,57 +1,33 @@
-import fetch, { Request } from 'node-fetch';
+import fetch, { Request as NodeFetchRequest } from 'node-fetch';
+import FormData from 'form-data';
 import locko from 'locko';
 import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 import type { CacheStrategy, FetchInit, FetchResource, INodeFetchCacheCache } from './types.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';
 import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
+import { hasOnlyIfCachedOption } from './helpers/headers.js';
 
-type FetchCustomization = {
+type CacheKeyCalculator = typeof calculateCacheKey;
+
+type NFCCustomizations = {
   cache: INodeFetchCacheCache;
-  calculateCacheKey: typeof calculateCacheKey;
+  calculateCacheKey: CacheKeyCalculator;
   shouldCacheResponse: CacheStrategy;
 };
 
-type FetchOptions = Partial<FetchCustomization>;
+type NFCOptions = Partial<NFCCustomizations>;
 
-function headerKeyIsCacheControl(key: string) {
-  return key.trim().toLowerCase() === 'cache-control';
-}
-
-function headerValueContainsOnlyIfCached(cacheControlValue: string | undefined) {
-  return cacheControlValue
-    ?.split?.(',')
-    .map(d => d.trim().toLowerCase())
-    .includes('only-if-cached');
-}
-
-function hasOnlyWithCacheOption(resource: FetchResource, init: FetchInit) {
-  if (
-    Object.entries(init?.headers ?? {})
-      .some(
-        ([key, value]) => headerKeyIsCacheControl(key) && headerValueContainsOnlyIfCached(value as string | undefined),
-      )
-  ) {
-    return true;
-  }
-
-  if (resource instanceof Request && headerValueContainsOnlyIfCached(resource.headers.get('Cache-Control') ?? undefined)) {
-    return true;
-  }
-
-  return false;
-}
-
-function getUrlFromRequestArguments(resource: Request | string) {
-  if (resource instanceof Request) {
+function getUrlFromRequestArguments(resource: NodeFetchRequest | string) {
+  if (resource instanceof NodeFetchRequest) {
     return resource.url;
   }
 
   return resource;
 }
 
-async function getResponse(fetchCustomization: FetchCustomization, resource: FetchResource, init: FetchInit) {
-  if (typeof resource !== 'string' && !(resource instanceof Request)) {
+async function getResponse(fetchCustomization: NFCCustomizations, resource: FetchResource, init: FetchInit) {
+  if (typeof resource !== 'string' && !(resource instanceof NodeFetchRequest)) {
     throw new TypeError('The first argument to fetch must be either a string or a node-fetch Request instance');
   }
 
@@ -70,7 +46,7 @@ async function getResponse(fetchCustomization: FetchCustomization, resource: Fet
       );
     }
 
-    if (hasOnlyWithCacheOption(resource, init)) {
+    if (hasOnlyIfCachedOption(resource, init)) {
       return NFCResponse.cacheMissResponse(
         getUrlFromRequestArguments(resource),
       );
@@ -101,7 +77,7 @@ async function getResponse(fetchCustomization: FetchCustomization, resource: Fet
 
 const globalMemoryCache = new MemoryCache();
 
-function create(creationOptions: FetchOptions) {
+function create(creationOptions: NFCOptions) {
   const fetchOptions = {
     cache: creationOptions.cache ?? globalMemoryCache,
     shouldCacheResponse: creationOptions.shouldCacheResponse ?? (() => true),
@@ -111,7 +87,7 @@ function create(creationOptions: FetchOptions) {
   const fetchCache = async (
     resource: FetchResource,
     init?: FetchInit,
-    perRequestOptions?: FetchOptions,
+    perRequestOptions?: NFCOptions,
   ) => getResponse(
     { ...fetchOptions, ...perRequestOptions },
     resource,
@@ -133,7 +109,18 @@ const cacheStrategies = {
 export default defaultFetch;
 export { MemoryCache } from './classes/caching/memory_cache.js';
 export { FileSystemCache } from './classes/caching/file_system_cache.js';
-export { calculateCacheKey, calculateCacheKey as getCacheKey, CACHE_VERSION } from './helpers/cache_keys.js';
-export type { FetchResource, FetchInit } from './types.js';
+export { CACHE_VERSION } from './helpers/cache_keys.js';
 export type { NFCResponse } from './classes/response.js';
-export { cacheStrategies };
+export type { NFCResponseMetadata } from './types.js';
+export {
+  FormData,
+  NodeFetchRequest,
+  cacheStrategies,
+  calculateCacheKey,
+  calculateCacheKey as getCacheKey,
+  type NFCOptions,
+  type CacheKeyCalculator,
+  type INodeFetchCacheCache,
+  type FetchResource,
+  type FetchInit,
+};

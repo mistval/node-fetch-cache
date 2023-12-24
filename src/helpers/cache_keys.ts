@@ -1,7 +1,7 @@
 import fs from 'fs';
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
-import { Request } from 'node-fetch';
+import { Request as NodeFetchRequest } from 'node-fetch';
 import type { FetchInit, FetchResource, FormDataInternal } from '../types.js';
 import { FormData } from '../types.js';
 
@@ -65,7 +65,7 @@ function getBodyCacheKeyJson(body: any): string | FormDataInternal | undefined {
   throw new Error('Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, fs.ReadStream, FormData');
 }
 
-function getRequestCacheKeyJson(request: Request) {
+function getRequestCacheKeyJson(request: NodeFetchRequest) {
   return {
     headers: getHeadersCacheKeyJson([...request.headers.entries()]),
     method: request.method,
@@ -80,7 +80,7 @@ function getRequestCacheKeyJson(request: Request) {
 }
 
 export function calculateCacheKey(resource: FetchResource, init?: FetchInit) {
-  const resourceCacheKeyJson = resource instanceof Request
+  const resourceCacheKeyJson = resource instanceof NodeFetchRequest
     ? getRequestCacheKeyJson(resource)
     : { url: resource, body: undefined };
 

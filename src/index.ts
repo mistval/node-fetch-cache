@@ -68,9 +68,9 @@ async function getResponse(fetchCustomization: FetchCustomization, requestArgume
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
 
     const responseClone = fetchResponse.clone();
-    const cache = await fetchCustomization.shouldCacheResponse(responseClone);
+    const shouldCache = await fetchCustomization.shouldCacheResponse(responseClone);
 
-    if (cache) {
+    if (shouldCache) {
       await fetchCustomization.cache.set(
         cacheKey,
         (responseClone.bodyUsed ? fetchResponse.clone() : responseClone).body,

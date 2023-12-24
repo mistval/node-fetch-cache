@@ -123,7 +123,7 @@ function create(creationOptions: FetchOptions) {
   return fetchCache;
 }
 
-const defaultFetch = create({ cache: globalMemoryCache });
+const defaultFetch = create({});
 
 export default defaultFetch;
 export { MemoryCache } from './classes/caching/memory_cache.js';

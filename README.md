@@ -1,5 +1,9 @@
 # node-fetch-cache
 
+[![codecov](https://codecov.io/github/mistval/node-fetch-cache/graph/badge.svg?token=UYA5PDNZ0J)](https://codecov.io/github/mistval/node-fetch-cache)
+
+![workflow status](https://github.com/mistval/node-fetch-cache/.github/workflows/ci.yml/badge.svg)
+
 node-fetch with caching of responses.
 
 The first fetch with any given arguments will result in an HTTP request and any subsequent fetch with the same arguments will read the response from the cache.

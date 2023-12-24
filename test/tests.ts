@@ -338,7 +338,7 @@ describe('Cache tests', () => {
 
   it('Can use a client-provided custom cache key', async () => {
     const cacheFunction = (resource: FetchResource) => {
-      if (resource instanceof Request) {
+      if (resource instanceof StandardFetchRequest) {
         return resource.url;
       }
 

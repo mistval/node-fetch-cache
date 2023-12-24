@@ -95,7 +95,7 @@ Note that the default cache is a globally shared instance of `MemoryCache` with 
 
 ## Implement your Own Cache
 
-If neither MemoryCache nor FileSystemCache meet your needs, you can implement your own cache. You can use any object that implements the following interface:
+If neither `MemoryCache` nor `FileSystemCache` meet your needs, you can implement your own cache. You can use any object that implements the following interface:
 
 ```ts
 type INodeFetchCacheCache = {
@@ -114,12 +114,12 @@ type INodeFetchCacheCache = {
 
 The `set()` function must accept a key (which will be a string), a response body stream, and a metadata object (which will be a JSON-serializable JS object). It should store these in such a way that it can return them later via the `get()` function.
 
-The `get()` function should return the cached body and metadata that had been set via the `set()` function, or undefined if no cached value is found.
+The `get()` function should return the cached body and metadata that had been set via the `set()` function, or `undefined` if no cached value is found.
 
 The `remove()` function should remove the cached value associated with the given key, if any.
 
 You may bend the rules and implement certain types of custom cache control logic in your custom cache if you'd like to. Specifically:
-1. Your cache may choose to remove values from the cache arbitrarily (for example if you want to implement a TTL option like MemoryCache and FileSystemCache do).
+1. Your cache may choose to remove values from the cache arbitrarily (for example if you want to implement a TTL option like `MemoryCache` and `FileSystemCache` do).
 2. Your cache may choose to ignore calls to `set()`. For example, if you want to implement a cache that only caches responses with a 2xx status code, you could simply not cache responses with other status codes.
 3. It is not strictly necessary for `get()` to return the exact same data that was passed to `set()`. For example `get()` could return a custom header in the metadata with the number of times that the response has been read from the cache.
 
@@ -212,7 +212,7 @@ const fetch = NodeFetchCache.create({ cache: new FileSystemCache(options) });
 
 ### Cache-Control: only-if-cached
 
-If you are relying on the `Cache-Control: only-if-cached` header feature, that has been changed to better align with the browser fetch API. It no longer returns undefined, but instead returns a `504 Gateway Timeout` response if no cached response is available. The response will also have an `isCacheMiss` property set to true to help you distinguish it from a regular 504 response. You should rewrite code like this:
+If you are relying on the `Cache-Control: only-if-cached` header feature, that has been changed to better align with the browser fetch API. It no longer returns `undefined`, but instead returns a `504 Gateway Timeout` response if no cached response is available. The response will also have an `isCacheMiss` property set to true to help you distinguish it from a regular 504 response. You should rewrite code like this:
 
 ```js
 import fetch from 'node-fetch-cache';

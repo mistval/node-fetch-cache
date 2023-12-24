@@ -197,31 +197,31 @@ describe('Header tests', () => {
 describe('Cache tests', () => {
   it('Uses cache', async () => {
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Can eject from cache', async () => {
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
 
     await response.ejectFromCache();
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Does not error if ejecting from cache twice', async () => {
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     await response.ejectFromCache();
     await response.ejectFromCache();
@@ -229,34 +229,34 @@ describe('Cache tests', () => {
 
   it('Gives different string bodies different cache keys', async () => {
     response = await cachedFetch(TWO_HUNDRED_URL, post('a'));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL, post('b'));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
   });
 
   it('Gives same string bodies same cache keys', async () => {
     response = await cachedFetch(TWO_HUNDRED_URL, post('a'));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL, post('a'));
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Gives different URLSearchParams different cache keys', async () => {
     response = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=b')));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
   });
 
   it('Gives same URLSearchParams same cache keys', async () => {
     response = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Gives different read streams different cache keys', async () => {
@@ -264,20 +264,20 @@ describe('Cache tests', () => {
     const s2 = fs.createReadStream(path.join(__dirname, '..', 'src', 'index.ts'));
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(s1));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(s2));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
   });
 
   it('Gives the same read streams the same cache key', async () => {
     const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(s1));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(s1));
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Gives different form data different cache keys', async () => {
@@ -288,10 +288,10 @@ describe('Cache tests', () => {
     data2.append('b', 'b');
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(data1));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(data2));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
   });
 
   it('Gives same form data same cache keys', async () => {
@@ -302,10 +302,10 @@ describe('Cache tests', () => {
     data2.append('a', 'a');
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(data1));
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL, post(data2));
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Does not error with custom agent with circular properties', async () => {
@@ -327,11 +327,11 @@ describe('Data tests', () => {
   it('Supports request objects', async () => {
     let request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
     response = await cachedFetch(request);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
     response = await cachedFetch(request);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Supports request objects with custom headers', async () => {
@@ -339,10 +339,10 @@ describe('Data tests', () => {
     const request2 = new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { XXX: 'ZZZ' } });
 
     response = await cachedFetch(request1);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(request2);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
   });
 
   it('Refuses to consume body twice', async () => {
@@ -355,36 +355,36 @@ describe('Data tests', () => {
     response = await cachedFetch(TEXT_BODY_URL);
     const body1 = await response.text();
     assert.strictEqual(body1, TEXT_BODY_EXPECTED);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TEXT_BODY_URL);
     const body2 = await response.text();
     assert.strictEqual(body2, TEXT_BODY_EXPECTED);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Can get JSON body', async () => {
     response = await cachedFetch(JSON_BODY_URL);
     const body1 = await response.json() as { slideshow: unknown };
     assert(body1?.slideshow);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(JSON_BODY_URL);
     const body2 = await response.json() as { slideshow: unknown };
     assert(body2.slideshow);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Can get PNG buffer body', async () => {
     response = await cachedFetch(PNG_BODY_URL);
     const body1 = await response.buffer();
     assert.strictEqual(expectedPngBuffer.equals(body1), true);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(PNG_BODY_URL);
     const body2 = await response.buffer();
     assert.strictEqual(expectedPngBuffer.equals(body2), true);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Can stream a body', async () => {
@@ -396,7 +396,7 @@ describe('Data tests', () => {
     }
 
     assert.strictEqual(TEXT_BODY_EXPECTED, body);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TEXT_BODY_URL);
     body = '';
@@ -406,7 +406,7 @@ describe('Data tests', () => {
     }
 
     assert.strictEqual(TEXT_BODY_EXPECTED, body);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Errors if the body type is not supported', async () => {
@@ -420,7 +420,7 @@ describe('Data tests', () => {
     ]);
 
     // One should be false, the other should be true
-    assert(response1.fromCache !== response.fromCache);
+    assert(response1.returnedFromCache !== response.returnedFromCache);
   });
 }).timeout(10_000);
 
@@ -428,14 +428,14 @@ describe('Memory cache tests', () => {
   it('Supports TTL', async () => {
     cachedFetch = FetchCache.create({ cache: new MemoryCache({ ttl: 100 }) });
     let response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
 
     await wait(200);
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
   });
 }).timeout(10_000);
 
@@ -443,14 +443,14 @@ describe('File system cache tests', () => {
   it('Supports TTL', async () => {
     cachedFetch = FetchCache.create({ cache: new FileSystemCache({ ttl: 100 }) });
     let response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
 
     await wait(200);
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
   });
 
   it('Can get PNG buffer body', async () => {
@@ -458,30 +458,30 @@ describe('File system cache tests', () => {
     response = await cachedFetch(PNG_BODY_URL);
     const body1 = await response.buffer();
     assert.strictEqual(expectedPngBuffer.equals(body1), true);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(PNG_BODY_URL);
     const body2 = await response.buffer();
     assert.strictEqual(expectedPngBuffer.equals(body2), true);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Can eject from cache', async () => {
     cachedFetch = FetchCache.create({ cache: new FileSystemCache() });
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
 
     await response.ejectFromCache();
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, false);
+    assert.strictEqual(response.returnedFromCache, false);
 
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert.strictEqual(response.fromCache, true);
+    assert.strictEqual(response.returnedFromCache, true);
   });
 });
 
@@ -492,9 +492,9 @@ describe('Cache mode tests', () => {
     response = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
     assert(response.status === 504 && response.isCacheMiss);
     response = await cachedFetch(TWO_HUNDRED_URL);
-    assert(response && !response.fromCache);
+    assert(response && !response.returnedFromCache);
     response = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
-    assert(response?.fromCache);
+    assert(response?.returnedFromCache);
     await response.ejectFromCache();
     response = await cachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
     assert(response.status === 504 && response.isCacheMiss);
@@ -504,9 +504,9 @@ describe('Cache mode tests', () => {
     response = await cachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }));
     assert(response.status === 504 && response.isCacheMiss);
     response = await cachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL));
-    assert(response && !response.fromCache);
+    assert(response && !response.returnedFromCache);
     response = await cachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }));
-    assert(response?.fromCache);
+    assert(response?.returnedFromCache);
   });
 });
 

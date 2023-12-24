@@ -8,7 +8,7 @@ import { getCacheKey } from './helpers/cache_keys.js';
 
 type FetchCustomization = {
   cache: INodeFetchCacheCache;
-  cacheStrategy: CacheStrategy;
+  shouldCacheResponse: CacheStrategy;
 };
 
 type FetchOptions = Partial<FetchCustomization>;
@@ -78,7 +78,7 @@ async function getResponse(fetchCustomization: FetchCustomization, requestArgume
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
 
     const responseClone = fetchResponse.clone();
-    const cache = await fetchCustomization.cacheStrategy(responseClone);
+    const cache = await fetchCustomization.shouldCacheResponse(responseClone);
 
     if (cache) {
       await fetchCustomization.cache.set(
@@ -102,7 +102,7 @@ const globalMemoryCache = new MemoryCache();
 function create(options: FetchOptions) {
   const fetchCustomization = {
     cache: options.cache ?? globalMemoryCache,
-    cacheStrategy: options.cacheStrategy ?? (() => true),
+    shouldCacheResponse: options.shouldCacheResponse ?? (() => true),
   };
 
   const fetchCache = async (...args: Parameters<typeof fetch>) => getResponse(fetchCustomization, args);

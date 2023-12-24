@@ -44,7 +44,7 @@ export class NFCResponse extends Response {
     bodyStream: NodeJS.ReadableStream,
     metaData: Record<string, unknown>,
     public readonly ejectFromCache: () => Promise<unknown>,
-    public readonly fromCache: boolean,
+    public readonly returnedFromCache: boolean,
     public readonly isCacheMiss = false,
   ) {
     super(bodyStream, metaData);

@@ -60,7 +60,7 @@ const response = await fetch(
 console.log(await response.text());
 ```
 
-If you provide options in both ways, the options are merged together with those passed to `fetch()` taking precedence.
+If you provide options in both ways, then the options are merged together, with those passed to `fetch()` taking precedence.
 
 ## Cache to Disk
 

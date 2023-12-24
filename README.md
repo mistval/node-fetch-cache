@@ -27,7 +27,7 @@ This module's API is a superset of `node-fetch`'s. You can consult [the node-fet
 
 ### Control what's cached
 
-By default `node-fetch-cache` caches all responses, regardless of the status code or any other characteristics.
+By default `node-fetch-cache` caches all responses, regardless of the status code or any other response characteristics.
 
 There are two main ways to customize which responses are cached and which are not.
 
@@ -60,7 +60,7 @@ const response = await fetch(
 console.log(await response.text());
 ```
 
-If you do both, the options passed to `fetch()` take precedence.
+If you provide options in both ways, the options are merged together with those passed to `fetch()` taking precedence.
 
 ## Cache to Disk
 

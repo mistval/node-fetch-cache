@@ -29,7 +29,7 @@ This module's API is a superset of `node-fetch`'s. You can consult [the node-fet
 
 By default `node-fetch-cache` caches all responses, regardless of the status code or any other characteristics.
 
-There are two main ways to control what is cached.
+There are two main ways to customize which responses are cached and which are not.
 
 By `create()`ing a custom fetch instance:
 

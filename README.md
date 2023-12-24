@@ -141,9 +141,9 @@ if (response.isCacheMiss) {
 
 ## Advanced API
 
-### Custom Cache Key Hash Function
+### Custom Cache Key Function
 
-You can provide custom hash key generation logic to `node-fetch-cache` by passing a `calculateCacheKey` option to `create()`:
+You can provide custom cache key generation logic to `node-fetch-cache` by passing a `calculateCacheKey` option to `create()`:
 
 ```js
 import NodeFetchCache, { CACHE_VERSION } from 'node-fetch-cache';
@@ -157,11 +157,11 @@ const fetch = NodeFetchCache.create({
 
 In the above example, all requests to a given URL will hash to the same cache key, so only the very first request with that URL will result in an HTTP request and all subsequent requests will read the response from the cache, even if they have completely different headers, bodies, etc.
 
-It is important to include `CACHE_VERSION` as part of the cache key so that when `node-fetch-cache` has backwards-incomptible changes in storage format, the cache will be rebuilt.
+It is wise to include `CACHE_VERSION` as part of the cache key so that when `node-fetch-cache` has backwards-incomptible changes in storage format, the obsolete cache entries will be automatically abandoned.
 
-### Build-In Cache Key Hash Function
+### Built-In Cache Key Function
 
-This module exports a `calculateCacheKey()` which is the default hash function used to calculate a cache key string from request parameters. It may be useful for enabling some advanced use cases (especially if you want to call cache functions directly). Call `calculateCacheKey()` exactly like you would call `fetch()`:
+This module exports a `calculateCacheKey()` which is the default function used to calculate a cache key string from request parameters. It may be useful for enabling some advanced use cases (especially if you want to call cache functions directly). Call `calculateCacheKey()` exactly like you would call `fetch()`:
 
 ```js
 import { fetchBuilder, MemoryCache, calculateCacheKey } from 'node-fetch-cache';

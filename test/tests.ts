@@ -528,6 +528,13 @@ describe('Cache mode tests', () => {
     response = await defaultCachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }));
     assert(response?.returnedFromCache);
   });
+
+  it('Works with only-if-cached along with other cache-control directives', async () => {
+    response = await defaultCachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' } }));
+    assert(response.status === 504 && response.isCacheMiss);
+    response = await defaultCachedFetch(TWO_HUNDRED_URL, { headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' } });
+    assert(response.status === 504 && response.isCacheMiss);
+  });
 });
 
 describe('Cache key tests', () => {

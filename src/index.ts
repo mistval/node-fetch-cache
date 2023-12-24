@@ -13,15 +13,28 @@ type FetchCustomization = {
 
 type FetchOptions = Partial<FetchCustomization>;
 
+function headerKeyIsCacheControl(key: string) {
+  return key.trim().toLowerCase() === 'cache-control';
+}
+
+function headerValueContainsOnlyIfCached(cacheControlValue: string | undefined) {
+  return cacheControlValue
+    ?.split?.(',')
+    .map(d => d.trim().toLowerCase())
+    .includes('only-if-cached');
+}
+
 function hasOnlyWithCacheOption(resource: FetchResource, init: FetchInit) {
   if (
     Object.entries(init?.headers ?? {})
-      .some(([key, value]) => key.toLowerCase() === 'cache-control' && value === 'only-if-cached')
+      .some(
+        ([key, value]) => headerKeyIsCacheControl(key) && headerValueContainsOnlyIfCached(value as string | undefined),
+      )
   ) {
     return true;
   }
 
-  if (resource instanceof Request && resource.headers.get('Cache-Control') === 'only-if-cached') {
+  if (resource instanceof Request && headerValueContainsOnlyIfCached(resource.headers.get('Cache-Control') ?? undefined)) {
     return true;
   }
 

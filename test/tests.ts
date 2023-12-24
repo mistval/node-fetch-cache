@@ -10,9 +10,7 @@ import { Agent } from 'http';
 import { rimraf } from 'rimraf';
 import FormData from 'form-data';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
-import FetchCache, { MemoryCache, FileSystemCache, cacheOkayOnly, cacheNon5xxOnly } from '../src/index.js';
-import type { NFCResponse } from '../src/classes/response.js';
-import { calculateCacheKey } from '../src/helpers/cache_keys.js';
+import FetchCache, { MemoryCache, FileSystemCache, cacheOkayOnly, cacheNon5xxOnly, FetchResource, NFCResponse, calculateCacheKey } from '../src/index.js';
 
 const httpBinBaseUrl = process.env['HTTP_BIN_BASE_URL'] ?? 'https://httpbin.org';
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -336,6 +334,27 @@ describe('Cache tests', () => {
 
     assert.strictEqual(response1.returnedFromCache, false);
     assert.strictEqual(response2.returnedFromCache, true);
+  });
+
+  it('Can use a client-provided custom cache key', async () => {
+    const cacheFunction = (resource: FetchResource) => {
+      if (resource instanceof Request) {
+        return resource.url;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return resource.toString();
+    };
+
+    const cachedFetch = FetchCache.create({ calculateCacheKey: cacheFunction });
+    const response1 = await cachedFetch(TWO_HUNDRED_URL, { headers: { XXX: 'YYY' } });
+    const response2 = await cachedFetch(TWO_HUNDRED_URL, { headers: { XXX: 'ZZZ' } });
+
+    assert.strictEqual(response1.returnedFromCache, false);
+    assert.strictEqual(response2.returnedFromCache, true);
+
+    const response3 = await cachedFetch(FOUR_HUNDRED_URL, { headers: { XXX: 'YYY' } });
+    assert.strictEqual(response3.returnedFromCache, false);
   });
 }).timeout(10_000);
 

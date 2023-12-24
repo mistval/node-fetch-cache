@@ -192,6 +192,10 @@ await response.ejectFromCache();
 
 The v4 version of this package has several breaking changes and new features. Please review the below details if you are upgrading from v3.
 
+### Node.js v14.14.0 is the lowest supported version
+
+v4 will not work at all on Node.js versions below v14.14.0. Automated tests are run on v14.14.0, and the latest releases of v14, v16, v18, v20, and v21.
+
 ### Specifying a Cache
 
 The syntax to specify a non-default cache has changed. You should rewrite code like this:

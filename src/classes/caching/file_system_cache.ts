@@ -1,6 +1,5 @@
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
-import assert from 'assert';
 import cacache from 'cacache';
 import { type INodeFetchCacheCache } from './cache.js';
 
@@ -23,7 +22,7 @@ export class FileSystemCache implements INodeFetchCacheCache {
     this.cacheDirectory = options.cacheDirectory ?? '.cache';
   }
 
-  async get(key: string, options?: { ignoreExpiration?: boolean }) {
+  async get(key: string) {
     const [, metaKey] = getBodyAndMetaKeys(key);
 
     const metaInfo = await cacache.get.info(this.cacheDirectory, metaKey);
@@ -40,9 +39,7 @@ export class FileSystemCache implements INodeFetchCacheCache {
     delete metaData.empty;
     delete metaData.expiration;
 
-    const ignoreExpiration = options?.ignoreExpiration;
-
-    if (!ignoreExpiration && expiration && expiration < Date.now()) {
+    if (expiration && expiration < Date.now()) {
       return undefined;
     }
 
@@ -99,9 +96,5 @@ export class FileSystemCache implements INodeFetchCacheCache {
 
     const metaBuffer = Buffer.from(JSON.stringify(metaToStore));
     await cacache.put(this.cacheDirectory, metaKey, metaBuffer);
-    const cachedData = await this.get(key, { ignoreExpiration: true });
-    assert(cachedData, 'Cached data should be available after storing it');
-
-    return cachedData;
   }
 }

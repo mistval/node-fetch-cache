@@ -15,6 +15,5 @@ describe('Commonjs module tests', () => {
     assert(typeof fetch === 'function');
     assert(fetch.MemoryCache);
     assert(fetch.FileSystemCache);
-    assert(fetch.fetchBuilder);
   });
 });

@@ -3,15 +3,15 @@ import locko from 'locko';
 import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 import { type INodeFetchCacheCache } from './classes/caching/cache.js';
-import type { FetchInit, FetchResource } from './types.js';
+import type { CacheStrategy, FetchInit, FetchResource } from './types.js';
 import { getCacheKey } from './helpers/cache_keys.js';
 
-/* B
-type FetchOptions = {
-  cache?: INodeFetchCacheCache;
-  cacheStrategy?: CacheStrategy;
+type FetchCustomization = {
+  cache: INodeFetchCacheCache;
+  cacheStrategy: CacheStrategy;
 };
-*/
+
+type FetchOptions = Partial<FetchCustomization>;
 
 function hasOnlyWithCacheOption(resource: FetchResource, init: FetchInit) {
   if (
@@ -42,11 +42,11 @@ function getUrlFromRequestArguments(...args: Parameters<typeof fetch>) {
   throw new Error('Unsupported resource type. Supported resource types are: string, Request');
 }
 
-async function getResponse(cache: INodeFetchCacheCache, requestArguments: Parameters<typeof fetch>) {
+async function getResponse(fetchCustomization: FetchCustomization, requestArguments: Parameters<typeof fetch>) {
   const cacheKey = getCacheKey(...requestArguments);
-  let cachedValue = await cache.get(cacheKey);
+  let cachedValue = await fetchCustomization.cache.get(cacheKey);
 
-  const ejectSelfFromCache = async () => cache.remove(cacheKey);
+  const ejectSelfFromCache = async () => fetchCustomization.cache.remove(cacheKey);
 
   if (cachedValue) {
     return new NFCResponse(
@@ -64,7 +64,7 @@ async function getResponse(cache: INodeFetchCacheCache, requestArguments: Parame
   }
 
   return locko.doWithLock(cacheKey, async () => {
-    cachedValue = await cache.get(cacheKey);
+    cachedValue = await fetchCustomization.cache.get(cacheKey);
     if (cachedValue) {
       return new NFCResponse(
         cachedValue.bodyStream,
@@ -77,31 +77,42 @@ async function getResponse(cache: INodeFetchCacheCache, requestArguments: Parame
     const fetchResponse = await fetch(...requestArguments);
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
 
-    const newlyCachedData = await cache.set(
-      cacheKey,
-      fetchResponse.body,
-      serializedMeta,
-    );
+    const responseClone = fetchResponse.clone();
+    const cache = await fetchCustomization.cacheStrategy(responseClone);
+
+    if (cache) {
+      await fetchCustomization.cache.set(
+        cacheKey,
+        (responseClone.bodyUsed ? fetchResponse.clone() : responseClone).body,
+        serializedMeta,
+      );
+    }
 
     return new NFCResponse(
-      newlyCachedData.bodyStream,
-      newlyCachedData.metaData,
+      fetchResponse.body,
+      serializedMeta,
       ejectSelfFromCache,
       false,
     );
   });
 }
 
-function createFetchWithCache(cache: INodeFetchCacheCache) {
-  const fetchCache = async (...args: Parameters<typeof fetch>) => getResponse(cache, args);
-  fetchCache.withCache = createFetchWithCache;
+const globalMemoryCache = new MemoryCache();
+
+function create(options: FetchOptions) {
+  const fetchCustomization = {
+    cache: options.cache ?? globalMemoryCache,
+    cacheStrategy: options.cacheStrategy ?? (() => true),
+  };
+
+  const fetchCache = async (...args: Parameters<typeof fetch>) => getResponse(fetchCustomization, args);
+  fetchCache.create = create;
 
   return fetchCache;
 }
 
-const defaultFetch = createFetchWithCache(new MemoryCache());
+const defaultFetch = create({ cache: globalMemoryCache });
 
 export default defaultFetch;
-export const fetchBuilder = defaultFetch;
 export { MemoryCache } from './classes/caching/memory_cache.js';
 export { FileSystemCache } from './classes/caching/file_system_cache.js';

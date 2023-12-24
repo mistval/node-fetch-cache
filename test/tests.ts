@@ -65,7 +65,7 @@ async function dualFetch(...args: Parameters<typeof cachedFetch>) {
 
 beforeEach(async () => {
   rimraf.sync(CACHE_PATH);
-  cachedFetch = FetchCache.withCache(new MemoryCache());
+  cachedFetch = FetchCache.create({ cache: new MemoryCache() });
 });
 
 let response: NFCResponse;
@@ -316,7 +316,7 @@ describe('Cache tests', () => {
   });
 
   it('Works with a TTL of 0', async () => {
-    const cachedFetch = FetchCache.withCache(new FileSystemCache({ ttl: 0 }));
+    const cachedFetch = FetchCache.create({ cache: new FileSystemCache({ ttl: 0 }) });
 
     const response = await cachedFetch(TWO_HUNDRED_URL);
     assert(response.ok);
@@ -426,7 +426,7 @@ describe('Data tests', () => {
 
 describe('Memory cache tests', () => {
   it('Supports TTL', async () => {
-    cachedFetch = FetchCache.withCache(new MemoryCache({ ttl: 100 }));
+    cachedFetch = FetchCache.create({ cache: new MemoryCache({ ttl: 100 }) });
     let response = await cachedFetch(TWO_HUNDRED_URL);
     assert.strictEqual(response.fromCache, false);
     response = await cachedFetch(TWO_HUNDRED_URL);
@@ -441,7 +441,7 @@ describe('Memory cache tests', () => {
 
 describe('File system cache tests', () => {
   it('Supports TTL', async () => {
-    cachedFetch = FetchCache.withCache(new FileSystemCache({ ttl: 100 }));
+    cachedFetch = FetchCache.create({ cache: new FileSystemCache({ ttl: 100 }) });
     let response = await cachedFetch(TWO_HUNDRED_URL);
     assert.strictEqual(response.fromCache, false);
     response = await cachedFetch(TWO_HUNDRED_URL);
@@ -454,7 +454,7 @@ describe('File system cache tests', () => {
   });
 
   it('Can get PNG buffer body', async () => {
-    cachedFetch = FetchCache.withCache(new FileSystemCache());
+    cachedFetch = FetchCache.create({ cache: new FileSystemCache() });
     response = await cachedFetch(PNG_BODY_URL);
     const body1 = await response.buffer();
     assert.strictEqual(expectedPngBuffer.equals(body1), true);
@@ -467,7 +467,7 @@ describe('File system cache tests', () => {
   });
 
   it('Can eject from cache', async () => {
-    cachedFetch = FetchCache.withCache(new FileSystemCache());
+    cachedFetch = FetchCache.create({ cache: new FileSystemCache() });
 
     response = await cachedFetch(TWO_HUNDRED_URL);
     assert.strictEqual(response.fromCache, false);
@@ -513,7 +513,7 @@ describe('Cache mode tests', () => {
 describe('Cache key tests', () => {
   it('Can calculate a cache key and check that it exists', async () => {
     const cache = new MemoryCache();
-    cachedFetch = FetchCache.withCache(cache);
+    cachedFetch = FetchCache.create({ cache });
     await cachedFetch(TWO_HUNDRED_URL);
 
     const cacheKey = getCacheKey(TWO_HUNDRED_URL);

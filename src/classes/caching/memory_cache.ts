@@ -1,6 +1,5 @@
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
-import assert from 'assert';
 import { KeyTimeout } from './key_timeout.js';
 import { type INodeFetchCacheCache } from './cache.js';
 
@@ -51,9 +50,5 @@ export class MemoryCache implements INodeFetchCacheCache {
     if (typeof this.ttl === 'number') {
       this.keyTimeout.updateTimeout(key, this.ttl, async () => this.remove(key));
     }
-
-    const value = await this.get(key);
-    assert(value, 'Value should be set after setting it');
-    return value;
   }
 }

@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Debug Tests",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "test"],
+      "runtimeArgs": ["run", "test:debug"],
       "console": "integratedTerminal",
       "runtimeVersion": "20"
     }

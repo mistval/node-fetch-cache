@@ -113,11 +113,11 @@ export { CACHE_VERSION } from './helpers/cache_keys.js';
 export type { NFCResponse } from './classes/response.js';
 export type { NFCResponseMetadata } from './types.js';
 export {
+  cacheStrategies,
+  calculateCacheKey as getCacheKey,
+  calculateCacheKey,
   FormData,
   NodeFetchRequest,
-  cacheStrategies,
-  calculateCacheKey,
-  calculateCacheKey as getCacheKey,
   type NFCOptions,
   type CacheKeyCalculator,
   type INodeFetchCacheCache,

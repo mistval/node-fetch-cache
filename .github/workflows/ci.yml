@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 jobs:
   test_node_lts:
+    runs-on: ubuntu-latest
+
     services:
       httpbin:
         image: kennethreitz/httpbin

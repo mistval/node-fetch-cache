@@ -11,7 +11,7 @@ function md5(string_: string) {
   return crypto.createHash('md5').update(string_).digest('hex');
 }
 
-function getFormDataCacheKey(formData: FormData) {
+function getFormDataCacheKeyJson(formData: FormData) {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const cacheKey = { ...formData } as FormDataInternal;
   const boundary = formData.getBoundary();
@@ -55,7 +55,7 @@ function getBodyCacheKeyJson(body: any): string | FormDataInternal | undefined {
   }
 
   if (body instanceof FormData) {
-    return getFormDataCacheKey(body);
+    return getFormDataCacheKeyJson(body);
   }
 
   if (body instanceof Buffer) {
@@ -65,7 +65,7 @@ function getBodyCacheKeyJson(body: any): string | FormDataInternal | undefined {
   throw new Error('Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, fs.ReadStream, FormData');
 }
 
-function getRequestCacheKey(request: Request) {
+function getRequestCacheKeyJson(request: Request) {
   return {
     headers: getHeadersCacheKeyJson([...request.headers.entries()]),
     method: request.method,
@@ -73,12 +73,15 @@ function getRequestCacheKey(request: Request) {
     referrer: request.referrer,
     url: request.url,
     body: getBodyCacheKeyJson(request.body),
+    follow: request.follow,
+    compress: request.compress,
+    size: request.size,
   };
 }
 
 export function calculateCacheKey(resource: FetchResource, init?: FetchInit) {
   const resourceCacheKeyJson = resource instanceof Request
-    ? getRequestCacheKey(resource)
+    ? getRequestCacheKeyJson(resource)
     : { url: resource, body: undefined };
 
   const initCacheKeyJson = {

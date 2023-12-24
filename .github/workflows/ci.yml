@@ -25,6 +25,11 @@ jobs:
     - run: npm run tsc
     - run: npm run buildcjs
     - run: npm run coverage
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
 
   test_node_other:
     runs-on: ubuntu-latest

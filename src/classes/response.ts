@@ -28,7 +28,7 @@ export class NFCResponse extends Response {
       {
         url,
         status: 504,
-        statusText: 'Gateway Timeout',
+        statusText: 'Gateway Timeout', // TODO: Check if this is the correct statusText
         headers: {},
         size: 0,
         timeout: 0,

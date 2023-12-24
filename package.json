@@ -12,7 +12,7 @@
     "tsc": "tsc",
     "buildcjs": "cross-env rollup ./dist/index.js --file ./dist/index.cjs --format cjs && cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
     "test": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
-    "test:debug": "cross-env TS_NODE_FILES=true node -r ts-node/register node_modules/.bin/mocha --spec 'test/**/*.spec.ts' --spec 'src/**/*.spec.ts' --exit --timeout 120000",
+    "test:debug": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --inspect --inspect-brk --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test npm test",
     "lint": "xo .",
     "lintfix": "xo . --fix",
@@ -96,7 +96,9 @@
       "max-params": [
         "error",
         7
-      ]
+      ],
+      "unicorn/prefer-export-from": "off",
+      "@typescript-eslint/consistent-type-imports": "off"
     }
   }
 }

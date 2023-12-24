@@ -10,8 +10,9 @@ import { Agent } from 'http';
 import { rimraf } from 'rimraf';
 import FormData from 'form-data';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
-import FetchCache, { MemoryCache, FileSystemCache, getCacheKey } from '../src/index.js';
+import FetchCache, { MemoryCache, FileSystemCache } from '../src/index.js';
 import type { NFCResponse } from '../src/classes/response.js';
+import { getCacheKey } from '../src/helpers/cache_keys.js';
 
 const httpBinBaseUrl = process.env['HTTP_BIN_BASE_URL'] ?? 'https://httpbin.org';
 const __dirname = dirname(fileURLToPath(import.meta.url));

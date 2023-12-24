@@ -4,7 +4,7 @@ import assert from 'assert';
 import cacache from 'cacache';
 import { type INodeFetchCacheCache } from './cache.js';
 
-type IParsedMetadata = {
+type ParsedMetadata = {
   bodyStreamIntegrity?: string;
   empty?: boolean;
   expiration?: number;
@@ -33,7 +33,7 @@ export class FileSystemCache implements INodeFetchCacheCache {
     }
 
     const metaBuffer = await cacache.get.byDigest(this.cacheDirectory, metaInfo.integrity);
-    const metaData = JSON.parse(metaBuffer) as IParsedMetadata;
+    const metaData = JSON.parse(metaBuffer) as ParsedMetadata;
     const { bodyStreamIntegrity, empty, expiration } = metaData;
 
     delete metaData.bodyStreamIntegrity;

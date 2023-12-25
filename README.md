@@ -126,7 +126,7 @@ You may bend the rules and implement certain types of custom cache control logic
 2. Your cache may choose to ignore calls to `set()`. For example, if you want to implement a cache that only caches responses with a 2xx status code, you could simply not cache responses with other status codes.
 3. It is not strictly necessary for `get()` to return the exact same data that was passed to `set()`. For example `get()` could return a custom header in the metadata with the number of times that the response has been read from the cache.
 
-You can reference the implementations of [MemoryCache](./src/classes/caching/file_system_cache.ts) and [FileSystemCache](./src/classes/caching/file_system_cache.ts) for examples.
+You can reference the implementations of [MemoryCache](./src/classes/caching/memory_cache.ts) and [FileSystemCache](./src/classes/caching/file_system_cache.ts) for examples.
 
 ### Cache-Control: only-if-cached
 

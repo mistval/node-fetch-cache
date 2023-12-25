@@ -176,7 +176,7 @@ It is wise to include `CACHE_VERSION` as part of the cache key so that when node
 
 ### Built-In Cache Key Function
 
-node-fetch-cache exports a `calculateCacheKey()` which is the default function used to calculate a cache key string from request parameters. It may be useful for enabling some advanced use cases (especially if you want to call cache functions directly). Call `calculateCacheKey()` exactly like you would call `fetch()`:
+node-fetch-cache exports a `calculateCacheKey()` function which is the default function used to calculate a cache key string from request parameters. It may be useful for enabling some advanced use cases (especially if you want to call cache functions directly). Call `calculateCacheKey()` exactly like you would call `fetch()`:
 
 ```js
 import NodeFetchCache, {

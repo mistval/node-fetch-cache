@@ -8,3 +8,8 @@ test
 coverage
 .husky
 .env
+src/*
+*.js.map
+tsconfig.json
+.eslintrc.cjs
+commonjs

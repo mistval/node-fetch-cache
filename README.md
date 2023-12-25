@@ -161,7 +161,7 @@ It is wise to include `CACHE_VERSION` as part of the cache key so that when node
 
 ### Built-In Cache Key Function
 
-This module exports a `calculateCacheKey()` which is the default function used to calculate a cache key string from request parameters. It may be useful for enabling some advanced use cases (especially if you want to call cache functions directly). Call `calculateCacheKey()` exactly like you would call `fetch()`:
+node-fetch-cache exports a `calculateCacheKey()` which is the default function used to calculate a cache key string from request parameters. It may be useful for enabling some advanced use cases (especially if you want to call cache functions directly). Call `calculateCacheKey()` exactly like you would call `fetch()`:
 
 ```js
 import { fetchBuilder, MemoryCache, calculateCacheKey } from 'node-fetch-cache';
@@ -293,7 +293,7 @@ The answer is no. Only one request would be made, and 99 of the `fetch()` operat
 
 ### CommonJS
 
-This module supports both ESM and CommonJS. If you are using CommonJS, you can import it like so:
+node-fetch-cache supports both ESM and CommonJS. If you are using CommonJS, you can import it like so:
 
 ```js
 const fetch = require('node-fetch-cache');

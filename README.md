@@ -308,6 +308,8 @@ node-fetch-cache will support:
 
 Currently the oldest supported Node.js version is v14.14.0, which adds `fs.rmSync()` which is used by a dependency.
 
+Automated tests will be run on the current Node.js version, the oldest supported Node.js version, and the latest release of all even-numbered Node.js versions between those two.
+
 ## Bugs / Help / Feature Requests / Contributing
 
 For feature requests or help, please visit [the discussions page on GitHub](https://github.com/mistval/node-fetch-cache/discussions).

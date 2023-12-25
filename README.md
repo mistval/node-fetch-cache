@@ -23,7 +23,7 @@ The next time you `fetch('http://google.com')`, the response will be returned fr
 
 ## Basic API
 
-This module's API is a superset of `node-fetch`'s. You can consult [the node-fetch documentation](https://www.npmjs.com/package/node-fetch) for general usage. Only the extra features provided by node-fetch-cache are discussed below.
+This module's API is a superset of `node-fetch`'s. You can consult [the node-fetch documentation](https://www.npmjs.com/package/node-fetch) for its general usage. Only the additional caching features provided by node-fetch-cache are discussed below.
 
 ### Control what's cached
 

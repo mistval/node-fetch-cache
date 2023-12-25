@@ -63,13 +63,13 @@ export class FileSystemCache implements INodeFetchCacheCache {
     ]);
   }
 
-  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: Record<string, unknown>) {
+  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: NFCResponseMetadata) {
     const [bodyKey, metaKey] = getBodyAndMetaKeys(key);
 
     const metaToStore = {
       ...metaData,
-      expiration: undefined as (undefined | number),
-      bodyStreamIntegrity: undefined as (undefined | string),
+      expiration: undefined as undefined | number,
+      bodyStreamIntegrity: undefined as undefined | string,
       empty: false,
     };
 

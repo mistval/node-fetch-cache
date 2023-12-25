@@ -28,6 +28,28 @@ const JSON_BODY_URL = `${httpBinBaseUrl}/json`;
 const PNG_BODY_URL = `${httpBinBaseUrl}/image/png`;
 
 const TEXT_BODY_EXPECTED = 'User-agent: *\nDisallow: /deny\n';
+const JSON_BODY_EXPECTED = `{
+  "slideshow": {
+    "author": "Yours Truly", 
+    "date": "date of publication", 
+    "slides": [
+      {
+        "title": "Wake up to WonderWidgets!", 
+        "type": "all"
+      }, 
+      {
+        "items": [
+          "Why <em>WonderWidgets</em> are great", 
+          "Who <em>buys</em> WonderWidgets"
+        ], 
+        "title": "Overview", 
+        "type": "all"
+      }
+    ], 
+    "title": "Sample Slide Show"
+  }
+}
+`;
 
 let defaultCachedFetch: typeof FetchCache;
 let defaultCache: MemoryCache;
@@ -640,6 +662,49 @@ describe('Cache strategy tests', () => {
     response = await customCachedFetch(TEXT_BODY_URL);
     assert.strictEqual(response.returnedFromCache, false);
     assert.strictEqual(await response.text(), TEXT_BODY_EXPECTED);
+  });
+
+  it('Can use a custom cache strategy that uses the response for all response types', async () => {
+    const functionsThatUseResponse = [
+      'arrayBuffer',
+      'blob',
+      'buffer',
+      'json',
+      'text',
+      'textConverted',
+    ] as const;
+
+    await Promise.all(
+      functionsThatUseResponse.map(async functionName => {
+        const newFetch = FetchCache.create({
+          cache: new MemoryCache(),
+        });
+
+        response = await newFetch(JSON_BODY_URL, undefined, {
+          async shouldCacheResponse(response) {
+            await response[functionName]();
+            return true;
+          },
+        });
+
+        assert.strictEqual(response.returnedFromCache, false);
+
+        // Because when the json() function is used all of the whitespace in
+        // the response is lost, something a little special happens when we
+        // snipe the response body from json(). The cached response will have
+        // the whitespace stripped out, even though the original response may
+        // not have. This may cause issues for some extremely unusual use
+        // cases, but it's probably fine.
+        if (functionName === 'json') {
+          assert.strictEqual(
+            await response.text(),
+            JSON.stringify(JSON.parse(JSON_BODY_EXPECTED)),
+          );
+        } else {
+          assert.strictEqual(await response.text(), JSON_BODY_EXPECTED);
+        }
+      }),
+    );
   });
 });
 

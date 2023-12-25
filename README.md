@@ -125,7 +125,7 @@ type INodeFetchCacheCache = {
 };
 ```
 
-The `set()` function must accept a key (which will be a string), a response body stream, and a metadata object (which will be a JSON-serializable JS object). It should store these in such a way that it can return them later via the `get()` function. It should return the same metadata and a *new, unread* body stream.
+The `set()` function must accept a key (which will be a string), a response body stream, and a metadata object (which will be a JSON-serializable JS object). It should store these in such a way that the cache instance can return them later via the `get()` function. The `set()` function should return the same metadata that was passed in and a *new, unread* body stream with the same content as the stream that was passed in.
 
 The `get()` function should return the cached body and metadata that had been set via the `set()` function, or `undefined` if no cached value is found.
 
@@ -133,7 +133,7 @@ The `remove()` function should remove the cached value associated with the given
 
 You may bend the rules and implement certain types of custom cache control logic in your custom cache if you'd like to. Specifically:
 1. Your cache may choose to remove values from the cache arbitrarily (for example if you want to implement a TTL option like `MemoryCache` and `FileSystemCache` do).
-2. Your cache may choose to ignore calls to `set()`. For example, if you want to implement a cache that only caches responses with a 2xx status code, you could simply not cache responses with other status codes.
+2. Your cache may choose not to honor `set()` operations. For example, if you want to implement a cache that only caches responses that have a 2xx status code, your `set()` function could choose to discard responses with other status codes without inserting them into the cache.
 3. It is not strictly necessary for `get()` to return the exact same data that was passed to `set()`. For example `get()` could return a custom header in the metadata with the number of times that the response has been read from the cache.
 
 You can reference the implementations of [MemoryCache](./src/classes/caching/memory_cache.ts) and [FileSystemCache](./src/classes/caching/file_system_cache.ts) for examples.

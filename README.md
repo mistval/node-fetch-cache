@@ -62,7 +62,7 @@ console.log(await response.text());
 
 If you provide options in both ways, then the options are merged together, with those passed to `fetch()` taking precedence.
 
-## Cache to Disk
+### Cache to Disk
 
 By default responses are cached in memory, but you can also cache to files on disk. This allows the cache to survive the process exiting, allows multiple processes to share the same cache, and may reduce memory usage.
 
@@ -82,7 +82,7 @@ Options:
 }
 ```
 
-## Cache in Memory with a TTL
+### Cache in Memory with a TTL
 
 If you would like to cache in memory and automatically eject responses after a certain amount of time (in ms), you can create a custom instance of the `MemoryCache` class and use that:
 
@@ -93,7 +93,7 @@ const fetch = NodeFetchCache.create({ cache: new MemoryCache({ ttl: 1000 }) });
 
 Note that the default cache is a globally shared instance of `MemoryCache` with no TTL.
 
-## Implement your Own Cache
+### Implement your Own Cache
 
 If neither `MemoryCache` nor `FileSystemCache` meet your needs, you can implement your own cache. You can use any object that implements the following interface:
 

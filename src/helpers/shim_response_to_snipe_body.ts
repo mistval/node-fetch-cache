@@ -6,11 +6,11 @@ import { Response as NodeFetchResponse } from 'node-fetch';
  * consumes the response body in their `shouldCacheResponse` delegate.
  * The response body can only be consumed once, so if the user consumes
  * it then we wouldn't be able to read it again to write it to the cache.
- * This shim allows us to intercept the response body in that case and repackage
+ * This shim allows us to intercept the parsed body in that case and repackage
  * it into a fresh stream to cache. This of course doesn't work if the user
  * reads response.body directly, but that's not going to be likely.
  * My initial inclination was to use Response.prototype.clone() for this,
- * but it has issues with backpressure. */
+ * but the problems with backpressure seem significant. */
 export function shimResponseToSnipeBody(
   response: NodeFetchResponse,
   replaceBodyStream: (strean: NodeJS.ReadableStream) => void,

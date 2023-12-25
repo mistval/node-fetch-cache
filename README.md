@@ -70,7 +70,9 @@ Use the `FileSystemCache` class like so:
 
 ```js
 import NodeFetchCache, { FileSystemCache } from 'node-fetch-cache';
-const fetch = NodeFetchCache.create({ cache: new FileSystemCache(options) });
+const fetch = NodeFetchCache.create({
+  cache: new FileSystemCache(options),
+});
 ```
 
 Options:
@@ -140,7 +142,7 @@ const response = await fetch('https://google.com', {
 });
 
 if (response.isCacheMiss) {
-  // No response was found in the cache
+  console.log('No response was found in the cache!');
 }
 ```
 
@@ -169,11 +171,10 @@ It is wise to include `CACHE_VERSION` as part of the cache key so that when node
 node-fetch-cache exports a `calculateCacheKey()` which is the default function used to calculate a cache key string from request parameters. It may be useful for enabling some advanced use cases (especially if you want to call cache functions directly). Call `calculateCacheKey()` exactly like you would call `fetch()`:
 
 ```js
-import { fetchBuilder, MemoryCache, calculateCacheKey } from 'node-fetch-cache';
+import NodeFetchCache, { MemoryCache, calculateCacheKey } from 'node-fetch-cache';
 
 const cache = new MemoryCache();
-const fetch = fetchBuilder.withCache(cache);
-
+const fetch = NodeFetchCache.create({ cache });
 const rawCacheData = await cache.get(calculateCacheKey('https://google.com'));
 ```
 
@@ -212,7 +213,9 @@ To this:
 
 ```js
 import NodeFetchCache, { FileSystemCache } from 'node-fetch-cache';
-const fetch = NodeFetchCache.create({ cache: new FileSystemCache(options) });
+const fetch = NodeFetchCache.create({
+  cache: new FileSystemCache(options),
+});
 ```
 
 ### Cache-Control: only-if-cached
@@ -227,7 +230,7 @@ const response = await fetch('https://google.com', {
 });
 
 if (response === undefined) {
-  // No response was found in the cache
+  console.log('No response was found in the cache!');
 }
 ```
 
@@ -241,7 +244,7 @@ const response = await fetch('https://google.com', {
 });
 
 if (response.isCacheMiss) {
-  // No response was found in the cache
+  console.log('No response was found in the cache!');
 }
 ```
 
@@ -284,17 +287,20 @@ Streams don't quite play nice with the concept of caching based on request chara
 
 ### Request Concurrency
 
-Requests with the same cache key are queued. For example, you might wonder if making the same request 100 times simultaneously would result in 100 HTTP requests:
+Requests with the same cache key are globally queued. For example, you might wonder if making the same request 100 times simultaneously would result in 100 HTTP requests:
 
 ```js
 import fetch from 'node-fetch-cache';
 
-await Promise.all(
+const responses = await Promise.all(
   Array(100).fill().map(() => fetch('https://google.com')),
 );
+
+const fromCache = responses.filter(r => r.returnedFromCache);
+console.log('Number of responses served from the cache:', fromCache.length);
 ```
 
-The answer is no. Only one request would be made, and 99 of the `fetch()` operations will read the response from the cache.
+The answer is no. Only one request would be made, and 99 of the `fetch()` operations will read the response from the cache, which can be seen by examining the `returnedFromCache` property on the responses. This synchronization is provided by [locko](https://www.npmjs.com/package/locko).
 
 ### CommonJS
 

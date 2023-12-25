@@ -2,7 +2,7 @@
 
 [![codecov](https://codecov.io/github/mistval/node-fetch-cache/graph/badge.svg?token=UYA5PDNZ0J)](https://codecov.io/github/mistval/node-fetch-cache) ![workflow status](https://github.com/mistval/node-fetch-cache/actions/workflows/ci.yml/badge.svg)
 
-node-fetch with caching of responses.
+[node-fetch](https://www.npmjs.com/package/node-fetch) with caching of responses.
 
 The first fetch with any given arguments will result in an HTTP request and any subsequent fetch with the same arguments will read the response from the cache.
 
@@ -10,7 +10,7 @@ By default responses are cached in memory, but you can also cache to files on di
 
 ## Usage
 
-Import it and use it the same way you would use node-fetch:
+Import it and use it the same way you would use [node-fetch](https://www.npmjs.com/package/node-fetch):
 
 ```js
 import fetch from 'node-fetch-cache';

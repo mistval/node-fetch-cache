@@ -37,7 +37,8 @@ By `create()`ing a custom fetch instance:
 import NodeFetchCache from 'node-fetch-cache';
 
 const fetch = NodeFetchCache.create({
-  shouldCacheResponse: (response) => response.ok, // Only cache responses with a 2xx status code
+  // Only cache responses with a 2xx status code
+  shouldCacheResponse: (response) => response.ok,
 });
 
 const response = await fetch('http://google.com')
@@ -53,7 +54,8 @@ const response = await fetch(
   'http://google.com',
   undefined,
   {
-    shouldCacheResponse: (response) => response.ok, // Only cache responses with a 2xx status code
+    // Only cache responses with a 2xx status code
+    shouldCacheResponse: (response) => response.ok,
   },
 );
 
@@ -70,6 +72,7 @@ Use the `FileSystemCache` class like so:
 
 ```js
 import NodeFetchCache, { FileSystemCache } from 'node-fetch-cache';
+
 const fetch = NodeFetchCache.create({
   cache: new FileSystemCache(options),
 });
@@ -79,8 +82,13 @@ Options:
 
 ```js
 {
-  cacheDirectory: '/my/cache/directory/path', // Specify where to keep the cache. If undefined, '.cache' is used by default. If this directory does not exist, it will be created.
-  ttl: 1000, // Time to live. How long (in ms) responses remain cached before being automatically ejected. If undefined, responses are never automatically ejected from the cache.
+  // Specify where to keep the cache. If undefined, '.cache' is used by default.
+  // If this directory does not exist, it will be created.
+  cacheDirectory: '/my/cache/directory/path',
+  // Time to live. How long (in ms) responses remain cached before being
+  // automatically ejected. If undefined, responses are never
+  // automatically ejected from the cache.
+  ttl: 1000,
 }
 ```
 
@@ -171,7 +179,10 @@ It is wise to include `CACHE_VERSION` as part of the cache key so that when node
 node-fetch-cache exports a `calculateCacheKey()` which is the default function used to calculate a cache key string from request parameters. It may be useful for enabling some advanced use cases (especially if you want to call cache functions directly). Call `calculateCacheKey()` exactly like you would call `fetch()`:
 
 ```js
-import NodeFetchCache, { MemoryCache, calculateCacheKey } from 'node-fetch-cache';
+import NodeFetchCache, {
+  MemoryCache,
+  calculateCacheKey
+} from 'node-fetch-cache';
 
 const cache = new MemoryCache();
 const fetch = NodeFetchCache.create({ cache });
@@ -194,7 +205,7 @@ await response.ejectFromCache();
 
 ## Upgrading node-fetch-cache v3 -> v4
 
-The v4 version of this package has several breaking changes and new features. Please review the below details if you are upgrading from v3.
+The v4 version of node-fetch-cache has several breaking changes and new features. Please review the below details if you are upgrading from v3.
 
 ### Node.js v14.14.0 is now the lowest supported Node.js version
 
@@ -213,6 +224,7 @@ To this:
 
 ```js
 import NodeFetchCache, { FileSystemCache } from 'node-fetch-cache';
+
 const fetch = NodeFetchCache.create({
   cache: new FileSystemCache(options),
 });
@@ -270,9 +282,11 @@ fetch('http://google.com')
 To this:
 
 ```js
-fetch('http://google.com', {
-  shouldCacheResponse: response => response.ok,
-}).then(response => {
+fetch(
+  'http://google.com',
+  undefined,
+  { shouldCacheResponse: response => response.ok },
+).then(response => {
   return response.text();
 }).then(text => console.log(text));
 ```

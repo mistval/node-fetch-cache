@@ -29,5 +29,8 @@ export type INodeFetchCacheCache = {
     metaData: NFCResponseMetadata;
   } | undefined>;
   remove(key: string): Promise<void | unknown>;
-  set(key: string, bodyStream: NodeJS.ReadableStream, metaData: Record<string, unknown>): Promise<void | unknown>;
+  set(key: string, bodyStream: NodeJS.ReadableStream, metaData: Record<string, unknown>): Promise<{
+    bodyStream: NodeJS.ReadableStream;
+    metaData: NFCResponseMetadata;
+  }>;
 };

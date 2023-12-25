@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types.js';
@@ -50,5 +51,10 @@ export class MemoryCache implements INodeFetchCacheCache {
     if (typeof this.ttl === 'number') {
       this.keyTimeout.updateTimeout(key, this.ttl, async () => this.remove(key));
     }
+
+    const cachedResult = await this.get(key);
+    assert(cachedResult, 'Failed to cache response');
+
+    return cachedResult;
   }
 }

@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
 import cacache from 'cacache';
@@ -22,7 +23,7 @@ export class FileSystemCache implements INodeFetchCacheCache {
     this.cacheDirectory = options.cacheDirectory ?? '.cache';
   }
 
-  async get(key: string) {
+  async get(key: string, options?: { ignoreExpiration?: boolean }) {
     const [, metaKey] = getBodyAndMetaKeys(key);
 
     const metaInfo = await cacache.get.info(this.cacheDirectory, metaKey);
@@ -39,7 +40,7 @@ export class FileSystemCache implements INodeFetchCacheCache {
     delete metaData.empty;
     delete metaData.expiration;
 
-    if (expiration && expiration < Date.now()) {
+    if (!options?.ignoreExpiration && expiration && expiration < Date.now()) {
       return undefined;
     }
 
@@ -96,5 +97,9 @@ export class FileSystemCache implements INodeFetchCacheCache {
 
     const metaBuffer = Buffer.from(JSON.stringify(metaToStore));
     await cacache.put(this.cacheDirectory, metaKey, metaBuffer);
+    const cachedData = await this.get(key, { ignoreExpiration: true });
+    assert(cachedData, 'Failed to cache response');
+
+    return cachedData;
   }
 }

@@ -7,6 +7,7 @@ import type { CacheStrategy, FetchInit, FetchResource, INodeFetchCacheCache } fr
 import { calculateCacheKey } from './helpers/cache_keys.js';
 import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
 import { hasOnlyIfCachedOption } from './helpers/headers.js';
+import { shimResponseToSnipeBody } from './helpers/shim_response_to_snipe_body.js';
 
 type CacheKeyCalculator = typeof calculateCacheKey;
 
@@ -54,20 +55,26 @@ async function getResponse(fetchCustomization: NFCCustomizations, resource: Fetc
 
     const fetchResponse = await fetch(resource, init);
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
+    let bodyStream = fetchResponse.body;
 
-    const responseClone = fetchResponse.clone();
-    const shouldCache = await fetchCustomization.shouldCacheResponse(responseClone);
+    shimResponseToSnipeBody(fetchResponse, stream => {
+      bodyStream = stream;
+    });
+
+    const shouldCache = await fetchCustomization.shouldCacheResponse(fetchResponse);
 
     if (shouldCache) {
-      await fetchCustomization.cache.set(
+      const cacheSetResult = await fetchCustomization.cache.set(
         cacheKey,
-        (responseClone.bodyUsed ? fetchResponse.clone() : responseClone).body,
+        bodyStream,
         serializedMeta,
       );
+
+      bodyStream = cacheSetResult.bodyStream;
     }
 
     return new NFCResponse(
-      fetchResponse.body,
+      bodyStream,
       serializedMeta,
       ejectSelfFromCache,
       false,

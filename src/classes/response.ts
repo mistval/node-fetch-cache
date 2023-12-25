@@ -1,12 +1,12 @@
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
-import { Response } from 'node-fetch';
+import { Response as NodeFetchResponse } from 'node-fetch';
 import { NFCResponseMetadata } from '../types.js';
 
-const responseInternalSymbol = Object.getOwnPropertySymbols(new Response())[1];
+const responseInternalSymbol = Object.getOwnPropertySymbols(new NodeFetchResponse())[1];
 
-export class NFCResponse extends Response {
-  static serializeMetaFromNodeFetchResponse(response: Response): NFCResponseMetadata {
+export class NFCResponse extends NodeFetchResponse {
+  static serializeMetaFromNodeFetchResponse(response: NodeFetchResponse): NFCResponseMetadata {
     const metaData = {
       url: response.url,
       status: response.status,

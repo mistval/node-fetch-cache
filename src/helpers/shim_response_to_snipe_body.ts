@@ -32,28 +32,28 @@ export function shimResponseToSnipeBody(
   const origJson = response.json;
   response.json = async function () {
     const json = await origJson.call(this) as unknown;
-    replaceBodyStream(Readable.from(JSON.stringify(json)));
+    replaceBodyStream(Readable.from(Buffer.from(JSON.stringify(json))));
     return json;
   };
 
   const origText = response.text;
   response.text = async function () {
     const text = await origText.call(this);
-    replaceBodyStream(Readable.from(text));
+    replaceBodyStream(Readable.from(Buffer.from(text)));
     return text;
   };
 
   const origBlob = response.blob;
   response.blob = async function () {
     const blob = await origBlob.call(this);
-    replaceBodyStream(Readable.from(await blob.text()));
+    replaceBodyStream(Readable.from(Buffer.from(await blob.text())));
     return blob;
   };
 
   const origTextConverted = response.textConverted;
   response.textConverted = async function () {
     const textConverted = await origTextConverted.call(this);
-    replaceBodyStream(Readable.from(textConverted));
+    replaceBodyStream(Readable.from(Buffer.from(textConverted)));
     return textConverted;
   };
 }

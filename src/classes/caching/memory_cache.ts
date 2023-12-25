@@ -8,7 +8,7 @@ async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
   const chunks: Buffer[] = [];
   return new Promise((resolve, reject) => {
     stream.on('data', chunk =>
-      chunks.push(chunk instanceof Buffer ? chunk : Buffer.from(chunk as Buffer)),
+      chunks.push(chunk as Buffer),
     ).on('error', error => {
       reject(error);
     }).on('end', () => {

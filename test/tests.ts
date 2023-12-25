@@ -26,6 +26,7 @@ const THREE_HUNDRED_TWO_URL = `${httpBinBaseUrl}/status/302`;
 const TEXT_BODY_URL = `${httpBinBaseUrl}/robots.txt`;
 const JSON_BODY_URL = `${httpBinBaseUrl}/json`;
 const PNG_BODY_URL = `${httpBinBaseUrl}/image/png`;
+const HUNDRED_THOUSAND_BYTES_URL = `${httpBinBaseUrl}/stream-bytes/100000?chunk_size=10000`;
 
 const TEXT_BODY_EXPECTED = 'User-agent: *\nDisallow: /deny\n';
 const JSON_BODY_EXPECTED = `{
@@ -482,6 +483,24 @@ describe('Data tests', () => {
 
     // One should be false, the other should be true
     assert(response1.returnedFromCache !== response.returnedFromCache);
+  });
+
+  it('Can stream a hundred thousand bytes to a file in ten chunks', async () => {
+    defaultCachedFetch = FetchCache.create({ cache: new FileSystemCache() });
+
+    const initialResponse = await defaultCachedFetch(HUNDRED_THOUSAND_BYTES_URL);
+    assert(initialResponse.ok);
+    assert(!initialResponse.returnedFromCache);
+
+    const initialResponseBuffer = await initialResponse.buffer();
+    assert.equal(initialResponseBuffer.length, 100_000);
+
+    const secondResponse = await defaultCachedFetch(HUNDRED_THOUSAND_BYTES_URL);
+    assert(secondResponse.ok);
+    assert(secondResponse.returnedFromCache);
+
+    const secondResponseBuffer = await secondResponse.buffer();
+    assert.equal(secondResponseBuffer.length, 100_000);
   });
 }).timeout(10_000);
 

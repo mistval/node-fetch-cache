@@ -12,13 +12,17 @@ function headerValueContainsOnlyIfCached(cacheControlValue: string | undefined) 
     .includes('only-if-cached');
 }
 
+function headerEntryIsCacheControlOnlyIfCached(pair: [string, string]) {
+  return headerKeyIsCacheControl(pair[0]) && headerValueContainsOnlyIfCached(pair[1]);
+}
+
 export function hasOnlyIfCachedOption(resource: FetchResource, init: FetchInit) {
-  if (
-    Object.entries(init?.headers ?? {})
-      .some(
-        ([key, value]) => headerKeyIsCacheControl(key) && headerValueContainsOnlyIfCached(value as string | undefined),
-      )
-  ) {
+  const initHeaderEntries = Object.entries(init?.headers ?? {});
+  const initHeaderEntriesContainsCacheControlOnlyIfCached = initHeaderEntries.some(
+    pair => headerEntryIsCacheControlOnlyIfCached(pair as [string, string]),
+  );
+
+  if (initHeaderEntriesContainsCacheControlOnlyIfCached) {
     return true;
   }
 

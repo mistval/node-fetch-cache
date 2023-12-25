@@ -27,9 +27,15 @@ function getUrlFromRequestArguments(resource: NodeFetchRequest | string) {
   return resource;
 }
 
-async function getResponse(fetchCustomization: NFCCustomizations, resource: FetchResource, init: FetchInit) {
+async function getResponse(
+  fetchCustomization: NFCCustomizations,
+  resource: FetchResource,
+  init: FetchInit,
+) {
   if (typeof resource !== 'string' && !(resource instanceof NodeFetchRequest)) {
-    throw new TypeError('The first argument to fetch must be either a string or a node-fetch Request instance');
+    throw new TypeError(
+      'The first argument to fetch must be either a string or a node-fetch Request instance',
+    );
   }
 
   const cacheKey = fetchCustomization.calculateCacheKey(resource, init);

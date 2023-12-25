@@ -4,15 +4,12 @@ import { Readable } from 'stream';
 import cacache from 'cacache';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types';
 
-type ParsedMetadata = {
-  bodyStreamIntegrity?: string;
-  empty?: boolean;
-  expiration?: number;
+type StoredMetadata = {
+  emptyBody?: boolean;
+  expiration?: number | undefined;
 } & NFCResponseMetadata;
 
-function getBodyAndMetaKeys(key: string) {
-  return [`${key}body`, `${key}meta`] as const;
-}
+const emptyBuffer = Buffer.alloc(0);
 
 export class FileSystemCache implements INodeFetchCacheCache {
   private readonly ttl?: number | undefined;
@@ -24,62 +21,63 @@ export class FileSystemCache implements INodeFetchCacheCache {
   }
 
   async get(key: string, options?: { ignoreExpiration?: boolean }) {
-    const [, metaKey] = getBodyAndMetaKeys(key);
+    const cachedObjectInfo = await cacache.get.info(this.cacheDirectory, key);
 
-    const metaInfo = await cacache.get.info(this.cacheDirectory, metaKey);
-
-    if (!metaInfo) {
+    if (!cachedObjectInfo) {
       return undefined;
     }
 
-    const metaBuffer = await cacache.get.byDigest(this.cacheDirectory, metaInfo.integrity);
-    const metaData = JSON.parse(metaBuffer) as ParsedMetadata;
-    const { bodyStreamIntegrity, empty, expiration } = metaData;
-
-    delete metaData.bodyStreamIntegrity;
-    delete metaData.empty;
-    delete metaData.expiration;
+    const storedMetadata = cachedObjectInfo.metadata as StoredMetadata;
+    const { emptyBody, expiration, ...nfcMetadata } = storedMetadata;
 
     if (!options?.ignoreExpiration && expiration && expiration < Date.now()) {
       return undefined;
     }
 
-    const bodyStream = Boolean(empty) || !bodyStreamIntegrity
-      ? Readable.from(Buffer.alloc(0))
-      : cacache.get.stream.byDigest(this.cacheDirectory, bodyStreamIntegrity);
+    if (emptyBody) {
+      return {
+        bodyStream: Readable.from(emptyBuffer),
+        metaData: storedMetadata,
+      };
+    }
 
     return {
-      bodyStream,
-      metaData,
+      bodyStream: cacache.get.stream.byDigest(this.cacheDirectory, cachedObjectInfo.integrity),
+      metaData: nfcMetadata,
     };
   }
 
   async remove(key: string) {
-    const [bodyKey, metaKey] = getBodyAndMetaKeys(key);
-
-    return Promise.all([
-      cacache.rm.entry(this.cacheDirectory, bodyKey),
-      cacache.rm.entry(this.cacheDirectory, metaKey),
-    ]);
+    return cacache.rm.entry(this.cacheDirectory, key);
   }
 
   async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: NFCResponseMetadata) {
-    const [bodyKey, metaKey] = getBodyAndMetaKeys(key);
-
     const metaToStore = {
       ...metaData,
-      expiration: undefined as undefined | number,
-      bodyStreamIntegrity: undefined as undefined | string,
-      empty: false,
+      expiration: undefined as (undefined | number),
+      emptyBody: false,
     };
 
     if (typeof this.ttl === 'number') {
       metaToStore.expiration = Date.now() + this.ttl;
     }
 
+    await this.writeDataToCache(key, metaToStore, bodyStream);
+
+    const cachedData = await this.get(key, { ignoreExpiration: true });
+    assert(cachedData, 'Failed to cache response');
+
+    return cachedData;
+  }
+
+  private async writeDataToCache(
+    key: string,
+    storedMetadata: StoredMetadata,
+    stream: NodeJS.ReadableStream,
+  ) {
     try {
-      metaToStore.bodyStreamIntegrity = await new Promise((fulfill, reject) => {
-        bodyStream.pipe(cacache.put.stream(this.cacheDirectory, bodyKey))
+      await new Promise((fulfill, reject) => {
+        stream.pipe(cacache.put.stream(this.cacheDirectory, key, { metadata: storedMetadata }))
           .on('integrity', (i: string) => {
             fulfill(i);
           })
@@ -92,14 +90,8 @@ export class FileSystemCache implements INodeFetchCacheCache {
         throw error as Error;
       }
 
-      metaToStore.empty = true;
+      storedMetadata.emptyBody = true;
+      await cacache.put(this.cacheDirectory, key, emptyBuffer, { metadata: storedMetadata });
     }
-
-    const metaBuffer = Buffer.from(JSON.stringify(metaToStore));
-    await cacache.put(this.cacheDirectory, metaKey, metaBuffer);
-    const cachedData = await this.get(key, { ignoreExpiration: true });
-    assert(cachedData, 'Failed to cache response');
-
-    return cachedData;
   }
 }

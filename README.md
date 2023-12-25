@@ -328,3 +328,5 @@ For feature requests or help, please visit [the discussions page on GitHub](http
 For bug reports, please file an issue on [the issues page on GitHub](https://github.com/mistval/node-fetch-cache/issues).
 
 Contributions welcome! Please open a [pull request on GitHub](https://github.com/mistval/node-fetch-cache/pulls) with your changes. You can run them by me first on [the discussions page](https://github.com/mistval/node-fetch-cache/discussions) if you'd like. Please add tests for any changes.
+
+To accelerate tests, run `docker run -p 3000:80 kennethreitz/httpbin` and set an environment variable: `HTTP_BIN_BASE_URL=http://localhost:3000` (`.env` file is supported) before running the tests with `npm test`.

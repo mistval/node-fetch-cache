@@ -99,20 +99,23 @@ If neither `MemoryCache` nor `FileSystemCache` meet your needs, you can implemen
 
 ```ts
 type INodeFetchCacheCache = {
-  set(
-    key: string,
-    bodyStream: NodeJS.ReadableStream,
-    metaData: NFCResponseMetadata
-  ): Promise<void>;
   get(key: string): Promise<{
     bodyStream: NodeJS.ReadableStream;
     metaData: NFCResponseMetadata;
   } | undefined>;
-  remove(key: string): Promise<void>;
+  set(
+    key: string,
+    bodyStream: NodeJS.ReadableStream,
+    metaData: NFCResponseMetadata
+  ): Promise<{
+    bodyStream: NodeJS.ReadableStream;
+    metaData: NFCResponseMetadata;
+  }>;
+  remove(key: string): Promise<void | unknown>;
 };
 ```
 
-The `set()` function must accept a key (which will be a string), a response body stream, and a metadata object (which will be a JSON-serializable JS object). It should store these in such a way that it can return them later via the `get()` function.
+The `set()` function must accept a key (which will be a string), a response body stream, and a metadata object (which will be a JSON-serializable JS object). It should store these in such a way that it can return them later via the `get()` function. It should return the same metadata and a *new, unread* body stream.
 
 The `get()` function should return the cached body and metadata that had been set via the `set()` function, or `undefined` if no cached value is found.
 

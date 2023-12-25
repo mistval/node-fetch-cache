@@ -16,8 +16,7 @@ export class NFCResponse extends NodeFetchResponse {
       headers: response.headers.raw(),
       size: response.size,
       timeout: response.timeout,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      counter: (response as any)[responseInternalSymbol!].counter,
+      counter: (response as any)[responseInternalSymbol!].counter as number,
     };
 
     return metaData;

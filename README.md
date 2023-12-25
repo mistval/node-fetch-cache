@@ -192,7 +192,7 @@ The v4 version of this package has several breaking changes and new features. Pl
 
 ### Node.js v14.14.0 is now the lowest supported Node.js version
 
-v4 will not work at all on Node.js versions below v14.14.0. Automated tests are run on v14.14.0, and the latest releases of v14, v16, v18, v20, and v21.
+v4 will not work at all on Node.js versions below v14.14.0.
 
 ### Specifying a Cache
 
@@ -298,6 +298,15 @@ node-fetch-cache supports both ESM and CommonJS. If you are using CommonJS, you 
 ```js
 const fetch = require('node-fetch-cache');
 ```
+
+### Node.js Support Policy
+
+node-fetch-cache will support:
+* The current Node.js version
+* All non-EOL LTS Node.js versions
+* In addition, as far back as is technically easy
+
+Currently the oldest supported Node.js version is v14.14.0, which adds `fs.rmSync()` which is used by a dependency.
 
 ## Bugs / Help / Feature Requests / Contributing
 

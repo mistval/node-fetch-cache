@@ -693,8 +693,7 @@ describe('Cache strategy tests', () => {
         // the response is lost, something a little special happens when we
         // snipe the response body from json(). The cached response will have
         // the whitespace stripped out, even though the original response may
-        // not have. This may cause issues for some extremely unusual use
-        // cases, but it's probably fine.
+        // not have. This may cause issues for some unusual use cases.
         if (functionName === 'json') {
           assert.strictEqual(
             await response.text(),

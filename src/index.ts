@@ -39,8 +39,23 @@ async function getResponse(
   }
 
   const cacheKey = fetchCustomization.calculateCacheKey(resource, init);
-
   const ejectSelfFromCache = async () => fetchCustomization.cache.remove(cacheKey);
+
+  const cachedValue = await fetchCustomization.cache.get(cacheKey);
+  if (cachedValue) {
+    return new NFCResponse(
+      cachedValue.bodyStream,
+      cachedValue.metaData,
+      ejectSelfFromCache,
+      true,
+    );
+  }
+
+  if (hasOnlyIfCachedOption(resource, init)) {
+    return NFCResponse.cacheMissResponse(
+      getUrlFromRequestArguments(resource),
+    );
+  }
 
   return locko.doWithLock(cacheKey, async () => {
     const cachedValue = await fetchCustomization.cache.get(cacheKey);
@@ -50,12 +65,6 @@ async function getResponse(
         cachedValue.metaData,
         ejectSelfFromCache,
         true,
-      );
-    }
-
-    if (hasOnlyIfCachedOption(resource, init)) {
-      return NFCResponse.cacheMissResponse(
-        getUrlFromRequestArguments(resource),
       );
     }
 

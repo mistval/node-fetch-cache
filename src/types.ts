@@ -38,3 +38,10 @@ export type INodeFetchCacheCache = {
   }>;
   remove(key: string): Promise<void | unknown>;
 };
+
+export type ISynchronizationStrategy = {
+  doWithExclusiveLock<TReturnType>(
+    key: string,
+    action: () => Promise<TReturnType>,
+  ): Promise<TReturnType>;
+};

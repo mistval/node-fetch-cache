@@ -203,6 +203,45 @@ const response = await fetch('http://google.com');
 await response.ejectFromCache();
 ```
 
+### Request Synchronization Strategy
+
+You might wonder if making the same request many times simultaneously might result in many concurrent HTTP requests as they all miss the cache at the same time. For example:
+
+```js
+import fetch from 'node-fetch-cache';
+
+const responses = await Promise.all(
+  Array(100).fill().map(() => fetch('https://google.com')),
+);
+
+const fromCache = responses.filter(r => r.returnedFromCache);
+console.log('Number of responses served from the cache:', fromCache.length);
+```
+
+This depends on the request synchronization strategy used. By default, if you're using `MemoryCache`, or you're using `FileSystemCache` and *not sharing the cache among multiple processes*, then the answer is no. Only one HTTP request will be made and the other 99 requests will read the response from the cache. This is thanks to the default `LockoSynchronizationStrategy` which provides efficient in-process synchronization.
+
+You can provide your own synchronization strategy and you may wish to do so if you need to synchronize requests among multiple processes (potentially across multiple physical hosts). A custom synchronization strategy should implement the `ISynchronizationStrategy` interface:
+
+```ts
+type ISynchronizationStrategy = {
+  doWithExclusiveLock<TReturnType>(
+    key: string,
+    action: () => Promise<TReturnType>,
+  ): Promise<TReturnType>;
+};
+```
+
+And it should ensure that for any given `key`, `action`s are queued and are not executed in parallel.
+
+You can provide a custom synchronization strategy the same way you provide other options:
+
+```js
+const fetch = NodeFetchCache.create({
+  cache: new FileSystemCache(options),
+  synchronizationStrategy: new MySynchronizationStrategy(),
+});
+```
+
 ## Upgrading node-fetch-cache v3 -> v4
 
 The v4 version of node-fetch-cache has several breaking changes and new features. Please review the below details if you are upgrading from v3.
@@ -298,23 +337,6 @@ fetch(
 node-fetch-cache does not support `Stream` request bodies, except for `fs.ReadStream`. And when using `fs.ReadStream`, the cache key is generated based only on the path of the stream, not its content. That means if you stream `/my/desktop/image.png` twice, you will get a cached response the second time, **even if the content of image.png has changed**.
 
 Streams don't quite play nice with the concept of caching based on request characteristics, because we would have to read the stream to the end to find out what's in it and hash it into a proper cache key.
-
-### Request Concurrency
-
-Requests with the same cache key are globally queued. For example, you might wonder if making the same request 100 times simultaneously would result in 100 HTTP requests:
-
-```js
-import fetch from 'node-fetch-cache';
-
-const responses = await Promise.all(
-  Array(100).fill().map(() => fetch('https://google.com')),
-);
-
-const fromCache = responses.filter(r => r.returnedFromCache);
-console.log('Number of responses served from the cache:', fromCache.length);
-```
-
-The answer is no. Only one request would be made, and 99 of the `fetch()` operations will read the response from the cache, which can be seen by examining the `returnedFromCache` property on the responses. This synchronization is provided by [locko](https://www.npmjs.com/package/locko).
 
 ### CommonJS
 

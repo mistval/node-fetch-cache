@@ -1,18 +1,25 @@
 import fetch, { Request as NodeFetchRequest } from 'node-fetch';
 import FormData from 'form-data';
-import locko from 'locko';
 import { NFCResponse } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
-import type { CacheStrategy, FetchInit, FetchResource, INodeFetchCacheCache } from './types.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';
 import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
 import { hasOnlyIfCachedOption } from './helpers/headers.js';
 import { shimResponseToSnipeBody } from './helpers/shim_response_to_snipe_body.js';
+import { LockoSynchronizationStrategy } from './classes/locko_synchronization_strategy.js';
+import type {
+  CacheStrategy,
+  FetchInit,
+  FetchResource,
+  INodeFetchCacheCache,
+  ISynchronizationStrategy,
+} from './types.js';
 
 type CacheKeyCalculator = typeof calculateCacheKey;
 
 type NFCCustomizations = {
   cache: INodeFetchCacheCache;
+  synchronizationStrategy: ISynchronizationStrategy;
   calculateCacheKey: CacheKeyCalculator;
   shouldCacheResponse: CacheStrategy;
 };
@@ -57,7 +64,7 @@ async function getResponse(
     );
   }
 
-  return locko.doWithLock(cacheKey, async () => {
+  return fetchCustomization.synchronizationStrategy.doWithExclusiveLock(cacheKey, async () => {
     const cachedValue = await fetchCustomization.cache.get(cacheKey);
     if (cachedValue) {
       return new NFCResponse(
@@ -100,8 +107,9 @@ async function getResponse(
 const globalMemoryCache = new MemoryCache();
 
 function create(creationOptions: NFCOptions) {
-  const fetchOptions = {
+  const fetchOptions: NFCCustomizations = {
     cache: creationOptions.cache ?? globalMemoryCache,
+    synchronizationStrategy: creationOptions.synchronizationStrategy ?? new LockoSynchronizationStrategy(),
     shouldCacheResponse: creationOptions.shouldCacheResponse ?? (() => true),
     calculateCacheKey: creationOptions.calculateCacheKey ?? calculateCacheKey,
   };
@@ -146,4 +154,5 @@ export {
   type INodeFetchCacheCache,
   type FetchResource,
   type FetchInit,
+  type ISynchronizationStrategy,
 };

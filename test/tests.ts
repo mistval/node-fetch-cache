@@ -10,7 +10,15 @@ import { Agent } from 'http';
 import { rimraf } from 'rimraf';
 import FormData from 'form-data';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
-import FetchCache, { MemoryCache, FileSystemCache, cacheStrategies, FetchResource, NFCResponse, calculateCacheKey } from '../src/index.js';
+import FetchCache, {
+  MemoryCache,
+  FileSystemCache,
+  cacheStrategies,
+  FetchResource,
+  NFCResponse,
+  calculateCacheKey,
+  ISynchronizationStrategy,
+} from '../src/index.js';
 
 const httpBinBaseUrl = process.env['HTTP_BIN_BASE_URL'] ?? 'https://httpbin.org';
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -336,7 +344,7 @@ describe('Cache tests', () => {
     const agent = new Agent();
     (agent as any).agent = agent;
 
-    await defaultCachedFetch('http://httpbin.org/status/200', { agent });
+    await defaultCachedFetch(TWO_HUNDRED_URL, { agent });
   });
 
   it('Works with a TTL of 0', async () => {
@@ -477,12 +485,31 @@ describe('Data tests', () => {
 
   it('Uses cache even if you make multiple requests at the same time', async () => {
     const [response1, response] = await Promise.all([
-      defaultCachedFetch('http://httpbin.org/status/200'),
-      defaultCachedFetch('http://httpbin.org/status/200'),
+      defaultCachedFetch(TWO_HUNDRED_URL),
+      defaultCachedFetch(TWO_HUNDRED_URL),
     ]);
 
     // One should be false, the other should be true
     assert(response1.returnedFromCache !== response.returnedFromCache);
+  });
+
+  it('Allows a custom synchronization strategy', async () => {
+    const bogusSynchronizationStrategy: ISynchronizationStrategy = {
+      doWithExclusiveLock: async (_, action) => action(),
+    };
+
+    defaultCachedFetch = FetchCache.create({
+      cache: new FileSystemCache(),
+      synchronizationStrategy: bogusSynchronizationStrategy,
+    });
+
+    const responses = await Promise.all(
+      Array(10).fill(0).map(async () => defaultCachedFetch(TWO_HUNDRED_URL)),
+    );
+
+    // Since our bogus synchronization strategy doesn't actually synchronize,
+    // both requests should be cache misses.
+    assert(responses.every(response => !response.returnedFromCache));
   });
 
   it('Can stream a hundred thousand bytes to a file in ten chunks', async () => {

@@ -52,13 +52,9 @@ export class NFCResponse extends NodeFetchResponse {
     public readonly returnedFromCache: boolean,
     public readonly isCacheMiss = false,
   ) {
-    // The node-fetch types seem to have a bug. response.headers.raw() returns a Record<string, string[]>
-    // but the types claim that the constructor does not accept headers in that format (even though it
-    // empirically does). So we cast it to unknown and then to the type that is accepted (even though it's
-    // not really that type). I might go send the types a PR.
     super(
       bodyStream,
-      metaData as unknown as NodeFetchResponseInit,
+      metaData,
     );
   }
 }

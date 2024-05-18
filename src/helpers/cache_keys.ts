@@ -5,7 +5,7 @@ import { Request as NodeFetchRequest } from 'node-fetch';
 import type { FetchInit, FetchResource, FormDataInternal } from '../types.js';
 import { FormData } from '../types.js';
 
-export const CACHE_VERSION = 5;
+export const CACHE_VERSION = 6;
 
 function md5(string_: string) {
   return crypto.createHash('md5').update(string_).digest('hex');
@@ -73,8 +73,8 @@ function getRequestCacheKeyJson(request: NodeFetchRequest) {
     referrer: request.referrer,
     url: request.url,
     body: getBodyCacheKeyJson(request.body),
-    follow: request.follow,
-    compress: request.compress,
+    follow: (request as any).follow, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+    compress: (request as any).compress, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     size: request.size,
   };
 }

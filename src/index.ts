@@ -88,7 +88,7 @@ async function getResponse(
     if (shouldCache) {
       const cacheSetResult = await fetchCustomization.cache.set(
         cacheKey,
-        bodyStream,
+        bodyStream!,
         serializedMeta,
       );
 
@@ -96,7 +96,7 @@ async function getResponse(
     }
 
     return new NFCResponse(
-      bodyStream,
+      bodyStream!,
       serializedMeta,
       ejectSelfFromCache,
       false,

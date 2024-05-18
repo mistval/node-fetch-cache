@@ -384,7 +384,6 @@ describe('Cache tests', () => {
         return resource.url;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       return resource.toString();
     };
 
@@ -468,7 +467,7 @@ describe('Data tests', () => {
     response = await defaultCachedFetch(TEXT_BODY_URL);
     let body = '';
 
-    for await (const chunk of response.body) {
+    for await (const chunk of response.body!) {
       body += chunk.toString();
     }
 
@@ -478,7 +477,7 @@ describe('Data tests', () => {
     response = await defaultCachedFetch(TEXT_BODY_URL);
     body = '';
 
-    for await (const chunk of response.body) {
+    for await (const chunk of response.body!) {
       body += chunk.toString();
     }
 
@@ -744,7 +743,13 @@ describe('Cache strategy tests', () => {
   });
 
   it('Can use a custom cache strategy that uses the response for all response types', async () => {
-    const functionsThatUseResponse = ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted'] as const;
+    const functionsThatUseResponse = [
+      'arrayBuffer',
+      'blob',
+      'buffer',
+      'json',
+      'text',
+    ] as const;
 
     await Promise.all(
       functionsThatUseResponse.map(async functionName => {

@@ -15,7 +15,7 @@ export class NFCResponse extends NodeFetchResponse {
       statusText: response.statusText,
       headers: response.headers.raw(),
       size: response.size,
-      timeout: response.timeout,
+      timeout: (response as any).timeout, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
       counter: (response as any)[responseInternalSymbol!].counter as number,
     };
 
@@ -45,6 +45,9 @@ export class NFCResponse extends NodeFetchResponse {
   constructor(
     bodyStream: NodeJS.ReadableStream,
     metaData: Omit<NodeFetchResponseInit, 'headers'> & {
+      url: string;
+      size: number;
+      timeout: number;
       counter: number;
       headers: Record<string, string[]>;
     },
@@ -54,7 +57,7 @@ export class NFCResponse extends NodeFetchResponse {
   ) {
     super(
       bodyStream,
-      metaData,
+      metaData as any, // eslint-disable-line @typescript-eslint/no-unsafe-argument
     );
   }
 }

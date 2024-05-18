@@ -373,7 +373,6 @@ describe('Cache tests', () => {
         return resource.url;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       return resource.toString();
     };
 
@@ -457,7 +456,7 @@ describe('Data tests', () => {
     response = await defaultCachedFetch(TEXT_BODY_URL);
     let body = '';
 
-    for await (const chunk of response.body) {
+    for await (const chunk of response.body!) {
       body += chunk.toString();
     }
 
@@ -467,7 +466,7 @@ describe('Data tests', () => {
     response = await defaultCachedFetch(TEXT_BODY_URL);
     body = '';
 
-    for await (const chunk of response.body) {
+    for await (const chunk of response.body!) {
       body += chunk.toString();
     }
 
@@ -717,7 +716,6 @@ describe('Cache strategy tests', () => {
       'buffer',
       'json',
       'text',
-      'textConverted',
     ] as const;
 
     await Promise.all(

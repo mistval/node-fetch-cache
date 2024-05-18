@@ -7,7 +7,19 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug Tests",
+      "name": "Debug Tests Local Server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test:debug"],
+      "console": "integratedTerminal",
+      "env": {
+        "HTTP_BIN_BASE_URL": "http://localhost:3000"
+      },
+      "runtimeVersion": "20"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Tests Remote Server",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "test:debug"],
       "console": "integratedTerminal",

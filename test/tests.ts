@@ -537,15 +537,15 @@ describe('Data tests', () => {
     assert(initialResponse.ok);
     assert(!initialResponse.returnedFromCache);
 
-    const initialResponseBuffer = await initialResponse.buffer();
-    assert.equal(initialResponseBuffer.length, 100_000);
+    const initialResponseBuffer = await initialResponse.arrayBuffer();
+    assert.equal(initialResponseBuffer.byteLength, 100_000);
 
     const secondResponse = await defaultCachedFetch(HUNDRED_THOUSAND_BYTES_URL);
     assert(secondResponse.ok);
     assert(secondResponse.returnedFromCache);
 
-    const secondResponseBuffer = await secondResponse.buffer();
-    assert.equal(secondResponseBuffer.length, 100_000);
+    const secondResponseBuffer = await secondResponse.arrayBuffer();
+    assert.equal(secondResponseBuffer.byteLength, 100_000);
   });
 }).timeout(10_000);
 

@@ -20,7 +20,6 @@ export type NFCResponseMetadata = {
   statusText: string;
   headers: Record<string, string[]>;
   size: number;
-  timeout: number;
   counter: any;
 };
 

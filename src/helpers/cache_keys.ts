@@ -1,11 +1,15 @@
 import fs from 'fs';
 import crypto from 'crypto';
+import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Request as NodeFetchRequest } from 'node-fetch';
 import type { FetchInit, FetchResource, FormDataInternal } from '../types.js';
 import { FormData } from '../types.js';
 
 export const CACHE_VERSION = 6;
+
+const bodyInternalsSymbol = Object.getOwnPropertySymbols(new NodeFetchRequest('http://url.com'))[0];
+assert(bodyInternalsSymbol, 'Failed to get node-fetch bodyInternalsSymbol');
 
 function md5(string_: string) {
   return crypto.createHash('md5').update(string_).digest('hex');
@@ -37,7 +41,7 @@ function getHeadersCacheKeyJson(headers: string[][]): string[][] {
     .filter(([key, value]) => key !== 'cache-control' || value !== 'only-if-cached');
 }
 
-function getBodyCacheKeyJson(body: any): string | FormDataInternal | undefined {
+function getBodyCacheKeyJson(body: unknown): string | FormDataInternal | undefined {
   if (!body) {
     return undefined;
   }
@@ -72,8 +76,10 @@ function getRequestCacheKeyJson(request: NodeFetchRequest) {
     redirect: request.redirect,
     referrer: request.referrer,
     url: request.url,
-    body: getBodyCacheKeyJson(request.body),
+    body: getBodyCacheKeyJson((request as any)[bodyInternalsSymbol!].body),
+    // Confirmed that this property exists, but it's not in the types
     follow: (request as any).follow, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+    // Confirmed that this property exists, but it's not in the types
     compress: (request as any).compress, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     size: request.size,
   };

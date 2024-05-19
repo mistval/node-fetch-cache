@@ -1,5 +1,6 @@
 import type fs from 'fs';
-import fetch, { Response as NodeFetchResponse } from 'node-fetch';
+import type { Response as NodeFetchResponse } from 'node-fetch';
+import type fetch from 'node-fetch';
 import FormData from 'form-data';
 
 export type FetchResource = Parameters<typeof fetch>[0];

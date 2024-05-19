@@ -56,7 +56,7 @@ export class NFCResponse extends NodeFetchResponse {
     public readonly isCacheMiss = false,
   ) {
     super(
-      bodyStream,
+      Readable.from(bodyStream),
       metaData as any, // eslint-disable-line @typescript-eslint/no-unsafe-argument
     );
   }

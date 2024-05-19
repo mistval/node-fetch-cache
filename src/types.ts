@@ -20,7 +20,7 @@ export type NFCResponseMetadata = {
   statusText: string;
   headers: Record<string, string[]>;
   size: number;
-  counter: any;
+  counter: number;
 };
 
 export type INodeFetchCacheCache = {

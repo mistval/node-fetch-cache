@@ -61,6 +61,12 @@
     "locko": "^1.1.0",
     "node-fetch": "2.7.0"
   },
+  "peerDependencies": {
+    "ioredis": "^4.28.5"
+  },
+  "optionalDependencies": {
+    "ioredis": "^4.28.5"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "npm run prepublishOnly"

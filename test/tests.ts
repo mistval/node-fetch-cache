@@ -13,6 +13,7 @@ import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
 import FetchCache, {
   MemoryCache,
   FileSystemCache,
+  RedisCache,
   cacheStrategies,
   FetchResource,
   NFCResponse,

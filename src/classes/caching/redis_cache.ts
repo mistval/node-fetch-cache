@@ -1,23 +1,8 @@
 import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
+import Redis from 'ioredis';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types';
-
-// type INodeFetchCacheCache = {
-//   get(key: string): Promise<{
-//     bodyStream: NodeJS.ReadableStream;
-//     metaData: NFCResponseMetadata;
-//   } | undefined>;
-//   set(
-//     key: string,
-//     bodyStream: NodeJS.ReadableStream,
-//     metaData: NFCResponseMetadata
-//   ): Promise<{
-//     bodyStream: NodeJS.ReadableStream;
-//     metaData: NFCResponseMetadata;
-//   }>;
-//   remove(key: string): Promise<void | unknown>;
-// };
 
 type StoredMetadata = {
   emptyBody?: boolean;
@@ -26,26 +11,40 @@ type StoredMetadata = {
 
 const emptyBuffer = Buffer.alloc(0);
 
-// redisConnection url string format
-// redis://<REDIS_USER>:<REDIS_PASSWORD>@<REDIS_HOST>:<REDIS_PORT>
-// leave undefined for localhost:6789
+// Redis Connection Parameters
+// redisConnection is any format supported by ioredis
+// Eg. redis://<REDIS_USER>:<REDIS_PASSWORD>@<REDIS_HOST>:<REDIS_PORT>
+// Leave undefined for localhost:6789
 
 export class RedisCache implements INodeFetchCacheCache {
   private readonly ttl?: number | undefined;
   private readonly redis;
-  private readonly redisConnection?: string | undefined;
-  private readonly redisOptions?: object | undefined;
+  private readonly redisConnection?: any | undefined;
+  private readonly redisOptions?: Record<string, unknown> | undefined;
 
-  constructor(options: { ttl?: number; redisConnection?: string; redisOptions?: {} } = {}) {
+  constructor(options: { ttl?: number; redisConnection?: any; redisOptions?: Record<string, unknown> } = {}) {
     this.redisConnection = options.redisConnection;
     this.redisOptions = options.redisOptions;
 
-    let Redis;
-    try {
-      Redis = require('ioredis');
-    } catch (e) {
-      console.log('ioredis is not installed. Redis support is disabled.');
-    }
+    // Need to test for optional dependencies.
+    // let Redis;
+    // try {
+    //   import {Redis} from 'ioredis';
+    // } catch (e) {
+    //   console.log('ioredis is not installed. Redis support is disabled.');
+    //   console.log('ioredis is not installed. Redis support is disabled.');
+    // }
+
+    // Need to test for optional dependencies.
+    // let Redis;
+    // (async () => {
+    //   try {
+    //     let { Redis } = await import('ioredis');
+    //     console.log('Package exists and can be imported:', Redis);
+    //   } catch (error) {
+    //     console.error('Error importing package:', error);
+    //   }
+    // })();
 
     if (Redis) {
       this.redis = new Redis(this.redisConnection, this.redisOptions);
@@ -55,15 +54,17 @@ export class RedisCache implements INodeFetchCacheCache {
   }
 
   async get(key: string, options?: { ignoreExpiration?: boolean }) {
+    console.log(this.redis);
     const cachedObjectInfo = await this.redis.get(key);
 
     if (!cachedObjectInfo) {
       return undefined;
     }
-  
+
     const readableStream = Readable.from(cachedObjectInfo);
-    // readableStream.push(null);  // do we need to terminate?
-  
+    // Do we need to terminate this stream?
+    // readableStream.push(null);
+
     const storedMetadata = await this.redis.get(`${key}:meta`);
     const { emptyBody, expiration, ...nfcMetadata } = storedMetadata;
 
@@ -74,7 +75,7 @@ export class RedisCache implements INodeFetchCacheCache {
     if (emptyBody) {
       return {
         bodyStream: Readable.from(emptyBuffer),
-        metaData: storedMetadata,  // why returning storedMetaData instread of nfcMetadata?
+        metaData: storedMetadata, // Why returning storedMetaData instread of nfcMetadata?
       };
     }
 
@@ -117,10 +118,10 @@ export class RedisCache implements INodeFetchCacheCache {
     storedMetadata: StoredMetadata,
     bodyStream: NodeJS.ReadableStream,
   ) {
-    let chunks: any = [];
+    const chunks: any = [];
 
     await new Promise((fulfill, reject) => {
-      bodyStream.on('data', (chunk) => {
+      bodyStream.on('data', chunk => {
         chunks.push(chunk);
       });
 
@@ -135,14 +136,14 @@ export class RedisCache implements INodeFetchCacheCache {
           }
 
           fulfill(null);
-        } catch (err) {
-          reject(err);
+        } catch (error) {
+          reject(error);
         }
       });
 
-      bodyStream.on('error', (err) => {
-        reject(err);
+      bodyStream.on('error', error => {
+        reject(error);
       });
-    })
+    });
   }
 }

@@ -11,7 +11,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "tsc": "tsc",
-    "buildcjs": "cross-env rollup ./dist/index.js --file ./dist/index.cjs --format cjs && cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
+    "buildcjs": "cross-env rollup ./dist/index.js --file ./dist/index.cjs --format cjs && shx cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
     "test": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
     "test:debug": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --inspect --inspect-brk --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test npm test",
@@ -50,6 +50,7 @@
     "mocha": "^10.2.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
+    "shx": "^0.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "xo": "^0.56.0"
@@ -59,13 +60,8 @@
     "cacache": "^18.0.1",
     "form-data": "^4.0.0",
     "locko": "^1.1.0",
-    "node-fetch": "2.7.0"
-  },
-  "peerDependencies": {
-    "ioredis": "^4.28.5"
-  },
-  "optionalDependencies": {
-    "ioredis": "^4.28.5"
+    "node-fetch": "2.7.0",
+    "ioredis": "^5.4.1"
   },
   "husky": {
     "hooks": {

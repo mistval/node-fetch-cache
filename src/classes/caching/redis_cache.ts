@@ -2,10 +2,11 @@ import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
 import Redis from 'ioredis';
+import type RedisOptions from 'ioredis';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types';
 
 type StoredMetadata = {
-	emptyBody?: boolean;
+	emptyBody?: boolean | undefined;
 	expiration?: number | undefined;
 } & NFCResponseMetadata;
 
@@ -18,12 +19,10 @@ const emptyBuffer = Buffer.alloc(0);
 
 export class RedisCache implements INodeFetchCacheCache {
 	private readonly ttl?: number | undefined;
-	private readonly redis;
-	private readonly redisConnection?: any | undefined;
-	private readonly redisOptions?: Record<string, unknown> | undefined;
+	private readonly redis: Redis | undefined;
+	private readonly redisOptions?: RedisOptions | undefined;
 
-	constructor(options: { ttl?: number; redisConnection?: any; redisOptions?: Record<string, unknown> } = {}) {
-		this.redisConnection = options.redisConnection;
+	constructor(options: { ttl?: number; redisOptions?: RedisOptions } = {}) {
 		this.redisOptions = options.redisOptions;
 
 		// Need to test for optional dependencies.
@@ -47,14 +46,14 @@ export class RedisCache implements INodeFetchCacheCache {
 		// })();
 
 		if (Redis) {
-			this.redis = new Redis(this.redisConnection, this.redisOptions);
+			this.redis = new Redis(this.redisOptions);
 		}
 
 		this.ttl = options.ttl;
 	}
 
 	async get(key: string, options?: { ignoreExpiration?: boolean }) {
-		const cachedObjectInfo = await this.redis.get(key);
+		const cachedObjectInfo = await this.redis?.get(key);
 
 		if (!cachedObjectInfo) {
 			return undefined;
@@ -64,8 +63,10 @@ export class RedisCache implements INodeFetchCacheCache {
 		// Do we need to terminate this stream?
 		// readableStream.push(null);
 
-		const storedMetadata = await this.redis.get(`${key}:meta`);
-		const { emptyBody, expiration, ...nfcMetadata } = storedMetadata;
+		const storedMetadata = await this.redis?.get(`${key}:meta`);
+
+		const storedMetadataJson = JSON.parse(storedMetadata) as StoredMetadata;
+		const { emptyBody, expiration, ...nfcMetadata } = storedMetadataJson;
 
 		if (!options?.ignoreExpiration && expiration && expiration < Date.now()) {
 			return undefined;
@@ -74,7 +75,7 @@ export class RedisCache implements INodeFetchCacheCache {
 		if (emptyBody) {
 			return {
 				bodyStream: Readable.from(emptyBuffer),
-				metaData: storedMetadata, // Why returning storedMetaData instread of nfcMetadata?
+				metaData: storedMetadata, // Why returning storedMetaData instead of nfcMetadata?
 			};
 		}
 
@@ -85,8 +86,8 @@ export class RedisCache implements INodeFetchCacheCache {
 	}
 
 	async remove(key: string) {
-		await this.redis.del(key);
-		await this.redis.del(`${key}:meta`);
+		await this.redis?.del(key);
+		await this.redis?.del(`${key}:meta`);
 		return true;
 	}
 
@@ -107,7 +108,7 @@ export class RedisCache implements INodeFetchCacheCache {
 		const cachedData = await this.get(key, { ignoreExpiration: true });
 		assert(cachedData, 'Failed to cache response');
 
-		const cachedMetaData = await this.redis.get(`${key}:meta`);
+		const cachedMetaData = await this.redis?.get(`${key}:meta`);
 		assert(cachedMetaData, 'Failed to cache metadata');
 
 		return cachedData;
@@ -125,10 +126,10 @@ export class RedisCache implements INodeFetchCacheCache {
 				try {
 					const buffer = Buffer.concat(chunks);
 
-					await this.redis.set(key, buffer);
+					await this.redis?.set(key, buffer);
 
 					if (storedMetadata) {
-						await this.redis.set(`${key}:meta`, JSON.stringify(storedMetadata));
+						await this.redis?.set(`${key}:meta`, JSON.stringify(storedMetadata));
 					}
 
 					fulfill(null);

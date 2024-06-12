@@ -2,7 +2,7 @@ import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
 import Redis from 'ioredis';
-import type RedisOptions from 'ioredis';
+import type { RedisOptions } from 'ioredis';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types';
 
 type StoredMetadata = {
@@ -19,11 +19,11 @@ const emptyBuffer = Buffer.alloc(0);
 
 export class RedisCache implements INodeFetchCacheCache {
 	private readonly ttl?: number | undefined;
-	private readonly redis: Redis | undefined;
-	private readonly redisOptions?: RedisOptions | undefined;
+	private readonly redis;
+	private readonly redisOptions: RedisOptions = {};
 
 	constructor(options: { ttl?: number; redisOptions?: RedisOptions } = {}) {
-		this.redisOptions = options.redisOptions;
+		this.redisOptions = options.redisOptions ? options.redisOptions : {};
 
 		// Need to test for optional dependencies.
 		// let Redis;
@@ -65,6 +65,10 @@ export class RedisCache implements INodeFetchCacheCache {
 
 		const storedMetadata = await this.redis?.get(`${key}:meta`);
 
+		if (!storedMetadata) {
+			return undefined;
+		}
+
 		const storedMetadataJson = JSON.parse(storedMetadata) as StoredMetadata;
 		const { emptyBody, expiration, ...nfcMetadata } = storedMetadataJson;
 
@@ -75,7 +79,7 @@ export class RedisCache implements INodeFetchCacheCache {
 		if (emptyBody) {
 			return {
 				bodyStream: Readable.from(emptyBuffer),
-				metaData: storedMetadata, // Why returning storedMetaData instead of nfcMetadata?
+				metaData: nfcMetadata,
 			};
 		}
 

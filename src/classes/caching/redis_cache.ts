@@ -10,20 +10,24 @@ type StoredMetadata = {
 	expiration?: number | undefined;
 } & NFCResponseMetadata;
 
+type extendedRedisOptions = {
+	ttl?: number | undefined;
+} & RedisOptions
+
 const emptyBuffer = Buffer.alloc(0);
 
 // Redis Connection Parameters
-// redisConnection is any format supported by ioredis
-// Eg. redis://<REDIS_USER>:<REDIS_PASSWORD>@<REDIS_HOST>:<REDIS_PORT>
-// Leave undefined for localhost:6789
+// add host, port or path as options to set database.
+// additionally, set `ttl` for a default expiry
+// Leave host, port or path undefined for localhost:6379
 
 export class RedisCache implements INodeFetchCacheCache {
 	private readonly ttl?: number | undefined;
 	private readonly redis;
 	private readonly redisOptions: RedisOptions = {};
 
-	constructor(options: { ttl?: number; redisOptions?: RedisOptions } = {}) {
-		this.redisOptions = options.redisOptions ? options.redisOptions : {};
+	constructor(options: extendedRedisOptions = {}) {
+		this.redisOptions = options ? options : {};
 
 		// Need to test for optional dependencies.
 		// let Redis;
@@ -49,7 +53,7 @@ export class RedisCache implements INodeFetchCacheCache {
 			this.redis = new Redis(this.redisOptions);
 		}
 
-		this.ttl = options.ttl;
+		this.ttl = options?.ttl;
 	}
 
 	async get(key: string, options?: { ignoreExpiration?: boolean }) {
@@ -130,10 +134,18 @@ export class RedisCache implements INodeFetchCacheCache {
 				try {
 					const buffer = Buffer.concat(chunks);
 
-					await this.redis?.set(key, buffer);
+					if (typeof this.ttl === 'number') {
+						await this.redis?.set(key, buffer, "PX", this.ttl);
+					} else {
+						await this.redis?.set(key, buffer);
+					}
 
 					if (storedMetadata) {
-						await this.redis?.set(`${key}:meta`, JSON.stringify(storedMetadata));
+						if (typeof this.ttl === 'number') {
+							await this.redis?.set(`${key}:meta`, JSON.stringify(storedMetadata), "PX", this.ttl);
+						} else {
+							await this.redis?.set(`${key}:meta`, JSON.stringify(storedMetadata));
+						}
 					}
 
 					fulfill(null);

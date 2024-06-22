@@ -1,9 +1,20 @@
 import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
-import Redis from 'ioredis';
-import type { RedisOptions } from 'ioredis';
+// Import Redis from 'ioredis';
+// import type { RedisOptions } from 'ioredis';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types';
+
+let module;
+try {
+	// @ts-expect-error 2307
+	module = await import('ioredis');
+} catch {
+	console.warn('redis_cache: ioredis is not installed.');
+}
+
+const Redis = module?.default;
+type RedisOptions = typeof module.RedisOptions;
 
 type StoredMetadata = {
 	emptyBody?: boolean | undefined;
@@ -12,7 +23,7 @@ type StoredMetadata = {
 
 type extendedRedisOptions = {
 	ttl?: number | undefined;
-} & RedisOptions
+} & RedisOptions;
 
 const emptyBuffer = Buffer.alloc(0);
 
@@ -23,42 +34,22 @@ const emptyBuffer = Buffer.alloc(0);
 
 export class RedisCache implements INodeFetchCacheCache {
 	private readonly ttl?: number | undefined;
-	private readonly redis: Redis;
+	private readonly redis: any;
 	private readonly redisOptions: RedisOptions = {};
 
-	constructor(options: extendedRedisOptions = {}, redisInstance?: Redis) {
+	constructor(options: extendedRedisOptions = {}, redisInstance?: typeof Redis) {
 		this.redisOptions = options ? options : {};
-		
-		this.redis = redisInstance || new Redis(this.redisOptions);
-
-		// Need to test for optional dependencies.
-		// let Redis;
-		// try {
-		//   import {Redis} from 'ioredis';
-		// } catch (e) {
-		//   console.log('ioredis is not installed. Redis support is disabled.');
-		//   console.log('ioredis is not installed. Redis support is disabled.');
-		// }
-
-		// Need to test for optional dependencies.
-		// let Redis;
-		// (async () => {
-		//   try {
-		//     let { Redis } = await import('ioredis');
-		//     console.log('Package exists and can be imported:', Redis);
-		//   } catch (error) {
-		//     console.error('Error importing package:', error);
-		//   }
-		// })();
-
-		// if (Redis) {
-		// 	this.redis = new Redis(this.redisOptions);
-		// }
-
 		this.ttl = options?.ttl;
+		if (Redis) {
+			this.redis = redisInstance || new Redis(this.redisOptions);
+		}
 	}
 
 	async get(key: string, options?: { ignoreExpiration?: boolean }) {
+		if (!this.redis) {
+			return undefined;
+		}
+
 		const cachedObjectInfo = await this.redis?.get(key);
 
 		if (!cachedObjectInfo) {
@@ -102,6 +93,10 @@ export class RedisCache implements INodeFetchCacheCache {
 	}
 
 	async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: NFCResponseMetadata) {
+		if (!this.redis) {
+			return undefined;
+		}
+
 		const metaToStore = {
 			...metaData,
 			expiration: undefined as undefined | number,
@@ -127,7 +122,7 @@ export class RedisCache implements INodeFetchCacheCache {
 		const chunks: any = [];
 
 		await new Promise((fulfill, reject) => {
-			bodyStream.on('data', (chunk) => {
+			bodyStream.on('data', chunk => {
 				chunks.push(chunk);
 			});
 
@@ -135,18 +130,10 @@ export class RedisCache implements INodeFetchCacheCache {
 				try {
 					const buffer = Buffer.concat(chunks);
 
-					if (typeof this.ttl === 'number') {
-						await this.redis?.set(key, buffer, "PX", this.ttl);
-					} else {
-						await this.redis?.set(key, buffer);
-					}
+					await (typeof this.ttl === 'number' ? this.redis?.set(key, buffer, 'PX', this.ttl) : this.redis?.set(key, buffer));
 
 					if (storedMetadata) {
-						if (typeof this.ttl === 'number') {
-							await this.redis?.set(`${key}:meta`, JSON.stringify(storedMetadata), "PX", this.ttl);
-						} else {
-							await this.redis?.set(`${key}:meta`, JSON.stringify(storedMetadata));
-						}
+						await (typeof this.ttl === 'number' ? this.redis?.set(`${key}:meta`, JSON.stringify(storedMetadata), 'PX', this.ttl) : this.redis?.set(`${key}:meta`, JSON.stringify(storedMetadata)));
 					}
 
 					fulfill(null);
@@ -155,7 +142,7 @@ export class RedisCache implements INodeFetchCacheCache {
 				}
 			});
 
-			bodyStream.on('error', (error) => {
+			bodyStream.on('error', error => {
 				reject(error);
 			});
 		});

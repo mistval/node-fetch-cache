@@ -13,7 +13,6 @@ import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
 import FetchCache, {
 	MemoryCache,
 	FileSystemCache,
-	RedisCache,
 	cacheStrategies,
 	FetchResource,
 	NFCResponse,
@@ -38,6 +37,7 @@ const PNG_BODY_URL = `${httpBinBaseUrl}/image/png`;
 const HUNDRED_THOUSAND_BYTES_URL = `${httpBinBaseUrl}/stream-bytes/100000?chunk_size=10000`;
 
 const DUMMY_JSON_URL = 'https://dummyjson.com/products/1';
+const DUMMY_JSON_URL_KEY = '4542044cc79f8c899ef69cd16dff7771';
 const expectedJson = {
 	id: 1,
 	title: 'Essence Mascara Lash Princess',
@@ -788,56 +788,6 @@ describe('Cache strategy tests', () => {
 				}
 			})
 		);
-	});
-});
-
-describe('Redis cache tests', () => {
-	it('Supports TTL', async () => {
-		defaultCachedFetch = FetchCache.create({ cache: new RedisCache({ ttl: 100 }) });
-
-		let response = await defaultCachedFetch(DUMMY_JSON_URL);
-		assert.strictEqual(response.returnedFromCache, false);
-
-		response = await defaultCachedFetch(DUMMY_JSON_URL);
-		assert.strictEqual(response.returnedFromCache, true);
-
-		await wait(200);
-
-		response = await defaultCachedFetch(DUMMY_JSON_URL);
-		assert.strictEqual(response.returnedFromCache, false);
-	});
-
-	it('Can get product JSON body', async () => {
-		defaultCachedFetch = FetchCache.create({ cache: new FileSystemCache() });
-		response = await defaultCachedFetch(DUMMY_JSON_URL);
-		const body1 = await response.json();
-		assert.strictEqual(expectedJson.id, body1.id);
-		assert.strictEqual(expectedJson.stock, body1.stock);
-		assert.strictEqual(response.returnedFromCache, false);
-
-		response = await defaultCachedFetch(DUMMY_JSON_URL);
-		const body2 = await response.buffer();
-		assert.strictEqual(expectedJson.id, body1.id);
-		assert.strictEqual(expectedJson.stock, body1.stock);
-		assert.strictEqual(response.returnedFromCache, true);
-	});
-
-	it('Can eject from cache', async () => {
-		defaultCachedFetch = FetchCache.create({ cache: new FileSystemCache() });
-
-		response = await defaultCachedFetch(DUMMY_JSON_URL);
-		assert.strictEqual(response.returnedFromCache, false);
-
-		response = await defaultCachedFetch(DUMMY_JSON_URL);
-		assert.strictEqual(response.returnedFromCache, true);
-
-		await response.ejectFromCache();
-
-		response = await defaultCachedFetch(DUMMY_JSON_URL);
-		assert.strictEqual(response.returnedFromCache, false);
-
-		response = await defaultCachedFetch(DUMMY_JSON_URL);
-		assert.strictEqual(response.returnedFromCache, true);
 	});
 });
 

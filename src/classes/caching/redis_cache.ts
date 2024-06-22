@@ -23,11 +23,13 @@ const emptyBuffer = Buffer.alloc(0);
 
 export class RedisCache implements INodeFetchCacheCache {
 	private readonly ttl?: number | undefined;
-	private readonly redis;
+	private readonly redis: Redis;
 	private readonly redisOptions: RedisOptions = {};
 
-	constructor(options: extendedRedisOptions = {}) {
+	constructor(options: extendedRedisOptions = {}, redisInstance?: Redis) {
 		this.redisOptions = options ? options : {};
+		
+		this.redis = redisInstance || new Redis(this.redisOptions);
 
 		// Need to test for optional dependencies.
 		// let Redis;
@@ -49,9 +51,9 @@ export class RedisCache implements INodeFetchCacheCache {
 		//   }
 		// })();
 
-		if (Redis) {
-			this.redis = new Redis(this.redisOptions);
-		}
+		// if (Redis) {
+		// 	this.redis = new Redis(this.redisOptions);
+		// }
 
 		this.ttl = options?.ttl;
 	}
@@ -112,7 +114,6 @@ export class RedisCache implements INodeFetchCacheCache {
 
 		await this.writeDataToRedis(key, metaToStore, bodyStream);
 
-		// const cachedData = await this.redis.get(key);
 		const cachedData = await this.get(key, { ignoreExpiration: true });
 		assert(cachedData, 'Failed to cache response');
 

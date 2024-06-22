@@ -94,7 +94,7 @@ Options:
 ```
 ### Cache with Redis
 
-A Redis cache may be used.  This required the optional peer dependency ioRedis to be installed.
+A Redis cache may be used.  This requires the optional peer dependency ioRedis to be installed. An exception will be thrown if the dependency is not available.
 
 
 For testing, a docker instance of Redis may be started as follows:

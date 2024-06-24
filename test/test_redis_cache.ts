@@ -30,7 +30,7 @@ const expectedJson = {
 describe('Redis cache tests', () => {
   before(async function () {
     try {
-      // @ts-expect-error 2307
+      // @ts-ignore
       const module = await import('ioredis');
       Redis = module.default;
     } catch {

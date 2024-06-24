@@ -1,20 +1,18 @@
 import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
-// Import Redis from 'ioredis';
-// import type { RedisOptions } from 'ioredis';
+import Redis from 'ioredis';
+import type { RedisOptions } from 'ioredis';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types';
 
-let module;
-try {
-	// @ts-expect-error 2307
-	module = await import('ioredis');
-} catch {
-	console.warn('redis_cache: ioredis is not installed.');
-}
-
-const Redis = module?.default;
-type RedisOptions = typeof module.RedisOptions;
+// let module;
+// try {
+// 	// @ts-ignore
+// 	module = await import('ioredis');
+// } catch {
+// 	console.warn('redis_cache: ioredis is not installed.');
+// }
+// const Redis = module?.default;
 
 type StoredMetadata = {
 	emptyBody?: boolean | undefined;
@@ -37,7 +35,7 @@ export class RedisCache implements INodeFetchCacheCache {
 	private readonly redis: any;
 	private readonly redisOptions: RedisOptions = {};
 
-	constructor(options: extendedRedisOptions = {}, redisInstance?: typeof Redis) {
+	constructor(options: extendedRedisOptions = {}, redisInstance?: Redis) {
 		this.redisOptions = options ? options : {};
 		this.ttl = options?.ttl;
 		if (Redis) {
@@ -93,9 +91,10 @@ export class RedisCache implements INodeFetchCacheCache {
 	}
 
 	async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: NFCResponseMetadata) {
-		if (!this.redis) {
-			return undefined;
-		}
+		// Unable to add this as set doesn't include undefined in the type.
+		// if (!this.redis) {
+		// 	return undefined;
+		// }
 
 		const metaToStore = {
 			...metaData,

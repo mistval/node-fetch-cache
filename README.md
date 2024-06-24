@@ -94,7 +94,7 @@ Options:
 ```
 ### Cache with Redis
 
-A Redis cache may be used.  This requires the optional peer dependency ioRedis to be installed. An exception will be thrown if the dependency is not available.
+A Redis cache may be used.  This requires the optional dependency ioredis to be installed. A warning will be emitted if ioredis is not available. No caching will occur.
 
 
 For testing, a docker instance of Redis may be started as follows:
@@ -137,7 +137,7 @@ Options:
 ```
 
 #### Metadata
-The RedisCache class stores metadata as a separate key in the Redis database. The keys appear as follows:
+The RedisCache class stores metadata as a separate key in the Redis database. The metadata key has the same hash but has suffix ":meta" The keys appear as follows:
 ```
 127.0.0.1:6379> keys *
 1) "aaa2b0d76148c24c04f17e168323bccc"

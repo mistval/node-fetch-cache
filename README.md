@@ -90,7 +90,11 @@ Options:
   // automatically ejected from the cache.
   ttl: 1000,
 }
+
 ```
+### Cache with Redis
+
+Use the [@node-fetch-cache/redis](https://www.npmjs.com/package/@node-fetch-cache/redis) package to cache in Redis.
 
 ### Cache in Memory with a TTL
 
@@ -98,14 +102,17 @@ If you would like to cache in memory and automatically eject responses after a c
 
 ```js
 import NodeFetchCache, { MemoryCache } from 'node-fetch-cache';
-const fetch = NodeFetchCache.create({ cache: new MemoryCache({ ttl: 1000 }) });
+
+const fetch = NodeFetchCache.create({
+  cache: new MemoryCache({ ttl: 1000 })
+});
 ```
 
 Note that the default cache is a globally shared instance of `MemoryCache` with no TTL.
 
 ### Implement your Own Cache
 
-If neither `MemoryCache` nor `FileSystemCache` meet your needs, you can implement your own cache. You can use any object that implements the following interface:
+If none of the existing caching options meet your needs, you can implement your own cache. You can use any object that implements the following interface:
 
 ```ts
 type INodeFetchCacheCache = {
@@ -365,4 +372,11 @@ For bug reports, please file an issue on [the issues page on GitHub](https://git
 
 Contributions welcome! Please open a [pull request on GitHub](https://github.com/mistval/node-fetch-cache/pulls) with your changes. You can run them by me first on [the discussions page](https://github.com/mistval/node-fetch-cache/discussions) if you'd like. Please add tests for any changes.
 
-To accelerate the tests, run `docker run -p 3000:80 kennethreitz/httpbin` and set an environment variable: `HTTP_BIN_BASE_URL=http://localhost:3000` (`.env` file is supported) before running the tests with `npm test`.
+To run the tests, first start an httpbin and Redis container:
+
+```sh
+docker run -p 3000:80 -d kennethreitz/httpbin
+docker run -p 6379:6379 -d redis
+```
+
+Then `npm test`.

@@ -12,9 +12,10 @@
   "scripts": {
     "tsc": "tsc",
     "buildcjs": "cross-env rollup ./dist/index.js --file ./dist/index.cjs --format cjs && cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
-    "test": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
+    "test": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --spec plugins/redis/test_redis_cache.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
     "test:debug": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --inspect --inspect-brk --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit",
-    "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test npm test",
+    "test:core": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
+    "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test --exclude=plugins/redis/test_redis_cache.ts npm test",
     "lint": "xo .",
     "lintfix": "xo . --fix",
     "prepublishOnly": "cross-env npm run tsc && npm run buildcjs && npm test",
@@ -51,8 +52,7 @@
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
-    "xo": "^0.56.0"
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@types/node-fetch": "2.6.11",
@@ -68,40 +68,5 @@
   },
   "engines": {
     "node": ">=14.14.0"
-  },
-  "xo": {
-    "space": true,
-    "ignores": [
-      "test/tests.cjs"
-    ],
-    "rules": {
-      "unicorn/filename-case": [
-        "error",
-        {
-          "case": "snakeCase"
-        }
-      ],
-      "@typescript-eslint/naming-convention": [
-        "error",
-        {
-          "selector": "typeAlias",
-          "format": [
-            "PascalCase"
-          ]
-        }
-      ],
-      "@typescript-eslint/object-curly-spacing": [
-        "error",
-        "always"
-      ],
-      "unicorn/prefer-node-protocol": "off",
-      "max-params": [
-        "error",
-        7
-      ],
-      "unicorn/prefer-export-from": "off",
-      "@typescript-eslint/consistent-type-imports": "off",
-      "unicorn/new-for-builtins": "off"
-    }
   }
 }

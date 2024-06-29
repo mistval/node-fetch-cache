@@ -109,5 +109,5 @@
   "ts-node": {
     "esm": true,
   },
-  "exclude": ["test", "dist", "plugins"]
+  "exclude": ["test_redis_cache.ts", "dist"]
 }

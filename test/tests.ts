@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-unassigned-import,import/order
 import 'dotenv/config.js';
-import process from 'process';
 import path, { dirname } from 'path';
 import util from 'util';
 import { fileURLToPath } from 'url';
@@ -20,7 +19,7 @@ import FetchCache, {
   ISynchronizationStrategy,
 } from '../src/index.js';
 
-const httpBinBaseUrl = process.env['HTTP_BIN_BASE_URL'] ?? 'https://httpbin.org';
+const httpBinBaseUrl = 'http://localhost:3000';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const wait = util.promisify(setTimeout);
 
@@ -200,10 +199,16 @@ describe('Header tests', () => {
   it('Can get a header by value', async () => {
     let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
     assert(standardFetchResponse.headers.get('content-length'));
-    assert.deepStrictEqual(cachedFetchResponse.headers.get('content-length'), standardFetchResponse.headers.get('content-length'));
+    assert.deepStrictEqual(
+      cachedFetchResponse.headers.get('content-length'),
+      standardFetchResponse.headers.get('content-length'),
+    );
 
     cachedFetchResponse = await defaultCachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(cachedFetchResponse.headers.get('content-length'), standardFetchResponse.headers.get('content-length'));
+    assert.deepStrictEqual(
+      cachedFetchResponse.headers.get('content-length'),
+      standardFetchResponse.headers.get('content-length'),
+    );
   });
 
   it('Returns undefined for non-existent header', async () => {
@@ -219,10 +224,16 @@ describe('Header tests', () => {
   it('Can get whether a header is present', async () => {
     let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
     assert(standardFetchResponse.headers.has('content-length'));
-    assert.deepStrictEqual(cachedFetchResponse.headers.has('content-length'), standardFetchResponse.headers.has('content-length'));
+    assert.deepStrictEqual(
+      cachedFetchResponse.headers.has('content-length'),
+      standardFetchResponse.headers.has('content-length'),
+    );
 
     cachedFetchResponse = await defaultCachedFetch(TWO_HUNDRED_URL);
-    assert.deepStrictEqual(cachedFetchResponse.headers.has('content-length'), standardFetchResponse.headers.has('content-length'));
+    assert.deepStrictEqual(
+      cachedFetchResponse.headers.has('content-length'),
+      standardFetchResponse.headers.has('content-length'),
+    );
   });
 }).timeout(10_000);
 
@@ -431,12 +442,12 @@ describe('Data tests', () => {
 
   it('Can get JSON body', async () => {
     response = await defaultCachedFetch(JSON_BODY_URL);
-    const body1 = await response.json() as { slideshow: unknown };
+    const body1 = (await response.json()) as { slideshow: unknown };
     assert(body1?.slideshow);
     assert.strictEqual(response.returnedFromCache, false);
 
     response = await defaultCachedFetch(JSON_BODY_URL);
-    const body2 = await response.json() as { slideshow: unknown };
+    const body2 = (await response.json()) as { slideshow: unknown };
     assert(body2.slideshow);
     assert.strictEqual(response.returnedFromCache, true);
   });
@@ -476,11 +487,17 @@ describe('Data tests', () => {
   });
 
   it('Errors if the body type is not supported', async () => {
-    await assert.rejects(async () => defaultCachedFetch(TEXT_BODY_URL, { body: 1 as unknown as string }), /Unsupported body type/);
+    await assert.rejects(
+      async () => defaultCachedFetch(TEXT_BODY_URL, { body: 1 as unknown as string }),
+      /Unsupported body type/,
+    );
   });
 
   it('Errors if the resource type is not supported', async () => {
-    await assert.rejects(async () => defaultCachedFetch(1 as unknown as string), /The first argument to fetch must be either a string or a node-fetch Request instance/);
+    await assert.rejects(
+      async () => defaultCachedFetch(1 as unknown as string),
+      /The first argument to fetch must be either a string or a node-fetch Request instance/,
+    );
   });
 
   it('Uses cache even if you make multiple requests at the same time', async () => {
@@ -504,7 +521,9 @@ describe('Data tests', () => {
     });
 
     const responses = await Promise.all(
-      Array(10).fill(0).map(async () => defaultCachedFetch(TWO_HUNDRED_URL)),
+      Array(10)
+        .fill(0)
+        .map(async () => defaultCachedFetch(TWO_HUNDRED_URL)),
     );
 
     // Since our bogus synchronization strategy doesn't actually synchronize,
@@ -608,18 +627,26 @@ describe('Cache mode tests', () => {
   });
 
   it('Can use the only-if-cached cache control setting via resource', async () => {
-    response = await defaultCachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }));
+    response = await defaultCachedFetch(
+      new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
+    );
     assert(response.status === 504 && response.isCacheMiss);
     response = await defaultCachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL));
     assert(response && !response.returnedFromCache);
-    response = await defaultCachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }));
+    response = await defaultCachedFetch(
+      new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
+    );
     assert(response?.returnedFromCache);
   });
 
   it('Works with only-if-cached along with other cache-control directives', async () => {
-    response = await defaultCachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' } }));
+    response = await defaultCachedFetch(
+      new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' } }),
+    );
     assert(response.status === 504 && response.isCacheMiss);
-    response = await defaultCachedFetch(TWO_HUNDRED_URL, { headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' } });
+    response = await defaultCachedFetch(TWO_HUNDRED_URL, {
+      headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' },
+    });
     assert(response.status === 504 && response.isCacheMiss);
   });
 });
@@ -664,13 +691,19 @@ describe('Cache strategy tests', () => {
       cache: defaultCache,
     });
 
-    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheStrategies.cacheOkayOnly });
+    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, {
+      shouldCacheResponse: cacheStrategies.cacheOkayOnly,
+    });
     assert.strictEqual(response.returnedFromCache, false);
 
-    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheStrategies.cacheOkayOnly });
+    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, {
+      shouldCacheResponse: cacheStrategies.cacheOkayOnly,
+    });
     assert.strictEqual(response.returnedFromCache, false);
 
-    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, { shouldCacheResponse: cacheStrategies.cacheNon5xxOnly });
+    response = await customCachedFetch(FOUR_HUNDRED_URL, undefined, {
+      shouldCacheResponse: cacheStrategies.cacheNon5xxOnly,
+    });
     assert.strictEqual(response.returnedFromCache, false);
 
     response = await customCachedFetch(FOUR_HUNDRED_URL);
@@ -711,14 +744,7 @@ describe('Cache strategy tests', () => {
   });
 
   it('Can use a custom cache strategy that uses the response for all response types', async () => {
-    const functionsThatUseResponse = [
-      'arrayBuffer',
-      'blob',
-      'buffer',
-      'json',
-      'text',
-      'textConverted',
-    ] as const;
+    const functionsThatUseResponse = ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted'] as const;
 
     await Promise.all(
       functionsThatUseResponse.map(async functionName => {
@@ -741,10 +767,7 @@ describe('Cache strategy tests', () => {
         // the whitespace stripped out, even though the original response may
         // not have. This may cause issues for some unusual use cases.
         if (functionName === 'json') {
-          assert.strictEqual(
-            await response.text(),
-            JSON.stringify(JSON.parse(JSON_BODY_EXPECTED)),
-          );
+          assert.strictEqual(await response.text(), JSON.stringify(JSON.parse(JSON_BODY_EXPECTED)));
         } else {
           assert.strictEqual(await response.text(), JSON_BODY_EXPECTED);
         }

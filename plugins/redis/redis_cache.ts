@@ -35,7 +35,7 @@ export class RedisCache implements INodeFetchCacheCache {
   async get(key: string, options?: { ignoreExpiration?: boolean }) {
     const cachedObjectInfo = await this.redis.get(key);
 
-    if (!cachedObjectInfo) {
+    if (cachedObjectInfo === null) {
       return undefined;
     }
 

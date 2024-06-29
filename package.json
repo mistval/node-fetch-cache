@@ -51,8 +51,7 @@
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
-    "xo": "^0.56.0"
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@types/node-fetch": "2.6.11",
@@ -68,40 +67,5 @@
   },
   "engines": {
     "node": ">=14.14.0"
-  },
-  "xo": {
-    "space": true,
-    "ignores": [
-      "test/tests.cjs"
-    ],
-    "rules": {
-      "unicorn/filename-case": [
-        "error",
-        {
-          "case": "snakeCase"
-        }
-      ],
-      "@typescript-eslint/naming-convention": [
-        "error",
-        {
-          "selector": "typeAlias",
-          "format": [
-            "PascalCase"
-          ]
-        }
-      ],
-      "@typescript-eslint/object-curly-spacing": [
-        "error",
-        "always"
-      ],
-      "unicorn/prefer-node-protocol": "off",
-      "max-params": [
-        "error",
-        7
-      ],
-      "unicorn/prefer-export-from": "off",
-      "@typescript-eslint/consistent-type-imports": "off",
-      "unicorn/new-for-builtins": "off"
-    }
   }
 }

@@ -6,7 +6,7 @@ import util from 'util';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import assert from 'assert';
-import { Agent } from 'https';
+import { Agent } from 'http';
 import { rimraf } from 'rimraf';
 import FormData from 'form-data';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
@@ -35,20 +35,6 @@ const TEXT_BODY_URL = `${httpBinBaseUrl}/robots.txt`;
 const JSON_BODY_URL = `${httpBinBaseUrl}/json`;
 const PNG_BODY_URL = `${httpBinBaseUrl}/image/png`;
 const HUNDRED_THOUSAND_BYTES_URL = `${httpBinBaseUrl}/stream-bytes/100000?chunk_size=10000`;
-
-const DUMMY_JSON_URL = 'https://dummyjson.com/products/1';
-const DUMMY_JSON_URL_KEY = '4542044cc79f8c899ef69cd16dff7771';
-const expectedJson = {
-  id: 1,
-  title: 'Essence Mascara Lash Princess',
-  description:
-		'The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects. Achieve dramatic lashes with this long-lasting and cruelty-free formula.',
-  category: 'beauty',
-  price: 9.99,
-  discountPercentage: 7.17,
-  rating: 4.94,
-  stock: 5,
-};
 
 const TEXT_BODY_EXPECTED = 'User-agent: *\nDisallow: /deny\n';
 const JSON_BODY_EXPECTED = `{

@@ -139,7 +139,6 @@ const cacheStrategies = {
 export default defaultFetch;
 export { MemoryCache } from './classes/caching/memory_cache.js';
 export { FileSystemCache } from './classes/caching/file_system_cache.js';
-export { RedisCache } from './classes/caching/redis_cache.js';
 export { CACHE_VERSION } from './helpers/cache_keys.js';
 export type { NFCResponse } from './classes/response.js';
 export type { NFCResponseMetadata } from './types.js';

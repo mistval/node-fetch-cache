@@ -1,0 +1,45 @@
+{
+  "name": "@node-fetch-cache/redis",
+  "version": "1.0.0",
+  "description": "Redis plugin for node-fetch-cache",
+  "type": "module",
+  "exports": {
+    "import": "./dist/redis_cache.js",
+    "require": "./dist/redis_cache.cjs"
+  },
+  "types": "./dist/redis_cache.d.ts",
+  "scripts": {
+    "test": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec ./test_redis_cache.ts --extensions ts --timeout 10000 --exit",
+    "test:debug": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --inspect --inspect-brk --require ts-node/register --spec ./test_redis_cache.ts --extensions ts --timeout 10000 --exit",
+    "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test_redis_cache.ts npm test",
+    "tsc": "tsc",
+    "buildcjs": "cross-env rollup ./dist/redis_cache.js --file ./dist/redis_cache.cjs --format cjs",
+    "prepublishOnly": "cross-env npm run tsc && npm run buildcjs && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mistval/node-fetch-cache.git"
+  },
+  "keywords": [
+    "node",
+    "fetch",
+    "node-fetch",
+    "cache",
+    "redis",
+    "plugin"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "chai": "^5.1.1",
+    "ioredis": "^5.4.1",
+    "node-fetch-cache": "^4.1.1",
+    "sinon": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.16",
+    "@types/sinon": "^17.0.3",
+    "c8": "^10.1.2",
+    "cross-env": "^7.0.3"
+  }
+}

@@ -11,9 +11,9 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "tsc": "tsc",
-    "buildcjs": "cross-env rollup ./dist/index.js --file ./dist/index.cjs --format cjs && shx cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
-    "test": "cross-env mocha --timeout 10000 --exit test/*.ts && mocha --timeout 10000 --exit test/tests.cjs",
-    "test:debug": "cross-env mocha --inspect --inspect-brk --timeout 10000 test/*.ts --exit",
+    "buildcjs": "cross-env rollup ./dist/index.js --file ./dist/index.cjs --format cjs && cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
+    "test": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
+    "test:debug": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --inspect --inspect-brk --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test npm test",
     "lint": "xo .",
     "lintfix": "xo . --fix",
@@ -39,14 +39,10 @@
   "homepage": "https://github.com/mistval/node-fetch-cache#readme",
   "devDependencies": {
     "@types/cacache": "^17.0.2",
-    "@types/chai": "^4.3.16",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.14.6",
-    "@types/sinon": "^17.0.3",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "c8": "^8.0.1",
-    "chai": "^5.1.1",
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
     "encoding": "^0.1.13",
@@ -54,10 +50,7 @@
     "mocha": "^10.2.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
-    "shx": "^0.3.4",
-    "sinon": "^18.0.0",
     "ts-node": "^10.9.2",
-    "tsx": "^4.15.4",
     "typescript": "^5.3.3",
     "xo": "^0.56.0"
   },
@@ -67,9 +60,6 @@
     "form-data": "^4.0.0",
     "locko": "^1.1.0",
     "node-fetch": "2.7.0"
-  },
-  "optionalDependencies": {
-    "ioredis": "5.4.1"
   },
   "husky": {
     "hooks": {

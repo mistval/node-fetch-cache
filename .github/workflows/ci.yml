@@ -22,9 +22,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 20.x
-    - run: cd plugins/redis
-    - run: npm ci
-    - run: cd ../..
+    - run: npm ci --prefix plugins/redis
     - run: npm ci
     - run: npm run tsc
     - run: npm run buildcjs
@@ -58,9 +56,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 20.x
-    - run: cd plugins/redis
-    - run: npm ci
-    - run: cd ../..
+    - run: npm ci --prefix plugins/redis
     - run: npm ci
     - run: npm run tsc
     - run: npm run buildcjs

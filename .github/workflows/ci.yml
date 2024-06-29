@@ -32,7 +32,7 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  test_node_14.14.0:
+  test_node_14_14_0:
     runs-on: ubuntu-latest
 
     strategy:

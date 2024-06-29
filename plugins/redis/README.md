@@ -82,3 +82,6 @@ string
 127.0.0.1:6379> get aaa2b0d76148c24c04f17e168323bccc:meta
 "{\"url\":\"https://www.google.com/\",\"status\":200, ...
 ```
+## Credits
+
+Credit to [dxclabs](https://github.com/dxclabs) for the initial implementation.

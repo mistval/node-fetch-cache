@@ -13,3 +13,5 @@ src/*
 tsconfig.json
 .eslintrc.cjs
 commonjs
+test_redis_cache.ts
+redis_cache.ts

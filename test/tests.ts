@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-unassigned-import,import/order
 import 'dotenv/config.js';
-import process from 'process';
 import path, { dirname } from 'path';
 import util from 'util';
 import { fileURLToPath } from 'url';
@@ -20,7 +19,7 @@ import FetchCache, {
   ISynchronizationStrategy,
 } from '../src/index.js';
 
-const httpBinBaseUrl = process.env['HTTP_BIN_BASE_URL'] ?? 'https://httpbin.org';
+const httpBinBaseUrl = 'http://localhost:3000';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const wait = util.promisify(setTimeout);
 

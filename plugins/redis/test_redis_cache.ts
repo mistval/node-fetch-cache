@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-unassigned-import,import/order
 import 'dotenv/config.js';
-import process from 'process';
 import path, { dirname } from 'path';
 import util from 'util';
 import { fileURLToPath } from 'url';
@@ -19,7 +18,7 @@ import FetchCache, {
 import { RedisCache } from './redis_cache.js';
 import { Redis } from 'ioredis';
 
-const httpBinBaseUrl = process.env['HTTP_BIN_BASE_URL'] ?? 'https://httpbin.org';
+const httpBinBaseUrl = 'http://localhost:3000';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const wait = util.promisify(setTimeout);
 const redisClient = new Redis();
@@ -101,7 +100,7 @@ beforeEach(async () => {
 
 let response: NFCResponse;
 
-describe('Basic property tests', () => {
+describe('REDIS Basic property tests', () => {
   it('Has a status property', async () => {
     let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
     assert.strictEqual(cachedFetchResponse.status, standardFetchResponse.status);
@@ -145,7 +144,7 @@ describe('Basic property tests', () => {
   });
 }).timeout(10_000);
 
-describe('Header tests', () => {
+describe('REDIS Header tests', () => {
   it('Gets correct raw headers', async () => {
     let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
     assert.deepStrictEqual(
@@ -237,7 +236,7 @@ describe('Header tests', () => {
   });
 }).timeout(10_000);
 
-describe('Cache tests', () => {
+describe('REDIS Cache tests', () => {
   it('Uses cache', async () => {
     response = await defaultCachedFetch(TWO_HUNDRED_URL);
     assert.strictEqual(response.returnedFromCache, false);
@@ -424,7 +423,7 @@ describe('Cache tests', () => {
   });
 }).timeout(10_000);
 
-describe('Data tests', () => {
+describe('REDIS Data tests', () => {
   it('Supports request objects', async () => {
     let request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
     response = await defaultCachedFetch(request);
@@ -574,7 +573,7 @@ describe('Data tests', () => {
   });
 }).timeout(10_000);
 
-describe('Cache mode tests', () => {
+describe('REDIS Cache mode tests', () => {
   it('Can use the only-if-cached cache control setting via init', async () => {
     response = await defaultCachedFetch(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } });
     assert(response.status === 504 && response.isCacheMiss);
@@ -614,7 +613,7 @@ describe('Cache mode tests', () => {
   });
 });
 
-describe('Cache key tests', () => {
+describe('REDIS Cache key tests', () => {
   it('Can calculate a cache key and check that it exists', async () => {
     await defaultCachedFetch(TWO_HUNDRED_URL);
 
@@ -629,7 +628,7 @@ describe('Cache key tests', () => {
   });
 });
 
-describe('Cache strategy tests', () => {
+describe('REDIS Cache strategy tests', () => {
   it('Can use a custom cache strategy to cache only OKAY responses', async () => {
     const customCachedFetch = FetchCache.create({
       cache: defaultCache,
@@ -735,7 +734,7 @@ describe('Cache strategy tests', () => {
   });
 });
 
-describe('Network error tests', () => {
+describe('REDIS Network error tests', () => {
   it('Bubbles up network errors', async () => {
     await assert.rejects(async () => defaultCachedFetch('http://localhost:1'), /^FetchError:/);
   });

@@ -32,13 +32,40 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  test_node_14.14.0:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.14.0]
+
+    services:
+      httpbin:
+        image: kennethreitz/httpbin
+        ports:
+          - 3000:80
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 20.x
+    - run: npm ci
+    - run: npm run tsc
+    - run: npm run buildcjs
+    - name: Use Node.js Version Under Test
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm run test:core
 
   test_node_other:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [14.14.0, 14.x, 16.x, 18.x, 22.x]
+        node-version: [14.x, 16.x, 18.x, 22.x]
 
     services:
       httpbin:

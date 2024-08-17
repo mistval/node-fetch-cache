@@ -15,15 +15,6 @@
         "HTTP_BIN_BASE_URL": "http://localhost:3000"
       },
       "runtimeVersion": "20"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Tests Remote Server",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "test:debug"],
-      "console": "integratedTerminal",
-      "runtimeVersion": "20"
     }
   ]
 }

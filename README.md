@@ -6,7 +6,7 @@
 
 The first fetch with any given arguments will result in an HTTP request and any subsequent fetch with the same arguments will read the response from the cache.
 
-By default responses are cached in memory, but you can also cache to files on disk, or implement your own cache.
+By default responses are cached in memory, but you can also cache to files on disk, cache in Redis, or implement your own cache.
 
 ## Usage
 
@@ -27,7 +27,7 @@ This module's API is a superset of `node-fetch`'s. You can consult [the node-fet
 
 ### Control what's cached
 
-By default node-fetch-cache caches all responses, regardless of the status code or any other response characteristics.
+By default node-fetch-cache caches all responses, regardless of the response status or any other response characteristics.
 
 There are two main ways to customize which responses are cached and which are not.
 
@@ -264,6 +264,10 @@ node-fetch-cache supports both ESM and CommonJS. If you are using CommonJS, you 
 ```js
 const fetch = require('node-fetch-cache');
 ```
+
+### Upgrading
+
+Upgrading from an older major version? Check the [upgrade guide](https://github.com/mistval/node-fetch-cache/tree/master/docs/upgrade_guide.md).
 
 ### Node.js Support Policy
 

@@ -12,9 +12,9 @@
   "scripts": {
     "tsc": "tsc",
     "buildcjs": "cross-env rollup ./dist/index.js --file ./dist/index.cjs --format cjs && cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
-    "test": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --spec plugins/redis/test_redis_cache.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
-    "test:debug": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --inspect --inspect-brk --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit",
-    "test:core": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
+    "test": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --spec test/tests.ts --spec plugins/redis/test_redis_cache.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
+    "test:debug": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --inspect --inspect-brk --spec test/tests.ts --spec plugins/redis/test_redis_cache.ts --extensions ts --timeout 10000 --exit",
+    "test:core": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test --exclude=plugins/redis/test_redis_cache.ts npm test",
     "lint": "xo .",
     "lintfix": "xo . --fix",
@@ -51,7 +51,6 @@
     "mocha": "^10.2.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
-    "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   },
   "dependencies": {

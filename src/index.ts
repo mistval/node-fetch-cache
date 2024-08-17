@@ -1,6 +1,6 @@
-import fetch, { Request as NodeFetchRequest } from 'node-fetch';
+import type { Request as NodeFetchRequestType } from 'node-fetch';
 import FormData from 'form-data';
-import { NFCResponse } from './classes/response.js';
+import { createNFCResponseClass } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';
 import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
@@ -26,7 +26,9 @@ type NFCCustomizations = {
 
 type NFCOptions = Partial<NFCCustomizations>;
 
-function getUrlFromRequestArguments(resource: NodeFetchRequest | string) {
+async function getUrlFromRequestArguments(resource: NodeFetchRequestType | string) {
+  const { Request: NodeFetchRequest } = await import('node-fetch');
+
   if (resource instanceof NodeFetchRequest) {
     return resource.url;
   }
@@ -39,13 +41,16 @@ async function getResponse(
   resource: FetchResource,
   init: FetchInit,
 ) {
+  const { Request: NodeFetchRequest, default: fetch } = await import('node-fetch');
+  const NFCResponse = await createNFCResponseClass();
+
   if (typeof resource !== 'string' && !(resource instanceof NodeFetchRequest)) {
     throw new TypeError(
       'The first argument to fetch must be either a string or a node-fetch Request instance',
     );
   }
 
-  const cacheKey = fetchCustomization.calculateCacheKey(resource, init);
+  const cacheKey = await fetchCustomization.calculateCacheKey(resource, init);
   const ejectSelfFromCache = async () => fetchCustomization.cache.remove(cacheKey);
 
   const cachedValue = await fetchCustomization.cache.get(cacheKey);
@@ -58,9 +63,9 @@ async function getResponse(
     );
   }
 
-  if (hasOnlyIfCachedOption(resource, init)) {
+  if (await hasOnlyIfCachedOption(resource, init)) {
     return NFCResponse.cacheMissResponse(
-      getUrlFromRequestArguments(resource),
+      await getUrlFromRequestArguments(resource),
     );
   }
 
@@ -148,7 +153,7 @@ export {
   calculateCacheKey as getCacheKey,
   calculateCacheKey,
   FormData,
-  NodeFetchRequest,
+  type NodeFetchRequestType as NodeFetchRequest,
   type NFCOptions,
   type CacheKeyCalculator,
   type INodeFetchCacheCache,

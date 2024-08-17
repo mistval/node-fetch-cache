@@ -2,14 +2,11 @@ import fs from 'fs';
 import crypto from 'crypto';
 import assert from 'assert';
 import { Buffer } from 'buffer';
-import { Request as NodeFetchRequest } from 'node-fetch';
+import type { Request as NodeFetchRequestType } from 'node-fetch';
 import type { FetchInit, FetchResource, FormDataInternal } from '../types.js';
 import { FormData } from '../types.js';
 
 export const CACHE_VERSION = 6;
-
-const bodyInternalsSymbol = Object.getOwnPropertySymbols(new NodeFetchRequest('http://url.com'))[0];
-assert(bodyInternalsSymbol, 'Failed to get node-fetch bodyInternalsSymbol');
 
 function md5(string_: string) {
   return crypto.createHash('md5').update(string_).digest('hex');
@@ -69,7 +66,11 @@ function getBodyCacheKeyJson(body: unknown): string | FormDataInternal | undefin
   throw new Error('Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, fs.ReadStream, FormData');
 }
 
-function getRequestCacheKeyJson(request: NodeFetchRequest) {
+async function getRequestCacheKeyJson(request: NodeFetchRequestType) {
+  const { Request: NodeFetchRequest } = await import('node-fetch');
+  const bodyInternalsSymbol = Object.getOwnPropertySymbols(new NodeFetchRequest('http://url.com'))[0];
+  assert(bodyInternalsSymbol, 'Failed to get node-fetch bodyInternalsSymbol');
+
   return {
     headers: getHeadersCacheKeyJson([...request.headers.entries()]),
     method: request.method,
@@ -85,9 +86,10 @@ function getRequestCacheKeyJson(request: NodeFetchRequest) {
   };
 }
 
-export function calculateCacheKey(resource: FetchResource, init?: FetchInit) {
+export async function calculateCacheKey(resource: FetchResource, init?: FetchInit) {
+  const { Request: NodeFetchRequest } = await import('node-fetch');
   const resourceCacheKeyJson = resource instanceof NodeFetchRequest
-    ? getRequestCacheKeyJson(resource)
+    ? await getRequestCacheKeyJson(resource)
     : { url: resource, body: undefined };
 
   const initCacheKeyJson = {

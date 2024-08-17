@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
-import { Response as NodeFetchResponse } from 'node-fetch';
+import type { Response as NodeFetchResponse } from 'node-fetch';
 
 /* This is a bit of a hack to deal with the case when the user
  * consumes the response body in their `shouldCacheResponse` delegate.

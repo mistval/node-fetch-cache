@@ -1,4 +1,3 @@
-import { Request as NodeFetchRequest } from 'node-fetch';
 import { FetchInit, FetchResource } from '../types.js';
 
 function headerKeyIsCacheControl(key: string) {
@@ -16,7 +15,7 @@ function headerEntryIsCacheControlOnlyIfCached(pair: [string, string]) {
   return headerKeyIsCacheControl(pair[0]) && headerValueContainsOnlyIfCached(pair[1]);
 }
 
-export function hasOnlyIfCachedOption(resource: FetchResource, init: FetchInit) {
+export async function hasOnlyIfCachedOption(resource: FetchResource, init: FetchInit) {
   const initHeaderEntries = Object.entries(init?.headers ?? {});
   const initHeaderEntriesContainsCacheControlOnlyIfCached = initHeaderEntries.some(
     pair => headerEntryIsCacheControlOnlyIfCached(pair as [string, string]),
@@ -25,6 +24,8 @@ export function hasOnlyIfCachedOption(resource: FetchResource, init: FetchInit) 
   if (initHeaderEntriesContainsCacheControlOnlyIfCached) {
     return true;
   }
+
+  const { Request: NodeFetchRequest } = await import('node-fetch');
 
   if (
     resource instanceof NodeFetchRequest

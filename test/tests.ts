@@ -379,7 +379,7 @@ describe('Cache tests', () => {
   });
 
   it('Can use a client-provided custom cache key', async () => {
-    const cacheFunction = (resource: FetchResource) => {
+    const cacheFunction = async (resource: FetchResource) => {
       if (resource instanceof StandardFetchRequest) {
         return resource.url;
       }
@@ -654,8 +654,8 @@ describe('Cache key tests', () => {
   it('Can calculate a cache key and check that it exists', async () => {
     await defaultCachedFetch(TWO_HUNDRED_URL);
 
-    const cacheKey = calculateCacheKey(TWO_HUNDRED_URL);
-    const nonExistentCacheKey = calculateCacheKey(TEXT_BODY_URL);
+    const cacheKey = await calculateCacheKey(TWO_HUNDRED_URL);
+    const nonExistentCacheKey = await calculateCacheKey(TEXT_BODY_URL);
 
     const cacheKeyResult = await defaultCache.get(cacheKey);
     const nonExistentCacheKeyResult = await defaultCache.get(nonExistentCacheKey);

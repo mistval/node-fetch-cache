@@ -1,4 +1,5 @@
 import type { Request as NodeFetchRequestType } from 'node-fetch';
+import { Readable } from 'stream';
 import { FormData } from 'formdata-node';
 import { getNFCResponseClass as getNFCResponseClass } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
@@ -94,7 +95,7 @@ async function getResponse(
     if (shouldCache) {
       const cacheSetResult = await fetchCustomization.cache.set(
         cacheKey,
-        bodyStream!,
+        bodyStream ?? Readable.from(Buffer.alloc(0)),
         serializedMeta,
       );
 
@@ -102,7 +103,7 @@ async function getResponse(
     }
 
     return new NFCResponse(
-      bodyStream!,
+      bodyStream ?? Readable.from(Buffer.alloc(0)),
       serializedMeta,
       ejectSelfFromCache,
       false,

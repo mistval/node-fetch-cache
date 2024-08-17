@@ -27,7 +27,8 @@ jobs:
     - run: npm run tsc
     - run: npm run buildcjs
     - run: npm link
-    - run: npm link node-fetch-cache --prefix plugins/redis
+    - run: npm link node-fetch-cache
+      working-directory: plugins/redis
     - run: npm run coverage
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
@@ -62,7 +63,8 @@ jobs:
     - run: npm run tsc
     - run: npm run buildcjs
     - run: npm link
-    - run: npm link node-fetch-cache --prefix plugins/redis
+    - run: npm link node-fetch-cache
+      working-directory: plugins/redis
     - name: Use Node.js Version Under Test
       uses: actions/setup-node@v1
       with:

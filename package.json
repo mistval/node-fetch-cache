@@ -52,7 +52,7 @@
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "cacache": "^18.0.1",
@@ -66,6 +66,6 @@
     }
   },
   "engines": {
-    "node": ">=14.14.0"
+    "node": ">=16.0.0"
   }
 }

@@ -6,7 +6,7 @@ The v5 version of `node-fetch-cache` upgrades `node-fetch` from v2 to v3.
 
 Please consult the [node-fetch v2 -> v3 upgrade guide](https://github.com/node-fetch/node-fetch/blob/main/docs/v3-UPGRADE-GUIDE.md) and follow the instructions there, except regarding the following:
 
-1. The minimum supported node version for `node-fetch-cache` is v18.18.0
+1. The minimum supported node version for `node-fetch-cache` is v18.19.0
 2. Unlike `node-fetch` v3, `node-fetch-cache` v5 still supports CommonJS.
 
 In addition, `node-fetch-cache` specifics have changed in the following breaking ways, which will affect a minority of use cases:

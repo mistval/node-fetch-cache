@@ -276,7 +276,7 @@ node-fetch-cache will support:
 * All non-EOL LTS Node.js versions
 * In addition, as far back as is technically easy
 
-Currently the oldest supported Node.js version is v18.18.0.
+Currently the oldest supported Node.js version is v18.19.0.
 
 Automated tests will be run on the current Node.js version, the oldest supported Node.js version, and the latest release of all even-numbered Node.js versions between those two.
 

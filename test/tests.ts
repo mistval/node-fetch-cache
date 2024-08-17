@@ -7,7 +7,7 @@ import fs from 'fs';
 import assert from 'assert';
 import { Agent } from 'http';
 import { rimraf } from 'rimraf';
-import FormData from 'form-data';
+import { FormData } from 'formdata-node';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
 import FetchCache, {
   MemoryCache,

@@ -2,20 +2,21 @@
 
 ## Upgrading node-fetch-cache v4 -> v5
 
-The v5 version of node-fetch-cache upgrades `node-fetch` from v2 to v3.
+The v5 version of `node-fetch-cache` upgrades `node-fetch` from v2 to v3.
 
 Please consult the [node-fetch v2 -> v3 upgrade guide](https://github.com/node-fetch/node-fetch/blob/main/docs/v3-UPGRADE-GUIDE.md) and follow the instructions there, except regarding the following:
 
 1. The minimum supported node version for `node-fetch-cache` is v16.0.0
 2. Unlike `node-fetch` v3, `node-fetch-cache` v5 still supports CommonJS.
 
-In addition node-fetch-cache specifics have changed in the following ways:
+In addition, `node-fetch-cache` specifics have changed in the following breaking ways, which will affect a minority of use cases:
 
 1. If you are providing a custom `calculateCacheKey` function, it must now be async (returns a promise).
+2. `node-fetch-cache` now uses [formdata-node](https://www.npmjs.com/package/formdata-node) instead of [form-data](https://www.npmjs.com/package/form-data) (which has been deprecated in `node-fetch` v3). This may affect you if you are sending request bodies of type FormData.
 
 ## Upgrading node-fetch-cache v3 -> v4
 
-The v4 version of node-fetch-cache has several breaking changes and new features.
+The v4 version of `node-fetch-cache` has several breaking changes and new features.
 
 ### Node.js v14.14.0 is now the lowest supported Node.js version
 

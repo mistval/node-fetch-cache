@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import assert from 'assert';
 import { Buffer } from 'buffer';
 import type { Request as NodeFetchRequestType } from 'node-fetch';
-import type { FetchInit, FetchResource, FormDataInternal } from '../types.js';
+import type { FetchInit, FetchResource } from '../types.js';
 import { FormData } from '../types.js';
 import { getNodeFetch } from './node_fetch_imports.js';
 
@@ -15,20 +15,10 @@ function md5(string_: string) {
 
 function getFormDataCacheKeyJson(formData: FormData) {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const cacheKey = { ...formData } as FormDataInternal;
-  const boundary = formData.getBoundary();
-
-  delete cacheKey._boundary;
-
-  const boundaryReplaceRegex = new RegExp(boundary, 'g');
-
-  cacheKey._streams = cacheKey._streams.map(s => {
-    if (typeof s === 'string') {
-      return s.replace(boundaryReplaceRegex, '');
-    }
-
-    return s;
-  });
+  const cacheKey = {
+    type: 'FormData',
+    entries: Array.from(formData.entries()),
+  };
 
   return cacheKey;
 }
@@ -39,7 +29,7 @@ function getHeadersCacheKeyJson(headers: string[][]): string[][] {
     .filter(([key, value]) => key !== 'cache-control' || value !== 'only-if-cached');
 }
 
-function getBodyCacheKeyJson(body: unknown): string | FormDataInternal | undefined {
+function getBodyCacheKeyJson(body: unknown): string | object | undefined {
   if (!body) {
     return undefined;
   }
@@ -94,7 +84,7 @@ export async function calculateCacheKey(resource: FetchResource, init?: FetchIni
     : { url: resource, body: undefined };
 
   const initCacheKeyJson = {
-    body: undefined as (undefined | string | FormDataInternal),
+    body: undefined as (undefined | string | object),
     ...init,
     headers: getHeadersCacheKeyJson(Object.entries(init?.headers ?? {})),
   };

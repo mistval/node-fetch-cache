@@ -1,5 +1,5 @@
 import type { Request as NodeFetchRequestType } from 'node-fetch';
-import FormData from 'form-data';
+import { FormData } from 'formdata-node';
 import { getNFCResponseClass as getNFCResponseClass } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';

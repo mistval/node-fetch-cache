@@ -18,7 +18,7 @@
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test --exclude=plugins/redis/test_redis_cache.ts npm test",
     "lint": "xo .",
     "lintfix": "xo . --fix",
-    "prepublishOnly": "cross-env npm run tsc && npm run buildcjs && npm test",
+    "prepublishOnly": "cross-env rm -rf dist && npm run tsc && npm run buildcjs && npm test",
     "prepare": "husky install"
   },
   "repository": {

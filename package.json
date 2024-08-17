@@ -1,6 +1,6 @@
 {
   "name": "node-fetch-cache",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "description": "node-fetch with caching.",
   "main": "src/index.js",
   "type": "module",
@@ -51,6 +51,7 @@
     "mocha": "^10.2.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
+    "tsx": "^4.17.0",
     "typescript": "^5.5.4"
   },
   "dependencies": {

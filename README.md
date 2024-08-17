@@ -163,6 +163,19 @@ if (response.isCacheMiss) {
 
 ## Advanced API
 
+### Accessing Node-Fetch Exports
+
+If you need to access `node-fetch` exports (for example you might want to create a Request instance), you can do so by using the `getNodeFetch()` function:
+
+```js
+import fetch, { getNodeFetch } from 'node-fetch-cache';
+
+const { Request } = await getNodeFetch();
+const response = await fetch(new Request('https://google.com'));
+```
+
+You should not import from `node-fetch` directly since it is important that your code is using exports from the same version of `node-fetch` that is being used by `node-fetch-cache` internally.
+
 ### Custom Cache Key Function
 
 You can provide custom cache key generation logic to node-fetch-cache by passing a `calculateCacheKey` option to `create()`:

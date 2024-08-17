@@ -1,4 +1,5 @@
 export async function getNodeFetch() {
-  const { default: fetch, Request: NodeFetchRequest, Response: NodeFetchResponse } = await import('node-fetch');
-  return { fetch, NodeFetchRequest, NodeFetchResponse };
+  const nodeFetchModule = await import('node-fetch');
+  const { default: fetch, Request: NodeFetchRequest, Response: NodeFetchResponse } = nodeFetchModule;
+  return { ...nodeFetchModule, fetch, NodeFetchRequest, NodeFetchResponse };
 }

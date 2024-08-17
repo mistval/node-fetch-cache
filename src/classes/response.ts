@@ -3,9 +3,10 @@ import { Buffer } from 'buffer';
 import { Readable } from 'stream';
 import type { Response as NodeFetchResponseType, ResponseInit as NodeFetchResponseInit } from 'node-fetch';
 import { NFCResponseMetadata } from '../types.js';
+import { getNodeFetch } from '../helpers/node_fetch_imports.js';
 
 export async function createNFCResponseClass() {
-  const { Response: NodeFetchResponse } = await import('node-fetch');
+  const { NodeFetchResponse } = await getNodeFetch();
 
   const responseInternalSymbol = Object.getOwnPropertySymbols(new NodeFetchResponse())[1];
   assert(responseInternalSymbol, 'Failed to get node-fetch responseInternalSymbol');
@@ -64,4 +65,5 @@ export async function createNFCResponseClass() {
 
 }
 
+export type NFCResponseClass = Awaited<ReturnType<typeof createNFCResponseClass>>;
 export type NFCResponse = InstanceType<Awaited<ReturnType<typeof createNFCResponseClass>>>;

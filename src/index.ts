@@ -14,6 +14,7 @@ import type {
   INodeFetchCacheCache,
   ISynchronizationStrategy,
 } from './types.js';
+import { getNodeFetch } from './helpers/node_fetch_imports.js';
 
 type CacheKeyCalculator = typeof calculateCacheKey;
 
@@ -27,7 +28,7 @@ type NFCCustomizations = {
 type NFCOptions = Partial<NFCCustomizations>;
 
 async function getUrlFromRequestArguments(resource: NodeFetchRequestType | string) {
-  const { Request: NodeFetchRequest } = await import('node-fetch');
+  const { NodeFetchRequest } = await getNodeFetch();
 
   if (resource instanceof NodeFetchRequest) {
     return resource.url;
@@ -41,7 +42,7 @@ async function getResponse(
   resource: FetchResource,
   init: FetchInit,
 ) {
-  const { Request: NodeFetchRequest, default: fetch } = await import('node-fetch');
+  const { NodeFetchRequest, fetch } = await getNodeFetch();
   const NFCResponse = await createNFCResponseClass();
 
   if (typeof resource !== 'string' && !(resource instanceof NodeFetchRequest)) {

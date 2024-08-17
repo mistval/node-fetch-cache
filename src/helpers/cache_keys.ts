@@ -5,6 +5,7 @@ import { Buffer } from 'buffer';
 import type { Request as NodeFetchRequestType } from 'node-fetch';
 import type { FetchInit, FetchResource, FormDataInternal } from '../types.js';
 import { FormData } from '../types.js';
+import { getNodeFetch } from './node_fetch_imports.js';
 
 export const CACHE_VERSION = 6;
 
@@ -67,7 +68,7 @@ function getBodyCacheKeyJson(body: unknown): string | FormDataInternal | undefin
 }
 
 async function getRequestCacheKeyJson(request: NodeFetchRequestType) {
-  const { Request: NodeFetchRequest } = await import('node-fetch');
+  const { NodeFetchRequest } = await getNodeFetch();
   const bodyInternalsSymbol = Object.getOwnPropertySymbols(new NodeFetchRequest('http://url.com'))[0];
   assert(bodyInternalsSymbol, 'Failed to get node-fetch bodyInternalsSymbol');
 
@@ -87,7 +88,7 @@ async function getRequestCacheKeyJson(request: NodeFetchRequestType) {
 }
 
 export async function calculateCacheKey(resource: FetchResource, init?: FetchInit) {
-  const { Request: NodeFetchRequest } = await import('node-fetch');
+  const { NodeFetchRequest } = await getNodeFetch();
   const resourceCacheKeyJson = resource instanceof NodeFetchRequest
     ? await getRequestCacheKeyJson(resource)
     : { url: resource, body: undefined };

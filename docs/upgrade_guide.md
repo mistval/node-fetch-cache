@@ -9,6 +9,10 @@ Please consult the [node-fetch v2 -> v3 upgrade guide](https://github.com/node-f
 1. The minimum supported node version for `node-fetch-cache` is v16.0.0
 2. Unlike `node-fetch` v3, `node-fetch-cache` v5 still supports CommonJS.
 
+In addition node-fetch-cache specifics have changed in the following ways:
+
+1. If you are providing a custom `calculateCacheKey` function, it must now be async (returns a promise).
+
 ## Upgrading node-fetch-cache v3 -> v4
 
 The v4 version of node-fetch-cache has several breaking changes and new features.

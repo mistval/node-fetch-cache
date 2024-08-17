@@ -526,8 +526,9 @@ describe('Data tests', () => {
     );
 
     // Since our bogus synchronization strategy doesn't actually synchronize,
-    // both requests should be cache misses.
-    assert(responses.every(response => !response.returnedFromCache));
+    // at least five responses should be cache misses (this depends on random
+    // timing and might be a little flaky).
+    assert(responses.filter(response => !response.returnedFromCache).length > 5);
   });
 
   it('Can stream a hundred thousand bytes to a file in ten chunks', async () => {

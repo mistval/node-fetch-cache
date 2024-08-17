@@ -5,7 +5,7 @@ import type { Response as NodeFetchResponseType, ResponseInit as NodeFetchRespon
 import { NFCResponseMetadata } from '../types.js';
 import { getNodeFetch } from '../helpers/node_fetch_imports.js';
 
-export async function createNFCResponseClass() {
+async function createNFCResponseClass() {
   const { NodeFetchResponse } = await getNodeFetch();
 
   const responseInternalSymbol = Object.getOwnPropertySymbols(new NodeFetchResponse())[1];
@@ -62,8 +62,17 @@ export async function createNFCResponseClass() {
       );
     }
   }
-
 }
 
 export type NFCResponseClass = Awaited<ReturnType<typeof createNFCResponseClass>>;
-export type NFCResponse = InstanceType<Awaited<ReturnType<typeof createNFCResponseClass>>>;
+export type NFCResponse = InstanceType<NFCResponseClass>;
+
+let cachedClass: NFCResponseClass | undefined;
+
+export async function getNFCResponseClass() {
+  if (!cachedClass) {
+    cachedClass = await createNFCResponseClass();
+  }
+
+  return cachedClass;
+}

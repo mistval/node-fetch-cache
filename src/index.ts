@@ -1,6 +1,6 @@
 import type { Request as NodeFetchRequestType } from 'node-fetch';
 import FormData from 'form-data';
-import { createNFCResponseClass } from './classes/response.js';
+import { getNFCResponseClass as getNFCResponseClass } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';
 import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
@@ -43,7 +43,7 @@ async function getResponse(
   init: FetchInit,
 ) {
   const { NodeFetchRequest, fetch } = await getNodeFetch();
-  const NFCResponse = await createNFCResponseClass();
+  const NFCResponse = await getNFCResponseClass();
 
   if (typeof resource !== 'string' && !(resource instanceof NodeFetchRequest)) {
     throw new TypeError(

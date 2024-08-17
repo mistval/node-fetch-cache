@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 import { Readable } from 'stream';
-import { Response as NodeFetchResponse } from 'node-fetch';
+import type { Response as NodeFetchResponse } from 'node-fetch';
 
 /* This is a bit of a hack to deal with the case when the user
  * consumes the response body in their `shouldCacheResponse` delegate.
@@ -31,7 +31,7 @@ export function shimResponseToSnipeBody(
 
   const origJson = response.json;
   response.json = async function () {
-    const json = await origJson.call(this) as unknown;
+    const json = await origJson.call(this);
     replaceBodyStream(Readable.from(Buffer.from(JSON.stringify(json))));
     return json;
   };
@@ -48,12 +48,5 @@ export function shimResponseToSnipeBody(
     const blob = await origBlob.call(this);
     replaceBodyStream(Readable.from(Buffer.from(await blob.text())));
     return blob;
-  };
-
-  const origTextConverted = response.textConverted;
-  response.textConverted = async function () {
-    const textConverted = await origTextConverted.call(this);
-    replaceBodyStream(Readable.from(Buffer.from(textConverted)));
-    return textConverted;
   };
 }

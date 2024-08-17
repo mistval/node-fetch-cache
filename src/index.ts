@@ -1,6 +1,7 @@
-import fetch, { Request as NodeFetchRequest } from 'node-fetch';
-import FormData from 'form-data';
-import { NFCResponse } from './classes/response.js';
+import type { Request as NodeFetchRequestType } from 'node-fetch';
+import { Readable } from 'stream';
+import { FormData } from 'formdata-node';
+import { getNFCResponseClass as getNFCResponseClass } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';
 import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
@@ -14,6 +15,7 @@ import type {
   INodeFetchCacheCache,
   ISynchronizationStrategy,
 } from './types.js';
+import { getNodeFetch } from './helpers/node_fetch_imports.js';
 
 type CacheKeyCalculator = typeof calculateCacheKey;
 
@@ -26,7 +28,9 @@ type NFCCustomizations = {
 
 type NFCOptions = Partial<NFCCustomizations>;
 
-function getUrlFromRequestArguments(resource: NodeFetchRequest | string) {
+async function getUrlFromRequestArguments(resource: NodeFetchRequestType | string) {
+  const { NodeFetchRequest } = await getNodeFetch();
+
   if (resource instanceof NodeFetchRequest) {
     return resource.url;
   }
@@ -39,13 +43,16 @@ async function getResponse(
   resource: FetchResource,
   init: FetchInit,
 ) {
+  const { NodeFetchRequest, fetch } = await getNodeFetch();
+  const NFCResponse = await getNFCResponseClass();
+
   if (typeof resource !== 'string' && !(resource instanceof NodeFetchRequest)) {
     throw new TypeError(
       'The first argument to fetch must be either a string or a node-fetch Request instance',
     );
   }
 
-  const cacheKey = fetchCustomization.calculateCacheKey(resource, init);
+  const cacheKey = await fetchCustomization.calculateCacheKey(resource, init);
   const ejectSelfFromCache = async () => fetchCustomization.cache.remove(cacheKey);
 
   const cachedValue = await fetchCustomization.cache.get(cacheKey);
@@ -58,9 +65,9 @@ async function getResponse(
     );
   }
 
-  if (hasOnlyIfCachedOption(resource, init)) {
+  if (await hasOnlyIfCachedOption(resource, init)) {
     return NFCResponse.cacheMissResponse(
-      getUrlFromRequestArguments(resource),
+      await getUrlFromRequestArguments(resource),
     );
   }
 
@@ -88,7 +95,7 @@ async function getResponse(
     if (shouldCache) {
       const cacheSetResult = await fetchCustomization.cache.set(
         cacheKey,
-        bodyStream,
+        bodyStream ?? Readable.from(Buffer.alloc(0)),
         serializedMeta,
       );
 
@@ -96,7 +103,7 @@ async function getResponse(
     }
 
     return new NFCResponse(
-      bodyStream,
+      bodyStream ?? Readable.from(Buffer.alloc(0)),
       serializedMeta,
       ejectSelfFromCache,
       false,
@@ -148,7 +155,7 @@ export {
   calculateCacheKey as getCacheKey,
   calculateCacheKey,
   FormData,
-  NodeFetchRequest,
+  type NodeFetchRequestType as NodeFetchRequest,
   type NFCOptions,
   type CacheKeyCalculator,
   type INodeFetchCacheCache,

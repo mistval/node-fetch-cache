@@ -6,7 +6,7 @@
 
 The first fetch with any given arguments will result in an HTTP request and any subsequent fetch with the same arguments will read the response from the cache.
 
-By default responses are cached in memory, but you can also cache to files on disk, or implement your own cache.
+By default responses are cached in memory, but you can also cache to files on disk, cache in Redis, or implement your own cache.
 
 ## Usage
 
@@ -27,7 +27,7 @@ This module's API is a superset of `node-fetch`'s. You can consult [the node-fet
 
 ### Control what's cached
 
-By default node-fetch-cache caches all responses, regardless of the status code or any other response characteristics.
+By default node-fetch-cache caches all responses, regardless of the response status or any other response characteristics.
 
 There are two main ways to customize which responses are cached and which are not.
 
@@ -249,94 +249,6 @@ const fetch = NodeFetchCache.create({
 });
 ```
 
-## Upgrading node-fetch-cache v3 -> v4
-
-The v4 version of node-fetch-cache has several breaking changes and new features. Please review the below details if you are upgrading from v3.
-
-### Node.js v14.14.0 is now the lowest supported Node.js version
-
-v4 will not work at all on Node.js versions below v14.14.0.
-
-### Specifying a Cache
-
-The syntax to specify a non-default cache has changed. You should rewrite code like this:
-
-```js
-import { fetchBuilder, FileSystemCache } from 'node-fetch-cache';
-const fetch = fetchBuilder.withCache(new FileSystemCache(options));
-```
-
-To this:
-
-```js
-import NodeFetchCache, { FileSystemCache } from 'node-fetch-cache';
-
-const fetch = NodeFetchCache.create({
-  cache: new FileSystemCache(options),
-});
-```
-
-### Cache-Control: only-if-cached
-
-If you are relying on the `Cache-Control: only-if-cached` header feature, that has been changed to better align with the browser fetch API. It no longer returns `undefined`, but instead returns a `504 Gateway Timeout` response if no cached response is available. The response will also have an `isCacheMiss` property set to true to help you distinguish it from a regular 504 response. You should rewrite code like this:
-
-```js
-import fetch from 'node-fetch-cache';
-
-const response = await fetch('https://google.com', {
-  headers: { 'Cache-Control': 'only-if-cached' }
-});
-
-if (response === undefined) {
-  console.log('No response was found in the cache!');
-}
-```
-
-To this:
-
-```js
-import fetch from 'node-fetch-cache';
-
-const response = await fetch('https://google.com', {
-  headers: { 'Cache-Control': 'only-if-cached' }
-});
-
-if (response.isCacheMiss) {
-  console.log('No response was found in the cache!');
-}
-```
-
-### TypeScript
-
-If you were using the `@types/node-fetch-cache` package, that is no longer necessary as v4 includes its own TypeScript definitions, which may be somewhat different.
-
-### ejectFromCache()
-
-While the `ejectFromCache()` function still exists and functions the same way as in v3, you may find the new `shouldCacheResponse` option to be cleaner for many use cases, and it also allows you to keep the response from being cached in the first place which will reduce writes to the cache. So consider rewriting code like this:
-
-```js
-fetch('http://google.com')
-  .then(async response => {
-    if (!response.ok) {
-      await response.ejectFromCache();
-    } else {
-      return response.text();
-    }
-  }).then(text => console.log(text));
-```
-
-To this:
-
-```js
-fetch(
-  'http://google.com',
-  undefined,
-  { shouldCacheResponse: response => response.ok },
-).then(response => {
-  return response.text();
-}).then(text => console.log(text));
-```
-
 ## Misc
 
 ### Streams
@@ -353,6 +265,10 @@ node-fetch-cache supports both ESM and CommonJS. If you are using CommonJS, you 
 const fetch = require('node-fetch-cache');
 ```
 
+### Upgrading
+
+Upgrading from an older major version? Check the [upgrade guide](https://github.com/mistval/node-fetch-cache/tree/master/docs/upgrade_guide.md).
+
 ### Node.js Support Policy
 
 node-fetch-cache will support:
@@ -360,7 +276,7 @@ node-fetch-cache will support:
 * All non-EOL LTS Node.js versions
 * In addition, as far back as is technically easy
 
-Currently the oldest supported Node.js version is v14.14.0, which adds `fs.rmSync()` which is used by a dependency.
+Currently the oldest supported Node.js version is v18.19.0.
 
 Automated tests will be run on the current Node.js version, the oldest supported Node.js version, and the latest release of all even-numbered Node.js versions between those two.
 

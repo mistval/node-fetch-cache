@@ -1,6 +1,6 @@
 {
   "name": "node-fetch-cache",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "description": "node-fetch with caching.",
   "main": "src/index.js",
   "type": "module",
@@ -12,9 +12,9 @@
   "scripts": {
     "tsc": "tsc",
     "buildcjs": "cross-env rollup ./dist/index.js --file ./dist/index.cjs --format cjs && cp ./commonjs/wrapper.cjs ./dist/wrapper.cjs",
-    "test": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --spec plugins/redis/test_redis_cache.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
-    "test:debug": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --inspect --inspect-brk --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit",
-    "test:core": "cross-env NODE_OPTIONS=\"--loader ts-node/esm\" mocha --require ts-node/register --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
+    "test": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --spec test/tests.ts --spec plugins/redis/test_redis_cache.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
+    "test:debug": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --inspect --inspect-brk --spec test/tests.ts --spec plugins/redis/test_redis_cache.ts --extensions ts --timeout 10000 --exit",
+    "test:core": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test --exclude=plugins/redis/test_redis_cache.ts npm test",
     "lint": "xo .",
     "lintfix": "xo . --fix",
@@ -51,15 +51,14 @@
     "mocha": "^10.2.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@types/node-fetch": "2.6.11",
     "cacache": "^18.0.1",
-    "form-data": "^4.0.0",
+    "formdata-node": "^6.0.3",
     "locko": "^1.1.0",
-    "node-fetch": "2.7.0"
+    "node-fetch": "3.3.2"
   },
   "husky": {
     "hooks": {
@@ -67,6 +66,6 @@
     }
   },
   "engines": {
-    "node": ">=14.14.0"
+    "node": ">=18.19.0"
   }
 }

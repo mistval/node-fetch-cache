@@ -1,11 +1,13 @@
 import fs from 'fs';
 import crypto from 'crypto';
+import assert from 'assert';
 import { Buffer } from 'buffer';
-import { Request as NodeFetchRequest } from 'node-fetch';
-import type { FetchInit, FetchResource, FormDataInternal } from '../types.js';
+import type { Request as NodeFetchRequestType } from 'node-fetch';
+import type { FetchInit, FetchResource } from '../types.js';
 import { FormData } from '../types.js';
+import { getNodeFetch } from './node_fetch_imports.js';
 
-export const CACHE_VERSION = 5;
+export const CACHE_VERSION = 6;
 
 function md5(string_: string) {
   return crypto.createHash('md5').update(string_).digest('hex');
@@ -13,20 +15,10 @@ function md5(string_: string) {
 
 function getFormDataCacheKeyJson(formData: FormData) {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const cacheKey = { ...formData } as FormDataInternal;
-  const boundary = formData.getBoundary();
-
-  delete cacheKey._boundary;
-
-  const boundaryReplaceRegex = new RegExp(boundary, 'g');
-
-  cacheKey._streams = cacheKey._streams.map(s => {
-    if (typeof s === 'string') {
-      return s.replace(boundaryReplaceRegex, '');
-    }
-
-    return s;
-  });
+  const cacheKey = {
+    type: 'FormData',
+    entries: Array.from(formData.entries()),
+  };
 
   return cacheKey;
 }
@@ -37,7 +29,7 @@ function getHeadersCacheKeyJson(headers: string[][]): string[][] {
     .filter(([key, value]) => key !== 'cache-control' || value !== 'only-if-cached');
 }
 
-function getBodyCacheKeyJson(body: any): string | FormDataInternal | undefined {
+function getBodyCacheKeyJson(body: unknown): string | object | undefined {
   if (!body) {
     return undefined;
   }
@@ -65,27 +57,34 @@ function getBodyCacheKeyJson(body: any): string | FormDataInternal | undefined {
   throw new Error('Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, fs.ReadStream, FormData');
 }
 
-function getRequestCacheKeyJson(request: NodeFetchRequest) {
+async function getRequestCacheKeyJson(request: NodeFetchRequestType) {
+  const { NodeFetchRequest } = await getNodeFetch();
+  const bodyInternalsSymbol = Object.getOwnPropertySymbols(new NodeFetchRequest('http://url.com'))[0];
+  assert(bodyInternalsSymbol, 'Failed to get node-fetch bodyInternalsSymbol');
+
   return {
     headers: getHeadersCacheKeyJson([...request.headers.entries()]),
     method: request.method,
     redirect: request.redirect,
     referrer: request.referrer,
     url: request.url,
-    body: getBodyCacheKeyJson(request.body),
-    follow: request.follow,
-    compress: request.compress,
+    body: getBodyCacheKeyJson((request as any)[bodyInternalsSymbol!].body),
+    // Confirmed that this property exists, but it's not in the types
+    follow: (request as any).follow, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+    // Confirmed that this property exists, but it's not in the types
+    compress: (request as any).compress, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     size: request.size,
   };
 }
 
-export function calculateCacheKey(resource: FetchResource, init?: FetchInit) {
+export async function calculateCacheKey(resource: FetchResource, init?: FetchInit) {
+  const { NodeFetchRequest } = await getNodeFetch();
   const resourceCacheKeyJson = resource instanceof NodeFetchRequest
-    ? getRequestCacheKeyJson(resource)
+    ? await getRequestCacheKeyJson(resource)
     : { url: resource, body: undefined };
 
   const initCacheKeyJson = {
-    body: undefined as (undefined | string | FormDataInternal),
+    body: undefined as (undefined | string | object),
     ...init,
     headers: getHeadersCacheKeyJson(Object.entries(init?.headers ?? {})),
   };

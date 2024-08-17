@@ -1,15 +1,10 @@
-import type fs from 'fs';
-import fetch, { Response as NodeFetchResponse } from 'node-fetch';
-import FormData from 'form-data';
+import type { Response as NodeFetchResponse } from 'node-fetch';
+import type fetch from 'node-fetch';
+import { FormData } from 'formdata-node';
 
 export type FetchResource = Parameters<typeof fetch>[0];
 export type FetchInit = Parameters<typeof fetch>[1];
 export type CacheStrategy = (response: NodeFetchResponse) => Promise<boolean> | boolean;
-
-export type FormDataInternal = {
-  _boundary?: string;
-  _streams: Array<string | fs.ReadStream>;
-} & FormData;
 
 export { FormData };
 
@@ -19,8 +14,7 @@ export type NFCResponseMetadata = {
   statusText: string;
   headers: Record<string, string[]>;
   size: number;
-  timeout: number;
-  counter: any;
+  counter: number;
 };
 
 export type INodeFetchCacheCache = {

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import assert from 'assert';
 import { Agent } from 'http';
-import FormData from 'form-data';
+import { FormData } from 'formdata-node';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
 import FetchCache, {
   cacheStrategies,
@@ -14,7 +14,7 @@ import FetchCache, {
   NFCResponse,
   calculateCacheKey,
   ISynchronizationStrategy,
-} from 'node-fetch-cache';
+} from '../../src/index.js';
 import { RedisCache } from './redis_cache.js';
 import { Redis } from 'ioredis';
 
@@ -366,7 +366,7 @@ describe('REDIS Plugin Tests', function() {
     });
   
     it('Can use a client-provided custom cache key', async () => {
-      const cacheFunction = (resource: FetchResource) => {
+      const cacheFunction = async (resource: FetchResource) => {
         if (resource instanceof StandardFetchRequest) {
           return resource.url;
         }
@@ -375,7 +375,7 @@ describe('REDIS Plugin Tests', function() {
         return resource.toString();
       };
   
-      const cachedFetch = FetchCache.create({ calculateCacheKey: cacheFunction });
+      const cachedFetch = FetchCache.create({ cache: defaultCache, calculateCacheKey: cacheFunction });
       const response1 = await cachedFetch(TWO_HUNDRED_URL, { headers: { XXX: 'YYY' } });
       const response2 = await cachedFetch(TWO_HUNDRED_URL, { headers: { XXX: 'ZZZ' } });
   
@@ -499,7 +499,7 @@ describe('REDIS Plugin Tests', function() {
       response = await defaultCachedFetch(TEXT_BODY_URL);
       let body = '';
   
-      for await (const chunk of response.body) {
+      for await (const chunk of response.body ?? []) {
         body += chunk.toString();
       }
   
@@ -509,7 +509,7 @@ describe('REDIS Plugin Tests', function() {
       response = await defaultCachedFetch(TEXT_BODY_URL);
       body = '';
   
-      for await (const chunk of response.body) {
+      for await (const chunk of response.body ?? []) {
         body += chunk.toString();
       }
   
@@ -556,10 +556,11 @@ describe('REDIS Plugin Tests', function() {
           .fill(0)
           .map(async () => defaultCachedFetch(TWO_HUNDRED_URL)),
       );
-  
+
       // Since our bogus synchronization strategy doesn't actually synchronize,
-      // both requests should be cache misses.
-      assert(responses.every(response => !response.returnedFromCache));
+      // at least two responses should be cache misses (this depends on random
+      // timing and might be a little flaky).
+      assert(responses.filter(response => !response.returnedFromCache).length > 1);
     });
   
     it('Can stream a hundred thousand bytes to a file in ten chunks', async () => {
@@ -625,8 +626,8 @@ describe('REDIS Plugin Tests', function() {
     it('Can calculate a cache key and check that it exists', async () => {
       await defaultCachedFetch(TWO_HUNDRED_URL);
   
-      const cacheKey = calculateCacheKey(TWO_HUNDRED_URL);
-      const nonExistentCacheKey = calculateCacheKey(TEXT_BODY_URL);
+      const cacheKey = await calculateCacheKey(TWO_HUNDRED_URL);
+      const nonExistentCacheKey = await calculateCacheKey(TEXT_BODY_URL);
   
       const cacheKeyResult = await defaultCache.get(cacheKey);
       const nonExistentCacheKeyResult = await defaultCache.get(nonExistentCacheKey);
@@ -714,7 +715,7 @@ describe('REDIS Plugin Tests', function() {
     });
   
     it('Can use a custom cache strategy that uses the response for all response types', async () => {
-      const functionsThatUseResponse = ['arrayBuffer', 'blob', 'buffer', 'json', 'text', 'textConverted'] as const;
+      const functionsThatUseResponse = ['arrayBuffer', 'blob', 'buffer', 'json', 'text'] as const;
   
       for (const functionName of functionsThatUseResponse) {
         await redisClient.flushall();

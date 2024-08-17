@@ -26,46 +26,21 @@ jobs:
     - run: npm ci
     - run: npm run tsc
     - run: npm run buildcjs
+    - run: npm link
+    - run: npm link node-fetch-cache
+      working-directory: plugins/redis
     - run: npm run coverage
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  test_node_14_14_0:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [14.14.0]
-
-    services:
-      httpbin:
-        image: kennethreitz/httpbin
-        ports:
-          - 3000:80
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 20.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 20.x
-    - run: npm ci
-    - run: npm run tsc
-    - run: npm run buildcjs
-    - name: Use Node.js Version Under Test
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm run test:core
-
   test_node_other:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x, 22.x]
+        node-version: [18.19.0, 18.x, 22.x]
 
     services:
       httpbin:
@@ -79,14 +54,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js 20.x
+    - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
-        node-version: 20.x
+        node-version: ${{ matrix.node-version }}
     - run: npm ci --prefix plugins/redis
     - run: npm ci
     - run: npm run tsc
     - run: npm run buildcjs
+    - run: npm link
+    - run: npm link node-fetch-cache
+      working-directory: plugins/redis
     - name: Use Node.js Version Under Test
       uses: actions/setup-node@v1
       with:

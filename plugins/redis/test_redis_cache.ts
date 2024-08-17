@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import assert from 'assert';
 import { Agent } from 'http';
-import { FormData} from 'formdata-node';
+import { FormData } from 'formdata-node';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
 import FetchCache, {
   cacheStrategies,

@@ -55,7 +55,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "cacache": "^18.0.1",
+    "cacache": "^18.0.4",
     "formdata-node": "^6.0.3",
     "locko": "^1.1.0",
     "node-fetch": "3.3.2"

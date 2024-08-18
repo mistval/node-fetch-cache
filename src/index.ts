@@ -1,5 +1,5 @@
 import type { Request as NodeFetchRequestType } from 'node-fetch';
-import { Readable } from 'stream';
+import assert from 'assert';
 import { FormData } from 'formdata-node';
 import { getNFCResponseClass as getNFCResponseClass } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
@@ -85,6 +85,7 @@ async function getResponse(
     const fetchResponse = await fetch(resource, init);
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
     let bodyStream = fetchResponse.body;
+    assert(bodyStream, 'No body stream found in fetch response');
 
     shimResponseToSnipeBody(fetchResponse, stream => {
       bodyStream = stream;
@@ -95,7 +96,7 @@ async function getResponse(
     if (shouldCache) {
       const cacheSetResult = await fetchCustomization.cache.set(
         cacheKey,
-        bodyStream ?? Readable.from(Buffer.alloc(0)),
+        bodyStream,
         serializedMeta,
       );
 
@@ -103,7 +104,7 @@ async function getResponse(
     }
 
     return new NFCResponse(
-      bodyStream ?? Readable.from(Buffer.alloc(0)),
+      bodyStream,
       serializedMeta,
       ejectSelfFromCache,
       false,

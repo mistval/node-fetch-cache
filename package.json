@@ -1,6 +1,6 @@
 {
   "name": "node-fetch-cache",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "node-fetch with caching.",
   "main": "src/index.js",
   "type": "module",

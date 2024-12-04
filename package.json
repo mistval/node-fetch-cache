@@ -58,7 +58,7 @@
     "cacache": "^18.0.4",
     "formdata-node": "^6.0.3",
     "locko": "^1.1.0",
-    "node-fetch": "3.3.2"
+    "node-fetch": "^3.3.2"
   },
   "husky": {
     "hooks": {

@@ -16,8 +16,6 @@
     "test:debug": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --inspect --inspect-brk --spec test/tests.ts --spec plugins/redis/test_redis_cache.ts --extensions ts --timeout 10000 --exit",
     "test:core": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --spec test/tests.ts --extensions ts --timeout 10000 --exit && mocha --timeout 10000 --exit test/tests.cjs",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test --exclude=plugins/redis/test_redis_cache.ts npm test",
-    "lint": "xo .",
-    "lintfix": "xo . --fix",
     "prepublishOnly": "cross-env rm -rf dist && npm run tsc && npm run buildcjs && npm test",
     "prepare": "husky install"
   },

@@ -12,8 +12,7 @@ describe('Commonjs module tests', () => {
   });
 
   it('Can make a request via Request object', async () => {
-    const nodeFetch = await fetch.getNodeFetch();
-    const res = await fetch(new nodeFetch.Request(TWO_HUNDRED_URL));
+    const res = await fetch(new Request(TWO_HUNDRED_URL));
     assert.strictEqual(res.status, 200);
   });
 

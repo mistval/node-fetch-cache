@@ -2,10 +2,8 @@ import fs from 'fs';
 import crypto from 'crypto';
 import assert from 'assert';
 import { Buffer } from 'buffer';
-import type { Request as NodeFetchRequestType } from 'node-fetch';
 import type { FetchInit, FetchResource } from '../types.js';
 import { FormData } from '../types.js';
-import { getNodeFetch } from './node_fetch_imports.js';
 
 export const CACHE_VERSION = 6;
 
@@ -57,9 +55,8 @@ function getBodyCacheKeyJson(body: unknown): string | object | undefined {
   throw new Error('Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, fs.ReadStream, FormData');
 }
 
-async function getRequestCacheKeyJson(request: NodeFetchRequestType) {
-  const { NodeFetchRequest } = await getNodeFetch();
-  const bodyInternalsSymbol = Object.getOwnPropertySymbols(new NodeFetchRequest('http://url.com'))[0];
+async function getRequestCacheKeyJson(request: Request) {
+  const bodyInternalsSymbol = Object.getOwnPropertySymbols(new Request('http://url.com'))[0];
   assert(bodyInternalsSymbol, 'Failed to get node-fetch bodyInternalsSymbol');
 
   return {
@@ -73,13 +70,12 @@ async function getRequestCacheKeyJson(request: NodeFetchRequestType) {
     follow: (request as any).follow, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     // Confirmed that this property exists, but it's not in the types
     compress: (request as any).compress, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-    size: request.size,
+    //size: request.size,
   };
 }
 
 export async function calculateCacheKey(resource: FetchResource, init?: FetchInit) {
-  const { NodeFetchRequest } = await getNodeFetch();
-  const resourceCacheKeyJson = resource instanceof NodeFetchRequest
+  const resourceCacheKeyJson = resource instanceof Request
     ? await getRequestCacheKeyJson(resource)
     : { url: resource, body: undefined };
 
@@ -92,6 +88,7 @@ export async function calculateCacheKey(resource: FetchResource, init?: FetchIni
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);
   initCacheKeyJson.body = getBodyCacheKeyJson(initCacheKeyJson.body);
 
+  // @ts-expect-error
   delete initCacheKeyJson.agent;
 
   return md5(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson, CACHE_VERSION]));

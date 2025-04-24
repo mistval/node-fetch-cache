@@ -40,12 +40,18 @@ async function getResponse(
   resource: FetchResource,
   init: FetchInit,
 ) {
+  const originalResource = resource;
+
   const NFCResponse = await getNFCResponseClass();
 
   if (typeof resource !== 'string' && !(resource instanceof Request)) {
     throw new TypeError(
       'The first argument to fetch must be either a string or a fetch Request instance',
     );
+  }
+
+  if (originalResource instanceof Request) {
+    resource = originalResource.clone()
   }
 
   const cacheKey = await fetchCustomization.calculateCacheKey(resource, init);
@@ -78,6 +84,10 @@ async function getResponse(
       );
     }
 
+    if (originalResource instanceof Request) {
+      resource = originalResource.clone()
+    }
+    
     const fetchResponse = await fetch(resource, init);
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
     let bodyStream = fetchResponse.body;

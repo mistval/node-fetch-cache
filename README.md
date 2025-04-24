@@ -301,11 +301,18 @@ For bug reports, please file an issue on [the issues page on GitHub](https://git
 
 Contributions welcome! Please open a [pull request on GitHub](https://github.com/mistval/node-fetch-cache/pulls) with your changes. You can run them by me first on [the discussions page](https://github.com/mistval/node-fetch-cache/discussions) if you'd like. Please add tests for any changes.
 
-To run the tests, first start an httpbin and Redis container:
+To run the tests, first do the following setup:
 
 ```sh
 docker run -p 3000:80 -d kennethreitz/httpbin
 docker run -p 6379:6379 -d redis
+
+npm install
+npm link
+cd plugins/redis
+npm install
+npm link node-fetch-cache
+cd ../..
 ```
 
 Then `npm test`.

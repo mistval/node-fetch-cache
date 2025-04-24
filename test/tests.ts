@@ -8,7 +8,6 @@ import assert from 'assert';
 import { Agent } from 'http';
 import { rimraf } from 'rimraf';
 import { FormData } from 'formdata-node';
-import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
 import FetchCache, {
   MemoryCache,
   FileSystemCache,
@@ -84,10 +83,10 @@ function removeDates(arrayOrObject: { date?: unknown } | string[] | string[][]) 
   return arrayOrObject;
 }
 
-async function dualFetch(...args: Parameters<typeof standardFetch>) {
+async function dualFetch(...args: Parameters<typeof fetch>) {
   const [cachedFetchResponse, standardFetchResponse] = await Promise.all([
     defaultCachedFetch(...args),
-    standardFetch(...args),
+    fetch(...args),
   ]);
 
   return { cachedFetchResponse, standardFetchResponse };
@@ -149,14 +148,14 @@ describe('Header tests', () => {
   it('Gets correct raw headers', async () => {
     let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
     assert.deepStrictEqual(
-      removeDates(cachedFetchResponse.headers.raw()),
-      removeDates(standardFetchResponse.headers.raw()),
+      removeDates(Array.from(cachedFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
+      removeDates(Array.from(standardFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
     );
 
     cachedFetchResponse = await defaultCachedFetch(TWO_HUNDRED_URL);
     assert.deepStrictEqual(
-      removeDates(cachedFetchResponse.headers.raw()),
-      removeDates(standardFetchResponse.headers.raw()),
+      removeDates(Array.from(cachedFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
+      removeDates(Array.from(standardFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
     );
   });
 
@@ -380,7 +379,7 @@ describe('Cache tests', () => {
 
   it('Can use a client-provided custom cache key', async () => {
     const cacheFunction = async (resource: FetchResource) => {
-      if (resource instanceof StandardFetchRequest) {
+      if (resource instanceof Request) {
         return resource.url;
       }
 
@@ -401,18 +400,18 @@ describe('Cache tests', () => {
 
 describe('Data tests', () => {
   it('Supports request objects', async () => {
-    let request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
+    let request = new Request('https://google.com', { body: 'test', method: 'POST' });
     response = await defaultCachedFetch(request);
     assert.strictEqual(response.returnedFromCache, false);
 
-    request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
+    request = new Request('https://google.com', { body: 'test', method: 'POST' });
     response = await defaultCachedFetch(request);
     assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Supports request objects with custom headers', async () => {
-    const request1 = new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { XXX: 'YYY' } });
-    const request2 = new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { XXX: 'ZZZ' } });
+    const request1 = new Request(TWO_HUNDRED_URL, { headers: { XXX: 'YYY' } });
+    const request2 = new Request(TWO_HUNDRED_URL, { headers: { XXX: 'ZZZ' } });
 
     response = await defaultCachedFetch(request1);
     assert.strictEqual(response.returnedFromCache, false);
@@ -424,7 +423,7 @@ describe('Data tests', () => {
   it('Refuses to consume body twice', async () => {
     response = await defaultCachedFetch(TEXT_BODY_URL);
     await response.text();
-    await assert.rejects(async () => response.text(), /body used already for:/);
+    await assert.rejects(async () => response.text(), /Body has already been read/);
   });
 
   it('Can get text body', async () => {
@@ -453,12 +452,12 @@ describe('Data tests', () => {
 
   it('Can get PNG buffer body', async () => {
     response = await defaultCachedFetch(PNG_BODY_URL);
-    const body1 = await response.buffer();
+    const body1 = new Uint8Array(await response.arrayBuffer());
     assert.strictEqual(expectedPngBuffer.equals(body1), true);
     assert.strictEqual(response.returnedFromCache, false);
 
     response = await defaultCachedFetch(PNG_BODY_URL);
-    const body2 = await response.buffer();
+    const body2 = new Uint8Array(await response.arrayBuffer());
     assert.strictEqual(expectedPngBuffer.equals(body2), true);
     assert.strictEqual(response.returnedFromCache, true);
   });
@@ -495,7 +494,7 @@ describe('Data tests', () => {
   it('Errors if the resource type is not supported', async () => {
     await assert.rejects(
       async () => defaultCachedFetch(1 as unknown as string),
-      /The first argument to fetch must be either a string or a node-fetch Request instance/,
+      /The first argument to fetch must be either a string or a fetch Request instance/,
     );
   });
 
@@ -582,12 +581,12 @@ describe('File system cache tests', () => {
   it('Can get PNG buffer body', async () => {
     defaultCachedFetch = FetchCache.create({ cache: new FileSystemCache() });
     response = await defaultCachedFetch(PNG_BODY_URL);
-    const body1 = await response.buffer();
+    const body1 = new Uint8Array(await response.arrayBuffer());
     assert.strictEqual(expectedPngBuffer.equals(body1), true);
     assert.strictEqual(response.returnedFromCache, false);
 
     response = await defaultCachedFetch(PNG_BODY_URL);
-    const body2 = await response.buffer();
+    const body2 = new Uint8Array(await response.arrayBuffer());
     assert.strictEqual(expectedPngBuffer.equals(body2), true);
     assert.strictEqual(response.returnedFromCache, true);
   });
@@ -628,20 +627,20 @@ describe('Cache mode tests', () => {
 
   it('Can use the only-if-cached cache control setting via resource', async () => {
     response = await defaultCachedFetch(
-      new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
+      new Request(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
     );
     assert(response.status === 504 && response.isCacheMiss);
-    response = await defaultCachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL));
+    response = await defaultCachedFetch(new Request(TWO_HUNDRED_URL));
     assert(response && !response.returnedFromCache);
     response = await defaultCachedFetch(
-      new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
+      new Request(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
     );
     assert(response?.returnedFromCache);
   });
 
   it('Works with only-if-cached along with other cache-control directives', async () => {
     response = await defaultCachedFetch(
-      new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' } }),
+      new Request(TWO_HUNDRED_URL, { headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' } }),
     );
     assert(response.status === 504 && response.isCacheMiss);
     response = await defaultCachedFetch(TWO_HUNDRED_URL, {

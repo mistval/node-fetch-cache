@@ -1,24 +1,19 @@
+import type { ReadableStream } from "stream/web";
 import assert from 'assert';
-import { Buffer } from 'buffer';
-import { Readable } from 'stream';
-import type { Response as NodeFetchResponseType, ResponseInit as NodeFetchResponseInit } from 'node-fetch';
 import { NFCResponseMetadata } from '../types.js';
-import { getNodeFetch } from '../helpers/node_fetch_imports.js';
 
 async function createNFCResponseClass() {
-  const { NodeFetchResponse } = await getNodeFetch();
-
-  const responseInternalSymbol = Object.getOwnPropertySymbols(new NodeFetchResponse())[1];
+  const responseInternalSymbol = Object.getOwnPropertySymbols(new Response())[1];
   assert(responseInternalSymbol, 'Failed to get node-fetch responseInternalSymbol');
 
-  return class NFCResponse extends NodeFetchResponse {
-    static serializeMetaFromNodeFetchResponse(response: NodeFetchResponseType): NFCResponseMetadata {
+  return class NFCResponse extends Response {
+    static serializeMetaFromNodeFetchResponse(response: Response): NFCResponseMetadata {
       const metaData = {
         url: response.url,
         status: response.status,
         statusText: response.statusText,
-        headers: response.headers.raw(),
-        size: response.size,
+        headers: Array.from(response.headers.entries()).reduce<Record<string, string[]>>((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {}),
+        //size: response.size,
         counter: (response as any)[responseInternalSymbol!].counter as number,
       };
 
@@ -29,13 +24,13 @@ async function createNFCResponseClass() {
       url: string,
     ) {
       return new NFCResponse(
-        Readable.from(Buffer.alloc(0)),
+        new Blob().stream() as Omit<ReadableStream<any>, "closed">,
         {
           url,
           status: 504,
           statusText: 'Gateway Timeout',
           headers: {},
-          size: 0,
+          //size: 0,
           counter: 0,
         },
         async () => undefined,
@@ -45,10 +40,10 @@ async function createNFCResponseClass() {
     }
 
     constructor(
-      bodyStream: NodeJS.ReadableStream,
-      metaData: Omit<NodeFetchResponseInit, 'headers'> & {
+      bodyStream: Omit<ReadableStream, "closed">,
+      metaData: Omit<ResponseInit, 'headers'> & {
         url: string;
-        size: number;
+        //size: number;
         counter: number;
         headers: Record<string, string[]>;
       },
@@ -57,7 +52,7 @@ async function createNFCResponseClass() {
       public readonly isCacheMiss = false,
     ) {
       super(
-        Readable.from(bodyStream),
+        bodyStream,
         metaData as any, // eslint-disable-line @typescript-eslint/no-unsafe-argument
       );
     }

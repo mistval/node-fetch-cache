@@ -1,10 +1,9 @@
-import type { Response as NodeFetchResponse } from 'node-fetch';
-import type fetch from 'node-fetch';
+import type { ReadableStream } from "stream/web";
 import { FormData } from 'formdata-node';
 
 export type FetchResource = Parameters<typeof fetch>[0];
 export type FetchInit = Parameters<typeof fetch>[1];
-export type CacheStrategy = (response: NodeFetchResponse) => Promise<boolean> | boolean;
+export type CacheStrategy = (response: Response) => Promise<boolean>;
 
 export { FormData };
 
@@ -13,21 +12,21 @@ export type NFCResponseMetadata = {
   status: number;
   statusText: string;
   headers: Record<string, string[]>;
-  size: number;
+  //size: number;
   counter: number;
 };
 
 export type INodeFetchCacheCache = {
   get(key: string): Promise<{
-    bodyStream: NodeJS.ReadableStream;
+    bodyStream: Omit<ReadableStream, "closed">;
     metaData: NFCResponseMetadata;
   } | undefined>;
   set(
     key: string,
-    bodyStream: NodeJS.ReadableStream,
+    bodyStream: Omit<ReadableStream, "closed">,
     metaData: NFCResponseMetadata
   ): Promise<{
-    bodyStream: NodeJS.ReadableStream;
+    bodyStream: Omit<ReadableStream, "closed">;
     metaData: NFCResponseMetadata;
   }>;
   remove(key: string): Promise<void | unknown>;

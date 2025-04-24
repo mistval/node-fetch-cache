@@ -1,5 +1,5 @@
+import { ReadableStream } from "stream/web";
 import { Buffer } from 'buffer';
-import { Readable } from 'stream';
 import Redis from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from 'node-fetch-cache';
@@ -35,7 +35,7 @@ export class RedisCache implements INodeFetchCacheCache {
       return undefined;
     }
 
-    const readableStream = Readable.from(cachedObjectInfo);
+    const readableStream = new Blob([cachedObjectInfo]).stream();
     const storedMetadata = await this.redis.get(`${key}:meta`);
 
     if (!storedMetadata) {
@@ -46,7 +46,7 @@ export class RedisCache implements INodeFetchCacheCache {
     const { expiration, ...nfcMetadata } = storedMetadataJson;
 
     return {
-      bodyStream: readableStream,
+      bodyStream: readableStream as Omit<ReadableStream<any>, "closed">,
       metaData: nfcMetadata,
     };
   }
@@ -57,7 +57,7 @@ export class RedisCache implements INodeFetchCacheCache {
     return true;
   }
 
-  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: NFCResponseMetadata) {
+  async set(key: string, bodyStream: Omit<ReadableStream, "closed">, metaData: NFCResponseMetadata) {
     const metaToStore = {
       ...metaData,
       expiration: undefined as undefined | number,
@@ -67,24 +67,14 @@ export class RedisCache implements INodeFetchCacheCache {
       metaToStore.expiration = Date.now() + this.ttl;
     }
 
-    const buffer: Buffer = await new Promise((fulfill, reject) => {
-      const chunks: Buffer[] = [];
+    const buffer: Buffer = await new Promise(async (fulfill, reject) => {
+      const chunks = [];
 
-      bodyStream.on('data', chunk => {
-        chunks.push(chunk as Buffer);
-      });
+      for await (const chunk of bodyStream) {
+        chunks.push(chunk);
+      }
 
-      bodyStream.on('end', async () => {
-        try {
-          fulfill(Buffer.concat(chunks));
-        } catch (error) {
-          reject(error);
-        }
-      });
-
-      bodyStream.on('error', error => {
-        reject(error);
-      });
+      fulfill(Buffer.concat(chunks));
     });
 
     await (typeof this.ttl === 'number' ? this.redis.set(key, buffer, 'PX', this.ttl) : this.redis.set(key, buffer));
@@ -94,7 +84,7 @@ export class RedisCache implements INodeFetchCacheCache {
     }
 
     return {
-      bodyStream: Readable.from(buffer),
+      bodyStream: new Blob([buffer]).stream() as Omit<ReadableStream<any>, "closed">,
       metaData: metaToStore,
     };
   }

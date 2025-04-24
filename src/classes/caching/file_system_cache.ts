@@ -1,8 +1,9 @@
+import { ReadableStream } from "stream/web";
 import assert from 'assert';
 import { Buffer } from 'buffer';
-import { Readable } from 'stream';
 import cacache from 'cacache';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types';
+import { Stream } from 'stream';
 
 type StoredMetadata = {
   emptyBody?: boolean;
@@ -36,13 +37,13 @@ export class FileSystemCache implements INodeFetchCacheCache {
 
     if (emptyBody) {
       return {
-        bodyStream: Readable.from(emptyBuffer),
+        bodyStream: ReadableStream.from(emptyBuffer),
         metaData: storedMetadata,
       };
     }
 
     return {
-      bodyStream: cacache.get.stream.byDigest(this.cacheDirectory, cachedObjectInfo.integrity),
+      bodyStream: ReadableStream.from(cacache.get.stream.byDigest(this.cacheDirectory, cachedObjectInfo.integrity)),
       metaData: nfcMetadata,
     };
   }
@@ -51,7 +52,7 @@ export class FileSystemCache implements INodeFetchCacheCache {
     return cacache.rm.entry(this.cacheDirectory, key);
   }
 
-  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: NFCResponseMetadata) {
+  async set(key: string, bodyStream: Omit<ReadableStream, "closed">, metaData: NFCResponseMetadata) {
     const metaToStore = {
       ...metaData,
       expiration: undefined as (undefined | number),
@@ -73,11 +74,11 @@ export class FileSystemCache implements INodeFetchCacheCache {
   private async writeDataToCache(
     key: string,
     storedMetadata: StoredMetadata,
-    stream: NodeJS.ReadableStream,
+    stream: ReadableStream,
   ) {
     try {
       await new Promise((fulfill, reject) => {
-        stream.pipe(cacache.put.stream(this.cacheDirectory, key, { metadata: storedMetadata }))
+        Stream.Readable.fromWeb(stream).pipe(cacache.put.stream(this.cacheDirectory, key, { metadata: storedMetadata }))
           .on('integrity', (i: string) => {
             fulfill(i);
           })

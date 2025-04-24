@@ -1,7 +1,3 @@
-import { Buffer } from 'buffer';
-import { Readable } from 'stream';
-import type { Response as NodeFetchResponse } from 'node-fetch';
-
 /* This is a bit of a hack to deal with the case when the user
  * consumes the response body in their `shouldCacheResponse` delegate.
  * The response body can only be consumed once, so if the user consumes
@@ -12,41 +8,35 @@ import type { Response as NodeFetchResponse } from 'node-fetch';
  * My initial inclination was to use Response.prototype.clone() for this,
  * but the problems with backpressure seem significant. */
 export function shimResponseToSnipeBody(
-  response: NodeFetchResponse,
-  replaceBodyStream: (strean: NodeJS.ReadableStream) => void,
+  response: Response,
+  replaceBodyStream: (stream: Omit<ReadableStream, "closed">) => void,
 ) {
   const origArrayBuffer = response.arrayBuffer;
   response.arrayBuffer = async function () {
     const arrayBuffer = await origArrayBuffer.call(this);
-    replaceBodyStream(Readable.from(Buffer.from(arrayBuffer)));
+    replaceBodyStream(new Blob([arrayBuffer]).stream());
     return arrayBuffer;
-  };
-
-  const origBuffer = response.buffer;
-  response.buffer = async function () {
-    const buffer = await origBuffer.call(this);
-    replaceBodyStream(Readable.from(buffer));
-    return buffer;
   };
 
   const origJson = response.json;
   response.json = async function () {
     const json = await origJson.call(this);
-    replaceBodyStream(Readable.from(Buffer.from(JSON.stringify(json))));
+    replaceBodyStream(new Blob([JSON.stringify(json)]).stream());
     return json;
   };
 
   const origText = response.text;
   response.text = async function () {
     const text = await origText.call(this);
-    replaceBodyStream(Readable.from(Buffer.from(text)));
+    replaceBodyStream(new Blob([text]).stream());
     return text;
   };
 
   const origBlob = response.blob;
   response.blob = async function () {
     const blob = await origBlob.call(this);
-    replaceBodyStream(Readable.from(Buffer.from(await blob.text())));
+    const text = await blob.text();
+    replaceBodyStream(new Blob([text]).stream());
     return blob;
   };
 }

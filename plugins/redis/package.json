@@ -32,7 +32,7 @@
   "license": "MIT",
   "dependencies": {
     "ioredis": "^5.4.1",
-    "node-fetch-cache": "^4.1.1"
+    "node-fetch-cache": "^5.0.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.16",

@@ -1,6 +1,5 @@
 import { ReadableStream } from "stream/web";
 import assert from 'assert';
-import { Buffer } from 'buffer';
 import cacache from 'cacache';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types';
 import { Stream } from 'stream';
@@ -10,7 +9,7 @@ type StoredMetadata = {
   expiration?: number | undefined;
 } & NFCResponseMetadata;
 
-const emptyBuffer = Buffer.alloc(0);
+const emptyBuffer = Buffer.from([])
 
 export class FileSystemCache implements INodeFetchCacheCache {
   private readonly ttl?: number | undefined;

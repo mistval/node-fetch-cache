@@ -1,5 +1,4 @@
 import { ReadableStream } from "stream/web";
-import { Buffer } from 'buffer';
 import Redis from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from 'node-fetch-cache';

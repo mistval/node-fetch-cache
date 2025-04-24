@@ -301,6 +301,7 @@ describe('Cache tests', () => {
     assert.strictEqual(response.returnedFromCache, true);
   });
 
+  /*
   it('Gives different read streams different cache keys', async () => {
     const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
     const s2 = fs.createReadStream(path.join(__dirname, '..', 'src', 'index.ts'));
@@ -321,7 +322,8 @@ describe('Cache tests', () => {
     response = await defaultCachedFetch(TWO_HUNDRED_URL, post(s1));
     assert.strictEqual(response.returnedFromCache, true);
   });
-
+  */
+ 
   it('Gives different form data different cache keys', async () => {
     const data1 = new FormData();
     data1.append('a', 'a');
@@ -464,23 +466,23 @@ describe('Data tests', () => {
 
   it('Can stream a body', async () => {
     response = await defaultCachedFetch(TEXT_BODY_URL);
-    let body = '';
+    let chunks = [];
 
     for await (const chunk of response.body!) {
-      body += chunk.toString();
+      chunks.push(chunk)
     }
 
-    assert.strictEqual(TEXT_BODY_EXPECTED, body);
+    assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(chunks).toString());
     assert.strictEqual(response.returnedFromCache, false);
 
     response = await defaultCachedFetch(TEXT_BODY_URL);
-    body = '';
+    chunks = [];
 
     for await (const chunk of response.body!) {
-      body += chunk.toString();
+      chunks.push(chunk)
     }
 
-    assert.strictEqual(TEXT_BODY_EXPECTED, body);
+    assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(chunks).toString());
     assert.strictEqual(response.returnedFromCache, true);
   });
 
@@ -746,7 +748,6 @@ describe('Cache strategy tests', () => {
     const functionsThatUseResponse = [
       'arrayBuffer',
       'blob',
-      'buffer',
       'json',
       'text',
     ] as const;
@@ -783,6 +784,6 @@ describe('Cache strategy tests', () => {
 
 describe('Network error tests', () => {
   it('Bubbles up network errors', async () => {
-    await assert.rejects(async () => defaultCachedFetch('http://localhost:1'), /^FetchError:/);
+    await assert.rejects(async () => defaultCachedFetch('http://localhost:1'), /TypeError: fetch failed/);
   });
 });

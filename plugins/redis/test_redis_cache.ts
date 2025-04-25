@@ -64,7 +64,7 @@ let defaultCachedFetch: typeof FetchCache;
 let defaultCache: RedisCache;
 
 function post(body: string | URLSearchParams | FormData | fs.ReadStream) {
-  return { method: 'POST', body };
+  return { method: 'POST', body, duplex: "half" };
 }
 
 function removeDates(arrayOrObject: { date?: unknown } | string[] | string[][]) {

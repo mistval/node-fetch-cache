@@ -572,14 +572,14 @@ describe('REDIS Plugin Tests', function() {
       assert(!initialResponse.returnedFromCache);
   
       const initialResponseBuffer = await initialResponse.arrayBuffer();
-      assert.equal(initialResponseBuffer.length, 100_000);
+      assert.equal(initialResponseBuffer.byteLength, 100_000);
   
       const secondResponse = await defaultCachedFetch(HUNDRED_THOUSAND_BYTES_URL);
       assert(secondResponse.ok);
       assert(secondResponse.returnedFromCache);
   
       const secondResponseBuffer = await secondResponse.arrayBuffer();
-      assert.equal(secondResponseBuffer.length, 100_000);
+      assert.equal(secondResponseBuffer.byteLength, 100_000);
     });
   }).timeout(10_000);
   

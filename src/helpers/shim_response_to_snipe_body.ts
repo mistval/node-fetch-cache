@@ -9,7 +9,7 @@
  * but the problems with backpressure seem significant. */
 export function shimResponseToSnipeBody(
   response: Response,
-  replaceBodyStream: (stream: Omit<ReadableStream, "closed">) => void,
+  replaceBodyStream: (stream: ReadableStream) => void,
 ) {
   const origArrayBuffer = response.arrayBuffer;
   response.arrayBuffer = async function () {

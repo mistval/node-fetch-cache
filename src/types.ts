@@ -12,21 +12,20 @@ export type NFCResponseMetadata = {
   status: number;
   statusText: string;
   headers: Record<string, string[]>;
-  //size: number;
   counter: number;
 };
 
 export type INodeFetchCacheCache = {
   get(key: string): Promise<{
-    bodyStream: Omit<ReadableStream, "closed">;
+    bodyStream: ReadableStream;
     metaData: NFCResponseMetadata;
   } | undefined>;
   set(
     key: string,
-    bodyStream: Omit<ReadableStream, "closed">,
+    bodyStream: ReadableStream,
     metaData: NFCResponseMetadata
   ): Promise<{
-    bodyStream: Omit<ReadableStream, "closed">;
+    bodyStream: ReadableStream;
     metaData: NFCResponseMetadata;
   }>;
   remove(key: string): Promise<void | unknown>;

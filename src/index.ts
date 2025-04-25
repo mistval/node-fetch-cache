@@ -102,7 +102,7 @@ async function getResponse(
     if (shouldCache) {
       const cacheSetResult = await fetchCustomization.cache.set(
         cacheKey,
-        bodyStream as Omit<ReadableStream<any>, "closed">,
+        bodyStream as ReadableStream,
         serializedMeta,
       );
 
@@ -110,7 +110,7 @@ async function getResponse(
     }
 
     return new NFCResponse(
-      bodyStream as Omit<ReadableStream<any>, "closed">,
+      bodyStream as ReadableStream,
       serializedMeta,
       ejectSelfFromCache,
       false,

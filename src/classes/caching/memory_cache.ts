@@ -26,7 +26,7 @@ export class MemoryCache implements INodeFetchCacheCache {
     const cachedValue = this.cache.get(key);
     if (cachedValue) {
       return {
-        bodyStream: new Blob([cachedValue.bodyBuffer]).stream() as Omit<ReadableStream<any>, "closed">,
+        bodyStream: new Blob([cachedValue.bodyBuffer]).stream() as ReadableStream,
         metaData: cachedValue.metaData,
       };
     }
@@ -39,7 +39,7 @@ export class MemoryCache implements INodeFetchCacheCache {
     this.cache.delete(key);
   }
 
-  async set(key: string, bodyStream: Omit<ReadableStream, "closed">, metaData: NFCResponseMetadata) {
+  async set(key: string, bodyStream: ReadableStream, metaData: NFCResponseMetadata) {
     const bodyBuffer = await streamToBuffer(bodyStream);
     this.cache.set(key, { bodyBuffer, metaData });
 

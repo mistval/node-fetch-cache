@@ -8,12 +8,17 @@ async function createNFCResponseClass() {
 
   return class NFCResponse extends Response {
     static serializeMetaFromNodeFetchResponse(response: Response): NFCResponseMetadata {
+      const headers = Array.from(response.headers.entries()).reduce<Record<string, string[]>>(function(headers, [key, value]) {
+        headers[key] = [...(headers[key] ?? []), value];
+
+        return headers;
+      }, {})
+
       const metaData = {
         url: response.url,
         status: response.status,
         statusText: response.statusText,
-        headers: Array.from(response.headers.entries()).reduce<Record<string, string[]>>((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {}),
-        //size: response.size,
+        headers: headers,
         counter: (response as any)[responseInternalSymbol!].counter as number,
       };
 
@@ -24,13 +29,12 @@ async function createNFCResponseClass() {
       url: string,
     ) {
       return new NFCResponse(
-        new Blob().stream() as Omit<ReadableStream<any>, "closed">,
+        new Blob().stream() as ReadableStream,
         {
           url,
           status: 504,
           statusText: 'Gateway Timeout',
           headers: {},
-          //size: 0,
           counter: 0,
         },
         async () => undefined,
@@ -40,10 +44,9 @@ async function createNFCResponseClass() {
     }
 
     constructor(
-      bodyStream: Omit<ReadableStream, "closed">,
+      bodyStream: ReadableStream,
       metaData: Omit<ResponseInit, 'headers'> & {
         url: string;
-        //size: number;
         counter: number;
         headers: Record<string, string[]>;
       },

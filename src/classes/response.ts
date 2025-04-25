@@ -1,11 +1,7 @@
 import type { ReadableStream } from "stream/web";
-import assert from 'assert';
 import { NFCResponseMetadata } from '../types.js';
 
 async function createNFCResponseClass() {
-  const responseInternalSymbol = Object.getOwnPropertySymbols(new Response())[1];
-  assert(responseInternalSymbol, 'Failed to get node-fetch responseInternalSymbol');
-
   return class NFCResponse extends Response {
     static serializeMetaFromNodeFetchResponse(response: Response): NFCResponseMetadata {
       const headers = Array.from(response.headers.entries()).reduce<Record<string, string[]>>(function(headers, [key, value]) {
@@ -19,7 +15,7 @@ async function createNFCResponseClass() {
         status: response.status,
         statusText: response.statusText,
         headers: headers,
-        counter: (response as any)[responseInternalSymbol!].counter as number,
+        counter: (response as any).counter as number,
       };
 
       return metaData;

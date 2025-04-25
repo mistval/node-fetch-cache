@@ -498,23 +498,13 @@ describe('REDIS Plugin Tests', function() {
   
     it('Can stream a body', async () => {
       response = await defaultCachedFetch(TEXT_BODY_URL);
-      let chunks = [];
   
-      for await (const chunk of response.body ?? []) {
-        chunks.push(chunk);
-      }
-  
-      assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(chunks).toString());
+      assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(await Array.fromAsync<ReadableStream>(response.body)).toString());
       assert.strictEqual(response.returnedFromCache, false);
   
       response = await defaultCachedFetch(TEXT_BODY_URL);
-      chunks = [];
   
-      for await (const chunk of response.body ?? []) {
-        chunks.push(chunk);
-      }
-  
-      assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(chunks).toString());
+      assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(await Array.fromAsync(response.body)).toString());
       assert.strictEqual(response.returnedFromCache, true);
     });
   

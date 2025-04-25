@@ -3,16 +3,6 @@ import assert from 'assert';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types.js';
 import { KeyTimeout } from './key_timeout.js';
 
-async function streamToBuffer(stream: ReadableStream): Promise<Buffer> {
-  const chunks = [];
-  
-  for await (const chunk of stream) {
-    chunks.push(chunk);
-  }
-
-  return Buffer.concat(chunks);
-}
-
 export class MemoryCache implements INodeFetchCacheCache {
   private readonly ttl?: number | undefined;
   private readonly keyTimeout = new KeyTimeout();
@@ -40,7 +30,7 @@ export class MemoryCache implements INodeFetchCacheCache {
   }
 
   async set(key: string, bodyStream: ReadableStream, metaData: NFCResponseMetadata) {
-    const bodyBuffer = await streamToBuffer(bodyStream);
+    const bodyBuffer = Buffer.concat(await Array.fromAsync(bodyStream));
     this.cache.set(key, { bodyBuffer, metaData });
 
     if (typeof this.ttl === 'number') {

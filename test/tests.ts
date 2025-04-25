@@ -18,6 +18,8 @@ import FetchCache, {
   ISynchronizationStrategy,
 } from '../src/index.js';
 
+const StandardFetchRequest = Request;
+
 const httpBinBaseUrl = 'http://localhost:3000';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const wait = util.promisify(setTimeout);
@@ -379,7 +381,7 @@ describe('Cache tests', () => {
 
   it('Can use a client-provided custom cache key', async () => {
     const cacheFunction = async (resource: FetchResource) => {
-      if (resource instanceof Request) {
+      if (resource instanceof StandardFetchRequest) {
         return resource.url;
       }
 
@@ -400,18 +402,18 @@ describe('Cache tests', () => {
 
 describe('Data tests', () => {
   it('Supports request objects', async () => {
-    let request = new Request('https://google.com', { body: 'test', method: 'POST' });
+    let request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
     response = await defaultCachedFetch(request);
     assert.strictEqual(response.returnedFromCache, false);
 
-    request = new Request('https://google.com', { body: 'test', method: 'POST' });
+    request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
     response = await defaultCachedFetch(request);
     assert.strictEqual(response.returnedFromCache, true);
   });
 
   it('Supports request objects with custom headers', async () => {
-    const request1 = new Request(TWO_HUNDRED_URL, { headers: { XXX: 'YYY' } });
-    const request2 = new Request(TWO_HUNDRED_URL, { headers: { XXX: 'ZZZ' } });
+    const request1 = new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { XXX: 'YYY' } });
+    const request2 = new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { XXX: 'ZZZ' } });
 
     response = await defaultCachedFetch(request1);
     assert.strictEqual(response.returnedFromCache, false);
@@ -627,20 +629,20 @@ describe('Cache mode tests', () => {
 
   it('Can use the only-if-cached cache control setting via resource', async () => {
     response = await defaultCachedFetch(
-      new Request(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
+      new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
     );
     assert(response.status === 504 && response.isCacheMiss);
-    response = await defaultCachedFetch(new Request(TWO_HUNDRED_URL));
+    response = await defaultCachedFetch(new StandardFetchRequest(TWO_HUNDRED_URL));
     assert(response && !response.returnedFromCache);
     response = await defaultCachedFetch(
-      new Request(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
+      new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'Cache-Control': 'only-if-cached' } }),
     );
     assert(response?.returnedFromCache);
   });
 
   it('Works with only-if-cached along with other cache-control directives', async () => {
     response = await defaultCachedFetch(
-      new Request(TWO_HUNDRED_URL, { headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' } }),
+      new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { 'cAcHe-cOnTrOl': '   only-if-cached  , no-store ' } }),
     );
     assert(response.status === 504 && response.isCacheMiss);
     response = await defaultCachedFetch(TWO_HUNDRED_URL, {

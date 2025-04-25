@@ -66,15 +66,7 @@ export class RedisCache implements INodeFetchCacheCache {
       metaToStore.expiration = Date.now() + this.ttl;
     }
 
-    const buffer: Buffer = await new Promise(async (fulfill, reject) => {
-      const chunks = [];
-
-      for await (const chunk of bodyStream) {
-        chunks.push(chunk);
-      }
-
-      fulfill(Buffer.concat(chunks));
-    });
+    const buffer: Buffer = Buffer.concat(await Array.fromAsync(bodyStream));
 
     await (typeof this.ttl === 'number' ? this.redis.set(key, buffer, 'PX', this.ttl) : this.redis.set(key, buffer));
 

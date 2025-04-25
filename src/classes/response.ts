@@ -11,8 +11,8 @@ async function createNFCResponseClass() {
       }, {})
 
       const metaData = {
-        redirected: response.redirected,
         url: response.url,
+        redirected: response.redirected,
         status: response.status,
         statusText: response.statusText,
         headers: headers,
@@ -29,11 +29,11 @@ async function createNFCResponseClass() {
         new Blob().stream() as ReadableStream,
         {
           url,
+          redirected: false,
           status: 504,
           statusText: 'Gateway Timeout',
           headers: {},
           counter: 0,
-          redirected: false,
         },
         async () => undefined,
         false,
@@ -41,23 +41,12 @@ async function createNFCResponseClass() {
       );
     }
 
-    static setUrlAndRedirected(target: Response, url: string, redirected: boolean) {
-      Object.defineProperty(target, 'url', {
-        get: () => url,
-        enumerable: true,
-        configurable: true,
-      });
-
-      Object.defineProperty(target, 'redirected', {
-        get: () => redirected,
-        enumerable: true,
-        configurable: true,
-      });
-    }
+    public override url;
+    public override redirected;
 
     constructor(
       bodyStream: ReadableStream,
-      metaData: Omit<ResponseInit, 'headers'> & {
+      public metaData: Omit<ResponseInit, 'headers'> & {
         url: string;
         redirected: boolean;
         counter: number;
@@ -69,16 +58,15 @@ async function createNFCResponseClass() {
     ) {
       super(
         bodyStream,
-        metaData as any,
+        metaData as any
       );
 
-      NFCResponse.setUrlAndRedirected(this, metaData.url, metaData.redirected);
+      this.url = metaData.url;
+      this.redirected = metaData.redirected
     }
 
-    override clone(): Response {
-      const superClone = super.clone();
-      NFCResponse.setUrlAndRedirected(superClone, this.url, this.redirected);
-      return superClone;
+    public override clone(): Response {
+      return new NFCResponse(super.body as ReadableStream, this.metaData, this.ejectFromCache, this.returnedFromCache, this.isCacheMiss)
     }
   }
 }

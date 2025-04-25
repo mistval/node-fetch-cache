@@ -51,7 +51,7 @@ export class FileSystemCache implements INodeFetchCacheCache {
     return cacache.rm.entry(this.cacheDirectory, key);
   }
 
-  async set(key: string, bodyStream: Omit<ReadableStream, "closed">, metaData: NFCResponseMetadata) {
+  async set(key: string, bodyStream: ReadableStream, metaData: NFCResponseMetadata) {
     const metaToStore = {
       ...metaData,
       expiration: undefined as (undefined | number),

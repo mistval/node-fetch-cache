@@ -45,7 +45,7 @@ export class RedisCache implements INodeFetchCacheCache {
     const { expiration, ...nfcMetadata } = storedMetadataJson;
 
     return {
-      bodyStream: readableStream as Omit<ReadableStream<any>, "closed">,
+      bodyStream: readableStream as ReadableStream,
       metaData: nfcMetadata,
     };
   }
@@ -56,7 +56,7 @@ export class RedisCache implements INodeFetchCacheCache {
     return true;
   }
 
-  async set(key: string, bodyStream: Omit<ReadableStream, "closed">, metaData: NFCResponseMetadata) {
+  async set(key: string, bodyStream: ReadableStream, metaData: NFCResponseMetadata) {
     const metaToStore = {
       ...metaData,
       expiration: undefined as undefined | number,
@@ -83,7 +83,7 @@ export class RedisCache implements INodeFetchCacheCache {
     }
 
     return {
-      bodyStream: new Blob([buffer]).stream() as Omit<ReadableStream<any>, "closed">,
+      bodyStream: new Blob([buffer]).stream() as ReadableStream,
       metaData: metaToStore,
     };
   }

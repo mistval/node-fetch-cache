@@ -1,5 +1,6 @@
 import type { FetchInit, FetchResource } from '../types.js';
 import { FormData } from '../types.js';
+import * as fs from "fs";
 
 export const CACHE_VERSION = 6;
 
@@ -39,6 +40,10 @@ function getBodyCacheKeyJson(body: unknown): string | object | undefined {
     return body.toString();
   }
 
+  if (body instanceof fs.ReadStream) {
+    return body.path.toString();
+  }
+
   if (body instanceof FormData) {
     return getFormDataCacheKeyJson(body);
   }
@@ -47,7 +52,7 @@ function getBodyCacheKeyJson(body: unknown): string | object | undefined {
     return body.toString();
   }
 
-  throw new Error("Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, FormData");
+  throw new Error('Unsupported body type. Supported body types are: string, number, undefined, null, url.URLSearchParams, fs.ReadStream, FormData');
 }
 
 async function getRequestCacheKeyJson(request: Request) {
@@ -63,8 +68,7 @@ async function getRequestCacheKeyJson(request: Request) {
     // Confirmed that this property exists, but it's not in the types
     follow: (request as any).follow, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     // Confirmed that this property exists, but it's not in the types
-    compress: (request as any).compress, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-    //size: request.size,
+    compress: (request as any).compress // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   };
 }
 

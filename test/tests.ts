@@ -301,7 +301,6 @@ describe('Cache tests', () => {
     assert.strictEqual(response.returnedFromCache, true);
   });
 
-  /*
   it('Gives different read streams different cache keys', async () => {
     const s1 = fs.createReadStream(path.join(__dirname, 'expected_png.png'));
     const s2 = fs.createReadStream(path.join(__dirname, '..', 'src', 'index.ts'));
@@ -322,7 +321,6 @@ describe('Cache tests', () => {
     response = await defaultCachedFetch(TWO_HUNDRED_URL, post(s1));
     assert.strictEqual(response.returnedFromCache, true);
   });
-  */
  
   it('Gives different form data different cache keys', async () => {
     const data1 = new FormData();

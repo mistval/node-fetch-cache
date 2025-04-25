@@ -3,7 +3,7 @@ import { FormData } from 'formdata-node';
 
 export type FetchResource = Parameters<typeof fetch>[0];
 export type FetchInit = Parameters<typeof fetch>[1];
-export type CacheStrategy = (response: Response) => Promise<boolean>;
+export type CacheStrategy = (response: Response) => Promise<boolean> | boolean;
 
 export { FormData };
 

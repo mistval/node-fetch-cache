@@ -11,6 +11,7 @@ async function createNFCResponseClass() {
       }, {})
 
       const metaData = {
+        redirected: response.redirected,
         url: response.url,
         status: response.status,
         statusText: response.statusText,
@@ -32,6 +33,7 @@ async function createNFCResponseClass() {
           statusText: 'Gateway Timeout',
           headers: {},
           counter: 0,
+          redirected: false,
         },
         async () => undefined,
         false,
@@ -39,10 +41,25 @@ async function createNFCResponseClass() {
       );
     }
 
+    static setUrlAndRedirected(target: Response, url: string, redirected: boolean) {
+      Object.defineProperty(target, 'url', {
+        get: () => url,
+        enumerable: true,
+        configurable: true,
+      });
+
+      Object.defineProperty(target, 'redirected', {
+        get: () => redirected,
+        enumerable: true,
+        configurable: true,
+      });
+    }
+
     constructor(
       bodyStream: ReadableStream,
       metaData: Omit<ResponseInit, 'headers'> & {
         url: string;
+        redirected: boolean;
         counter: number;
         headers: Record<string, string[]>;
       },
@@ -52,8 +69,16 @@ async function createNFCResponseClass() {
     ) {
       super(
         bodyStream,
-        metaData as any, // eslint-disable-line @typescript-eslint/no-unsafe-argument
+        metaData as any,
       );
+
+      NFCResponse.setUrlAndRedirected(this, metaData.url, metaData.redirected);
+    }
+
+    override clone(): Response {
+      const superClone = super.clone();
+      NFCResponse.setUrlAndRedirected(superClone, this.url, this.redirected);
+      return superClone;
     }
   }
 }

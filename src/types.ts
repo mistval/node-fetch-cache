@@ -9,7 +9,7 @@ export { FormData };
 
 export type NFCResponseMetadata = {
   url: string;
-  redirect: boolean;
+  redirected: boolean;
   status: number;
   statusText: string;
   headers: Record<string, string[]>;

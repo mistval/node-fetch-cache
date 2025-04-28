@@ -1,21 +1,7 @@
+import { ReadableStream } from "stream/web";
 import assert from 'assert';
-import { Buffer } from 'buffer';
-import { Readable } from 'stream';
 import type { INodeFetchCacheCache, NFCResponseMetadata } from '../../types.js';
 import { KeyTimeout } from './key_timeout.js';
-
-async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
-  const chunks: Buffer[] = [];
-  return new Promise((resolve, reject) => {
-    stream.on('data', chunk =>
-      chunks.push(chunk as Buffer),
-    ).on('error', error => {
-      reject(error);
-    }).on('end', () => {
-      resolve(Buffer.concat(chunks));
-    });
-  });
-}
 
 export class MemoryCache implements INodeFetchCacheCache {
   private readonly ttl?: number | undefined;
@@ -30,7 +16,7 @@ export class MemoryCache implements INodeFetchCacheCache {
     const cachedValue = this.cache.get(key);
     if (cachedValue) {
       return {
-        bodyStream: Readable.from(cachedValue.bodyBuffer),
+        bodyStream: new Blob([cachedValue.bodyBuffer]).stream() as ReadableStream,
         metaData: cachedValue.metaData,
       };
     }
@@ -43,8 +29,8 @@ export class MemoryCache implements INodeFetchCacheCache {
     this.cache.delete(key);
   }
 
-  async set(key: string, bodyStream: NodeJS.ReadableStream, metaData: NFCResponseMetadata) {
-    const bodyBuffer = await streamToBuffer(bodyStream);
+  async set(key: string, bodyStream: ReadableStream, metaData: NFCResponseMetadata) {
+    const bodyBuffer = Buffer.concat(await Array.fromAsync(bodyStream));
     this.cache.set(key, { bodyBuffer, metaData });
 
     if (typeof this.ttl === 'number') {

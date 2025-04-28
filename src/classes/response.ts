@@ -1,25 +1,22 @@
-import assert from 'assert';
-import { Buffer } from 'buffer';
-import { Readable } from 'stream';
-import type { Response as NodeFetchResponseType, ResponseInit as NodeFetchResponseInit } from 'node-fetch';
+import type { ReadableStream } from "stream/web";
 import { NFCResponseMetadata } from '../types.js';
-import { getNodeFetch } from '../helpers/node_fetch_imports.js';
 
 async function createNFCResponseClass() {
-  const { NodeFetchResponse } = await getNodeFetch();
+  return class NFCResponse extends Response {
+    static serializeMetaFromNodeFetchResponse(response: Response): NFCResponseMetadata {
+      const headers = Array.from(response.headers.entries()).reduce<Record<string, string[]>>(function(headers, [key, value]) {
+        headers[key] = [...(headers[key] ?? []), value];
 
-  const responseInternalSymbol = Object.getOwnPropertySymbols(new NodeFetchResponse())[1];
-  assert(responseInternalSymbol, 'Failed to get node-fetch responseInternalSymbol');
+        return headers;
+      }, {})
 
-  return class NFCResponse extends NodeFetchResponse {
-    static serializeMetaFromNodeFetchResponse(response: NodeFetchResponseType): NFCResponseMetadata {
       const metaData = {
         url: response.url,
+        redirected: response.redirected,
         status: response.status,
         statusText: response.statusText,
-        headers: response.headers.raw(),
-        size: response.size,
-        counter: (response as any)[responseInternalSymbol!].counter as number,
+        headers: headers,
+        counter: (response as any).counter as number,
       };
 
       return metaData;
@@ -29,13 +26,13 @@ async function createNFCResponseClass() {
       url: string,
     ) {
       return new NFCResponse(
-        Readable.from(Buffer.alloc(0)),
+        new Blob().stream() as ReadableStream,
         {
           url,
+          redirected: false,
           status: 504,
           statusText: 'Gateway Timeout',
           headers: {},
-          size: 0,
           counter: 0,
         },
         async () => undefined,
@@ -44,11 +41,14 @@ async function createNFCResponseClass() {
       );
     }
 
+    public override url;
+    public override redirected;
+
     constructor(
-      bodyStream: NodeJS.ReadableStream,
-      metaData: Omit<NodeFetchResponseInit, 'headers'> & {
+      bodyStream: ReadableStream,
+      public metaData: Omit<ResponseInit, 'headers'> & {
         url: string;
-        size: number;
+        redirected: boolean;
         counter: number;
         headers: Record<string, string[]>;
       },
@@ -57,9 +57,16 @@ async function createNFCResponseClass() {
       public readonly isCacheMiss = false,
     ) {
       super(
-        Readable.from(bodyStream),
-        metaData as any, // eslint-disable-line @typescript-eslint/no-unsafe-argument
+        bodyStream,
+        metaData as any
       );
+
+      this.url = metaData.url;
+      this.redirected = metaData.redirected
+    }
+
+    public override clone(): Response {
+      return new NFCResponse(super.body as ReadableStream, this.metaData, this.ejectFromCache, this.returnedFromCache, this.isCacheMiss)
     }
   }
 }

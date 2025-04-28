@@ -1,5 +1,4 @@
 import { FetchInit, FetchResource } from '../types.js';
-import { getNodeFetch } from './node_fetch_imports.js';
 
 function headerKeyIsCacheControl(key: string) {
   return key.trim().toLowerCase() === 'cache-control';
@@ -26,10 +25,8 @@ export async function hasOnlyIfCachedOption(resource: FetchResource, init: Fetch
     return true;
   }
 
-  const { NodeFetchRequest } = await getNodeFetch();
-
   if (
-    resource instanceof NodeFetchRequest
+    resource instanceof Request
     && headerValueContainsOnlyIfCached(resource.headers.get('Cache-Control') ?? undefined)
   ) {
     return true;

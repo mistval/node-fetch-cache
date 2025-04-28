@@ -1,4 +1,3 @@
-import type { Response } from 'node-fetch';
 import type { CacheStrategy } from '../types.js';
 
 export const cacheOkayOnly: CacheStrategy = (response: Response) => response.ok;

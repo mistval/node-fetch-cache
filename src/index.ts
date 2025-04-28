@@ -1,4 +1,4 @@
-import type { Request as NodeFetchRequestType } from 'node-fetch';
+import { ReadableStream } from "stream/web";
 import assert from 'assert';
 import { FormData } from 'formdata-node';
 import { getNFCResponseClass as getNFCResponseClass } from './classes/response.js';
@@ -15,7 +15,6 @@ import type {
   INodeFetchCacheCache,
   ISynchronizationStrategy,
 } from './types.js';
-import { getNodeFetch } from './helpers/node_fetch_imports.js';
 
 type CacheKeyCalculator = typeof calculateCacheKey;
 
@@ -28,10 +27,8 @@ type NFCCustomizations = {
 
 type NFCOptions = Partial<NFCCustomizations>;
 
-async function getUrlFromRequestArguments(resource: NodeFetchRequestType | string) {
-  const { NodeFetchRequest } = await getNodeFetch();
-
-  if (resource instanceof NodeFetchRequest) {
+async function getUrlFromRequestArguments(resource: Request | string) {
+  if (resource instanceof Request) {
     return resource.url;
   }
 
@@ -43,13 +40,18 @@ async function getResponse(
   resource: FetchResource,
   init: FetchInit,
 ) {
-  const { NodeFetchRequest, fetch } = await getNodeFetch();
+  const originalResource = resource;
+
   const NFCResponse = await getNFCResponseClass();
 
-  if (typeof resource !== 'string' && !(resource instanceof NodeFetchRequest)) {
+  if (typeof resource !== 'string' && !(resource instanceof Request)) {
     throw new TypeError(
-      'The first argument to fetch must be either a string or a node-fetch Request instance',
+      'The first argument to fetch must be either a string or a fetch Request instance',
     );
+  }
+
+  if (originalResource instanceof Request) {
+    resource = originalResource.clone()
   }
 
   const cacheKey = await fetchCustomization.calculateCacheKey(resource, init);
@@ -82,6 +84,10 @@ async function getResponse(
       );
     }
 
+    if (originalResource instanceof Request) {
+      resource = originalResource.clone()
+    }
+    
     const fetchResponse = await fetch(resource, init);
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
     let bodyStream = fetchResponse.body;
@@ -96,7 +102,7 @@ async function getResponse(
     if (shouldCache) {
       const cacheSetResult = await fetchCustomization.cache.set(
         cacheKey,
-        bodyStream,
+        bodyStream as ReadableStream,
         serializedMeta,
       );
 
@@ -104,7 +110,7 @@ async function getResponse(
     }
 
     return new NFCResponse(
-      bodyStream,
+      bodyStream as ReadableStream,
       serializedMeta,
       ejectSelfFromCache,
       false,
@@ -118,7 +124,7 @@ function create(creationOptions: NFCOptions) {
   const fetchOptions: NFCCustomizations = {
     cache: creationOptions.cache ?? globalMemoryCache,
     synchronizationStrategy: creationOptions.synchronizationStrategy ?? new LockoSynchronizationStrategy(),
-    shouldCacheResponse: creationOptions.shouldCacheResponse ?? (() => true),
+    shouldCacheResponse: creationOptions.shouldCacheResponse ?? (() => Promise.resolve(true)),
     calculateCacheKey: creationOptions.calculateCacheKey ?? calculateCacheKey,
   };
 
@@ -148,7 +154,6 @@ export default defaultFetch;
 export { MemoryCache } from './classes/caching/memory_cache.js';
 export { FileSystemCache } from './classes/caching/file_system_cache.js';
 export { CACHE_VERSION } from './helpers/cache_keys.js';
-export { getNodeFetch };
 export type { NFCResponse } from './classes/response.js';
 export type { NFCResponseMetadata } from './types.js';
 export {
@@ -157,7 +162,6 @@ export {
   calculateCacheKey as getCacheKey,
   calculateCacheKey,
   FormData,
-  type NodeFetchRequestType as NodeFetchRequest,
   type NFCOptions,
   type CacheKeyCalculator,
   type INodeFetchCacheCache,

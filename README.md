@@ -117,15 +117,15 @@ If none of the existing caching options meet your needs, you can implement your 
 ```ts
 type INodeFetchCacheCache = {
   get(key: string): Promise<{
-    bodyStream: NodeJS.ReadableStream;
+    bodyStream: ReadableStream;
     metaData: NFCResponseMetadata;
   } | undefined>;
   set(
     key: string,
-    bodyStream: NodeJS.ReadableStream,
+    bodyStream: ReadableStream,
     metaData: NFCResponseMetadata
   ): Promise<{
-    bodyStream: NodeJS.ReadableStream;
+    bodyStream: ReadableStream;
     metaData: NFCResponseMetadata;
   }>;
   remove(key: string): Promise<void | unknown>;
@@ -162,19 +162,6 @@ if (response.isCacheMiss) {
 ```
 
 ## Advanced API
-
-### Accessing Node-Fetch Exports
-
-If you need to access `node-fetch` exports (for example you might want to create a Request instance), you can do so by using the `getNodeFetch()` function:
-
-```js
-import fetch, { getNodeFetch } from 'node-fetch-cache';
-
-const { Request } = await getNodeFetch();
-const response = await fetch(new Request('https://google.com'));
-```
-
-You should not import from `node-fetch` directly since it is important that your code is using exports from the same version of `node-fetch` that is being used by `node-fetch-cache` internally.
 
 ### Custom Cache Key Function
 

@@ -50,13 +50,12 @@
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
     "tsx": "^4.17.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "cacache": "^18.0.4",
     "formdata-node": "^6.0.3",
-    "locko": "^1.1.0",
-    "node-fetch": "3.3.2"
+    "locko": "^1.1.0"
   },
   "husky": {
     "hooks": {

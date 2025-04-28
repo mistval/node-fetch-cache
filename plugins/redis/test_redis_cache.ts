@@ -7,7 +7,6 @@ import fs from 'fs';
 import assert from 'assert';
 import { Agent } from 'http';
 import { FormData } from 'formdata-node';
-import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
 import FetchCache, {
   cacheStrategies,
   FetchResource,
@@ -17,6 +16,8 @@ import FetchCache, {
 } from '../../src/index.js';
 import { RedisCache } from './redis_cache.js';
 import { Redis } from 'ioredis';
+
+const StandardFetchRequest = Request;
 
 const MIN_NODE_VERSION = 16;
 const httpBinBaseUrl = 'http://localhost:3000';
@@ -63,7 +64,7 @@ let defaultCachedFetch: typeof FetchCache;
 let defaultCache: RedisCache;
 
 function post(body: string | URLSearchParams | FormData | fs.ReadStream) {
-  return { method: 'POST', body };
+  return { method: 'POST', body, duplex: "half" };
 }
 
 function removeDates(arrayOrObject: { date?: unknown } | string[] | string[][]) {
@@ -84,10 +85,10 @@ function removeDates(arrayOrObject: { date?: unknown } | string[] | string[][]) 
   return arrayOrObject;
 }
 
-async function dualFetch(...args: Parameters<typeof standardFetch>) {
+async function dualFetch(...args: Parameters<typeof fetch>) {
   const [cachedFetchResponse, standardFetchResponse] = await Promise.all([
     defaultCachedFetch(...args),
-    standardFetch(...args),
+    fetch(...args),
   ]);
 
   return { cachedFetchResponse, standardFetchResponse };
@@ -156,14 +157,14 @@ describe('REDIS Plugin Tests', function() {
     it('Gets correct raw headers', async () => {
       let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
       assert.deepStrictEqual(
-        removeDates(cachedFetchResponse.headers.raw()),
-        removeDates(standardFetchResponse.headers.raw()),
+        removeDates(Array.from(cachedFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
+        removeDates(Array.from(standardFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
       );
   
       cachedFetchResponse = await defaultCachedFetch(TWO_HUNDRED_URL);
       assert.deepStrictEqual(
-        removeDates(cachedFetchResponse.headers.raw()),
-        removeDates(standardFetchResponse.headers.raw()),
+        removeDates(Array.from(cachedFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
+        removeDates(Array.from(standardFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
       );
     });
   
@@ -308,7 +309,7 @@ describe('REDIS Plugin Tests', function() {
       response = await defaultCachedFetch(TWO_HUNDRED_URL, post(new URLSearchParams('a=a')));
       assert.strictEqual(response.returnedFromCache, true);
     });
-  
+
     it('Gives different read streams different cache keys', async () => {
       const s1 = fs.createReadStream(path.join(__dirname, '..', '..', 'test', 'expected_png.png'));
       const s2 = fs.createReadStream(path.join(__dirname, '..', '..', 'test', '..', 'src', 'index.ts'));
@@ -329,7 +330,7 @@ describe('REDIS Plugin Tests', function() {
       response = await defaultCachedFetch(TWO_HUNDRED_URL, post(s1));
       assert.strictEqual(response.returnedFromCache, true);
     });
-  
+
     it('Gives different form data different cache keys', async () => {
       const data1 = new FormData();
       data1.append('a', 'a');
@@ -402,12 +403,12 @@ describe('REDIS Plugin Tests', function() {
     it('Can get PNG buffer body', async () => {
       defaultCachedFetch = FetchCache.create({ cache: new RedisCache(undefined, redisClient) });
       response = await defaultCachedFetch(PNG_BODY_URL);
-      const body1 = await response.buffer();
+      const body1 = new Uint8Array(await response.arrayBuffer());
       assert.strictEqual(expectedPngBuffer.equals(body1), true);
       assert.strictEqual(response.returnedFromCache, false);
   
       response = await defaultCachedFetch(PNG_BODY_URL);
-      const body2 = await response.buffer();
+      const body2 = new Uint8Array(await response.arrayBuffer());
       assert.strictEqual(expectedPngBuffer.equals(body2), true);
       assert.strictEqual(response.returnedFromCache, true);
     });
@@ -456,7 +457,7 @@ describe('REDIS Plugin Tests', function() {
     it('Refuses to consume body twice', async () => {
       response = await defaultCachedFetch(TEXT_BODY_URL);
       await response.text();
-      await assert.rejects(async () => response.text(), /body used already for:/);
+      await assert.rejects(async () => response.text(), /Body has already been read/);
     });
   
     it('Can get text body', async () => {
@@ -485,35 +486,25 @@ describe('REDIS Plugin Tests', function() {
   
     it('Can get PNG buffer body', async () => {
       response = await defaultCachedFetch(PNG_BODY_URL);
-      const body1 = await response.buffer();
+      const body1 = new Uint8Array(await response.arrayBuffer());
       assert.strictEqual(expectedPngBuffer.equals(body1), true);
       assert.strictEqual(response.returnedFromCache, false);
   
       response = await defaultCachedFetch(PNG_BODY_URL);
-      const body2 = await response.buffer();
+      const body2 = new Uint8Array(await response.arrayBuffer());
       assert.strictEqual(expectedPngBuffer.equals(body2), true);
       assert.strictEqual(response.returnedFromCache, true);
     });
   
     it('Can stream a body', async () => {
       response = await defaultCachedFetch(TEXT_BODY_URL);
-      let body = '';
   
-      for await (const chunk of response.body ?? []) {
-        body += chunk.toString();
-      }
-  
-      assert.strictEqual(TEXT_BODY_EXPECTED, body);
+      assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(await Array.fromAsync<ReadableStream>(response.body)).toString());
       assert.strictEqual(response.returnedFromCache, false);
   
       response = await defaultCachedFetch(TEXT_BODY_URL);
-      body = '';
   
-      for await (const chunk of response.body ?? []) {
-        body += chunk.toString();
-      }
-  
-      assert.strictEqual(TEXT_BODY_EXPECTED, body);
+      assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(await Array.fromAsync(response.body)).toString());
       assert.strictEqual(response.returnedFromCache, true);
     });
   
@@ -527,7 +518,7 @@ describe('REDIS Plugin Tests', function() {
     it('Errors if the resource type is not supported', async () => {
       await assert.rejects(
         async () => defaultCachedFetch(1 as unknown as string),
-        /The first argument to fetch must be either a string or a node-fetch Request instance/,
+        /The first argument to fetch must be either a string or a fetch Request instance/,
       );
     });
   
@@ -570,15 +561,15 @@ describe('REDIS Plugin Tests', function() {
       assert(initialResponse.ok);
       assert(!initialResponse.returnedFromCache);
   
-      const initialResponseBuffer = await initialResponse.buffer();
-      assert.equal(initialResponseBuffer.length, 100_000);
+      const initialResponseBuffer = await initialResponse.arrayBuffer();
+      assert.equal(initialResponseBuffer.byteLength, 100_000);
   
       const secondResponse = await defaultCachedFetch(HUNDRED_THOUSAND_BYTES_URL);
       assert(secondResponse.ok);
       assert(secondResponse.returnedFromCache);
   
-      const secondResponseBuffer = await secondResponse.buffer();
-      assert.equal(secondResponseBuffer.length, 100_000);
+      const secondResponseBuffer = await secondResponse.arrayBuffer();
+      assert.equal(secondResponseBuffer.byteLength, 100_000);
     });
   }).timeout(10_000);
   
@@ -715,7 +706,7 @@ describe('REDIS Plugin Tests', function() {
     });
   
     it('Can use a custom cache strategy that uses the response for all response types', async () => {
-      const functionsThatUseResponse = ['arrayBuffer', 'blob', 'buffer', 'json', 'text'] as const;
+      const functionsThatUseResponse = ['arrayBuffer', 'blob', 'json', 'text'] as const;
   
       for (const functionName of functionsThatUseResponse) {
         await redisClient.flushall();
@@ -745,7 +736,7 @@ describe('REDIS Plugin Tests', function() {
   
   describe('REDIS Network error tests', () => {
     it('Bubbles up network errors', async () => {
-      await assert.rejects(async () => defaultCachedFetch('http://localhost:1'), /^FetchError:/);
+      await assert.rejects(async () => defaultCachedFetch('http://localhost:1'), /TypeError: fetch failed/);
     });
   });
 });

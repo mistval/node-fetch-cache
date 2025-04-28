@@ -401,6 +401,15 @@ describe('Cache tests', () => {
 }).timeout(10_000);
 
 describe('Data tests', () => {
+  it('Can clone a response and read both', async () => {
+    const response = await defaultCachedFetch(TEXT_BODY_URL);
+    const clonedResponse = response.clone();
+    const body1 = await response.text();
+    const body2 = await clonedResponse.text();
+    assert.strictEqual(body1, TEXT_BODY_EXPECTED);
+    assert.strictEqual(body2, TEXT_BODY_EXPECTED);
+  });
+
   it('Supports request objects', async () => {
     let request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
     response = await defaultCachedFetch(request);

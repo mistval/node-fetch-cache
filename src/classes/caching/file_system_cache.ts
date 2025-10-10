@@ -20,6 +20,10 @@ export class FileSystemCache implements INodeFetchCacheCache {
     this.cacheDirectory = options.cacheDirectory ?? '.cache';
   }
 
+  clear() {
+    return cacache.rm.all(this.cacheDirectory);
+  }
+
   async get(key: string, options?: { ignoreExpiration?: boolean }) {
     const cachedObjectInfo = await cacache.get.info(this.cacheDirectory, key);
 

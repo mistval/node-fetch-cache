@@ -85,13 +85,15 @@ Options:
   // Specify where to keep the cache. If undefined, '.cache' is used by default.
   // If this directory does not exist, it will be created.
   cacheDirectory: '/my/cache/directory/path',
-  // Time to live. How long (in ms) responses remain cached before being
-  // automatically ejected. If undefined, responses are never
-  // automatically ejected from the cache.
+  // Time to live. How long (in ms) responses remain cached before
+  // becoming invalid. If undefined, cached responses never become
+  // invalid.
   ttl: 1000,
 }
-
 ```
+
+If you set a TTL, be aware that cache entries are not actively deleted from disk when they become invalid, which can cause disk bloat over time. To clean that up, you can periodically clear the entire cache directory by calling `.clear()` on an instance of `FileSystemCache`.
+
 ### Cache with Redis
 
 Use the [@node-fetch-cache/redis](https://www.npmjs.com/package/@node-fetch-cache/redis) package to cache in Redis.

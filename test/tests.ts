@@ -579,6 +579,21 @@ describe('File system cache tests', () => {
     assert.strictEqual(response.returnedFromCache, false);
   });
 
+  it('Can be cleared', async () => {
+    const cache = new FileSystemCache({ ttl: 100 });
+
+    defaultCachedFetch = FetchCache.create({ cache });
+    let response = await defaultCachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(response.returnedFromCache, false);
+    response = await defaultCachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(response.returnedFromCache, true);
+
+    await cache.clear();
+
+    response = await defaultCachedFetch(TWO_HUNDRED_URL);
+    assert.strictEqual(response.returnedFromCache, false);
+  });
+
   it('Can get PNG buffer body', async () => {
     defaultCachedFetch = FetchCache.create({ cache: new FileSystemCache() });
     response = await defaultCachedFetch(PNG_BODY_URL);

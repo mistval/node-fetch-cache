@@ -92,7 +92,7 @@ Options:
 }
 ```
 
-If you set a TTL, be aware that cache entries are not actively deleted from disk when they become invalid, which can cause disk bloat over time. To clean that up, you can clear the entire cache directory by calling `.clear()` on an instance of `FileSystemCache`.
+If you set a TTL, be aware that cache entries are not actively deleted from disk when they become invalid, which can cause disk bloat over time. To clean that up, you can periodically clear the entire cache directory by calling `.clear()` on an instance of `FileSystemCache`.
 
 ### Cache with Redis
 

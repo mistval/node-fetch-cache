@@ -1,4 +1,6 @@
 {
   "typescript.preferences.quoteStyle": "single",
-  "javascript.preferences.quoteStyle": "single"
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }

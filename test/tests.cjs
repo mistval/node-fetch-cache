@@ -21,4 +21,10 @@ describe('Commonjs module tests', () => {
     assert(fetch.MemoryCache);
     assert(fetch.FileSystemCache);
   });
+
+  after(async () => {
+    // Hack around Node.js bug on Windows "Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 76"
+    // See https://github.com/nodejs/node/issues/56645
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  });
 });

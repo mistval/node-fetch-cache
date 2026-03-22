@@ -66,7 +66,8 @@ async function createNFCResponseClass() {
     }
 
     public override clone(): Response {
-      return new NFCResponse(super.body as ReadableStream, this.metaData, this.ejectFromCache, this.returnedFromCache, this.isCacheMiss)
+      const superClone = super.clone();
+      return new NFCResponse(superClone.body as ReadableStream, this.metaData, this.ejectFromCache, this.returnedFromCache, this.isCacheMiss)
     }
   }
 }

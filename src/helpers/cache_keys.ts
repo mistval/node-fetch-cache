@@ -85,5 +85,7 @@ export async function calculateCacheKey(resource: FetchResource, init?: FetchIni
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);
   initCacheKeyJson.body = getBodyCacheKeyJson(initCacheKeyJson.body);
 
+  delete initCacheKeyJson.dispatcher;
+
   return sha1(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson, CACHE_VERSION]));
 }

@@ -372,6 +372,14 @@ describe('Cache tests', () => {
     assert.strictEqual(response2.returnedFromCache, true);
   });
 
+  it('Does not error with custom dispatcher', async () => {
+    const unidiciGlobalDispatcherSymbol = Symbol.for('undici.globalDispatcher.1');
+    const undiciGlobalDispatcher = (global as any)[unidiciGlobalDispatcherSymbol].constructor as { new(): NonNullable<NonNullable<FetchInit>['dispatcher']> };
+    const dispatcher = new undiciGlobalDispatcher();
+    (dispatcher as any).self = dispatcher;
+    await defaultCachedFetch(TWO_HUNDRED_URL, { dispatcher });
+  });
+
   it('Can use a client-provided custom cache key', async () => {
     const cacheFunction = async (resource: FetchResource) => {
       if (resource instanceof StandardFetchRequest) {

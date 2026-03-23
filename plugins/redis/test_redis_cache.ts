@@ -157,14 +157,14 @@ describe('REDIS Plugin Tests', function() {
     it('Gets correct raw headers', async () => {
       let { cachedFetchResponse, standardFetchResponse } = await dualFetch(TWO_HUNDRED_URL);
       assert.deepStrictEqual(
-        removeDates(Array.from(cachedFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
-        removeDates(Array.from(standardFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
+        removeDates(Array.from(cachedFetchResponse.headers.entries()).reduce((headers: Record<string, string[]>, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
+        removeDates(Array.from(standardFetchResponse.headers.entries()).reduce((headers: Record<string, string[]>, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
       );
   
       cachedFetchResponse = await defaultCachedFetch(TWO_HUNDRED_URL);
       assert.deepStrictEqual(
-        removeDates(Array.from(cachedFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
-        removeDates(Array.from(standardFetchResponse.headers.entries()).reduce((headers, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
+        removeDates(Array.from(cachedFetchResponse.headers.entries()).reduce((headers: Record<string, string[]>, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
+        removeDates(Array.from(standardFetchResponse.headers.entries()).reduce((headers: Record<string, string[]>, [key, value]) => { headers[key] = [...(headers[key] ?? []), value]; return headers; }, {})),
       );
     });
   

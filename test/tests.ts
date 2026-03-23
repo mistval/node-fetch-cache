@@ -64,7 +64,7 @@ let defaultCachedFetch: typeof FetchCache;
 let defaultCache: MemoryCache;
 
 function post(body: FetchBodyInit): FetchInit {
-  return { method: 'POST', body, duplex: 'half' };
+  return { method: 'POST', body: body || null, duplex: 'half' };
 }
 
 function removeDates(arrayOrObject: { date?: unknown } | string[] | string[][]) {
@@ -469,12 +469,12 @@ describe('Data tests', () => {
   it('Can stream a body', async () => {
     response = await defaultCachedFetch(TEXT_BODY_URL);
 
-    assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(await Array.fromAsync(response.body)).toString());
+    assert.strictEqual(TEXT_BODY_EXPECTED, await response.text());
     assert.strictEqual(response.returnedFromCache, false);
 
     response = await defaultCachedFetch(TEXT_BODY_URL);
     
-    assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(await Array.fromAsync(response.body)).toString());
+    assert.strictEqual(TEXT_BODY_EXPECTED, await response.text());
     assert.strictEqual(response.returnedFromCache, true);
   });
 

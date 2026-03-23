@@ -11,6 +11,8 @@ import FetchCache, {
   NFCResponse,
   calculateCacheKey,
   ISynchronizationStrategy,
+  FetchBodyInit,
+  FetchInit,
 } from '../../src/index.js';
 import { RedisCache } from './redis_cache.js';
 import { Redis } from 'ioredis';
@@ -61,8 +63,8 @@ const JSON_BODY_EXPECTED = `{
 let defaultCachedFetch: typeof FetchCache;
 let defaultCache: RedisCache;
 
-function post(body: string | URLSearchParams | FormData | fs.ReadStream) {
-  return { method: 'POST', body, duplex: "half" };
+function post(body: FetchBodyInit): FetchInit {
+  return { method: 'POST', body: body || null, duplex: 'half' };
 }
 
 function removeDates(arrayOrObject: { date?: unknown } | string[] | string[][]) {
@@ -490,12 +492,12 @@ describe('REDIS Plugin Tests', function() {
     it('Can stream a body', async () => {
       response = await defaultCachedFetch(TEXT_BODY_URL);
   
-      assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(await Array.fromAsync<ReadableStream>(response.body)).toString());
+      assert.strictEqual(TEXT_BODY_EXPECTED, await response.text());
       assert.strictEqual(response.returnedFromCache, false);
   
       response = await defaultCachedFetch(TEXT_BODY_URL);
   
-      assert.strictEqual(TEXT_BODY_EXPECTED, Buffer.concat(await Array.fromAsync(response.body)).toString());
+      assert.strictEqual(TEXT_BODY_EXPECTED, await response.text());
       assert.strictEqual(response.returnedFromCache, true);
     });
   

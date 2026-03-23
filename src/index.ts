@@ -1,6 +1,5 @@
 import { ReadableStream } from "stream/web";
 import assert from 'assert';
-import { FormData } from 'formdata-node';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';
 import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
@@ -8,6 +7,7 @@ import { hasOnlyIfCachedOption } from './helpers/headers.js';
 import { LockoSynchronizationStrategy } from './classes/locko_synchronization_strategy.js';
 import type {
   CacheStrategy,
+  FetchBodyInit,
   FetchInit,
   FetchResource,
   INodeFetchCacheCache,
@@ -155,11 +155,11 @@ export {
   cacheStrategies,
   calculateCacheKey as getCacheKey,
   calculateCacheKey,
-  FormData,
   type NFCOptions,
   type CacheKeyCalculator,
   type INodeFetchCacheCache,
   type FetchResource,
   type FetchInit,
+  type FetchBodyInit,
   type ISynchronizationStrategy,
 };

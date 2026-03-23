@@ -1,11 +1,9 @@
 import type { ReadableStream } from "stream/web";
-import { FormData } from 'formdata-node';
 
 export type FetchResource = Parameters<typeof fetch>[0];
 export type FetchInit = Parameters<typeof fetch>[1];
+export type FetchBodyInit = NonNullable<FetchInit>['body'];
 export type CacheStrategy = (response: Response) => Promise<boolean> | boolean;
-
-export { FormData };
 
 export type NFCResponseMetadata = {
   url: string;

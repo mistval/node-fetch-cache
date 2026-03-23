@@ -5,9 +5,7 @@ import util from 'util';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import assert from 'assert';
-import { Agent } from 'http';
 import { rimraf } from 'rimraf';
-import { FormData } from 'formdata-node';
 import FetchCache, {
   MemoryCache,
   FileSystemCache,
@@ -16,6 +14,8 @@ import FetchCache, {
   NFCResponse,
   calculateCacheKey,
   ISynchronizationStrategy,
+  FetchInit,
+  FetchBodyInit,
 } from '../src/index.js';
 
 const StandardFetchRequest = Request;
@@ -63,8 +63,8 @@ const JSON_BODY_EXPECTED = `{
 let defaultCachedFetch: typeof FetchCache;
 let defaultCache: MemoryCache;
 
-function post(body: string | URLSearchParams | FormData | fs.ReadStream) {
-  return { method: 'POST', body, duplex: "half" };
+function post(body: FetchBodyInit): FetchInit {
+  return { method: 'POST', body, duplex: 'half' };
 }
 
 function removeDates(arrayOrObject: { date?: unknown } | string[] | string[][]) {
@@ -350,13 +350,6 @@ describe('Cache tests', () => {
 
     response = await defaultCachedFetch(TWO_HUNDRED_URL, post(data2));
     assert.strictEqual(response.returnedFromCache, true);
-  });
-
-  it('Does not error with custom agent with circular properties', async () => {
-    const agent = new Agent();
-    (agent as any).agent = agent;
-
-    await defaultCachedFetch(TWO_HUNDRED_URL, { agent });
   });
 
   it('Works with a TTL of 0', async () => {

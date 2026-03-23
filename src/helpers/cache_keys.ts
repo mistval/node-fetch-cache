@@ -1,5 +1,4 @@
 import type { FetchInit, FetchResource } from '../types.js';
-import { FormData } from '../types.js';
 import * as fs from "fs";
 
 export const CACHE_VERSION = 6;
@@ -85,9 +84,6 @@ export async function calculateCacheKey(resource: FetchResource, init?: FetchIni
 
   resourceCacheKeyJson.body = getBodyCacheKeyJson(resourceCacheKeyJson.body);
   initCacheKeyJson.body = getBodyCacheKeyJson(initCacheKeyJson.body);
-
-  // @ts-expect-error
-  delete initCacheKeyJson.agent;
 
   return sha1(JSON.stringify([resourceCacheKeyJson, initCacheKeyJson, CACHE_VERSION]));
 }

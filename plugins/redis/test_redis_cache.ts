@@ -5,8 +5,6 @@ import util from 'util';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import assert from 'assert';
-import { Agent } from 'http';
-import { FormData } from 'formdata-node';
 import FetchCache, {
   cacheStrategies,
   FetchResource,
@@ -357,13 +355,6 @@ describe('REDIS Plugin Tests', function() {
   
       response = await defaultCachedFetch(TWO_HUNDRED_URL, post(data2));
       assert.strictEqual(response.returnedFromCache, true);
-    });
-  
-    it('Does not error with custom agent with circular properties', async () => {
-      const agent = new Agent();
-      (agent as any).agent = agent;
-  
-      await defaultCachedFetch(TWO_HUNDRED_URL, { agent });
     });
   
     it('Can use a client-provided custom cache key', async () => {

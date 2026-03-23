@@ -1,7 +1,6 @@
 import { ReadableStream } from "stream/web";
 import assert from 'assert';
 import { FormData } from 'formdata-node';
-import { getNFCResponseClass as getNFCResponseClass } from './classes/response.js';
 import { MemoryCache } from './classes/caching/memory_cache.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';
 import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
@@ -15,6 +14,7 @@ import type {
   INodeFetchCacheCache,
   ISynchronizationStrategy,
 } from './types.js';
+import { NFCResponse } from './classes/response.js';
 
 type CacheKeyCalculator = typeof calculateCacheKey;
 
@@ -41,8 +41,6 @@ async function getResponse(
   init: FetchInit,
 ) {
   const originalResource = resource;
-
-  const NFCResponse = await getNFCResponseClass();
 
   if (typeof resource !== 'string' && !(resource instanceof Request)) {
     throw new TypeError(

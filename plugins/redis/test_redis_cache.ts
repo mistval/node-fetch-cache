@@ -719,17 +719,7 @@ describe('REDIS Plugin Tests', function() {
         });
   
         assert.strictEqual(response.returnedFromCache, false);
-  
-        // Because when the json() function is used all of the whitespace in
-        // the response is lost, something a little special happens when we
-        // snipe the response body from json(). The cached response will have
-        // the whitespace stripped out, even though the original response may
-        // not have. This may cause issues for some unusual use cases.
-        if (functionName === 'json') {
-          assert.strictEqual(await response.text(), JSON.stringify(JSON.parse(JSON_BODY_EXPECTED)));
-        } else {
-          assert.strictEqual(await response.text(), JSON_BODY_EXPECTED);
-        }
+        assert.strictEqual(await response.text(), JSON_BODY_EXPECTED);
       }
     });
   });

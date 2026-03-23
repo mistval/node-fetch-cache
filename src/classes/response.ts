@@ -1,4 +1,4 @@
-import type { ReadableStream } from "stream/web";
+import { ReadableStream } from "stream/web";
 import { NFCResponseMetadata } from '../types.js';
 
 export class NFCResponse extends Response {
@@ -25,7 +25,7 @@ export class NFCResponse extends Response {
     url: string,
   ) {
     return new NFCResponse(
-      new Blob().stream() as ReadableStream,
+      ReadableStream.from([]),
       {
         url,
         redirected: false,
@@ -64,7 +64,9 @@ export class NFCResponse extends Response {
     this.redirected = metaData.redirected
   }
 
+  // @ts-ignore - There's a typing bug in Undici, PR raised here to fix: https://github.com/nodejs/undici/pull/4925
   public override clone(): Response {
+    // @ts-ignore
     const superClone = super.clone();
     return new NFCResponse(superClone.body as ReadableStream, this.metaData, this.ejectFromCache, this.returnedFromCache, this.isCacheMiss)
   }

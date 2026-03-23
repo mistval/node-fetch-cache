@@ -5,7 +5,6 @@ import { MemoryCache } from './classes/caching/memory_cache.js';
 import { calculateCacheKey } from './helpers/cache_keys.js';
 import { cacheNon5xxOnly, cacheOkayOnly } from './helpers/cache_strategies.js';
 import { hasOnlyIfCachedOption } from './helpers/headers.js';
-import { shimResponseToSnipeBody } from './helpers/shim_response_to_snipe_body.js';
 import { LockoSynchronizationStrategy } from './classes/locko_synchronization_strategy.js';
 import type {
   CacheStrategy,
@@ -88,14 +87,11 @@ async function getResponse(
     
     const fetchResponse = await fetch(resource, init);
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
+
+    const shouldCache = await fetchCustomization.shouldCacheResponse(fetchResponse.clone());
+
     let bodyStream = fetchResponse.body;
     assert(bodyStream, 'No body stream found in fetch response');
-
-    shimResponseToSnipeBody(fetchResponse, stream => {
-      bodyStream = stream;
-    });
-
-    const shouldCache = await fetchCustomization.shouldCacheResponse(fetchResponse);
 
     if (shouldCache) {
       const cacheSetResult = await fetchCustomization.cache.set(

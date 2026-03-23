@@ -26,6 +26,7 @@ jobs:
     - run: npm ci
     - run: npm run tsc
     - run: npm run buildcjs
+    - run: npm run test:typecheck
     - run: npm link
     - run: npm link node-fetch-cache
       working-directory: plugins/redis

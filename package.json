@@ -53,7 +53,7 @@
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
     "tsx": "^4.17.0",
-    "typescript": "^5.8.3"
+    "typescript": "^6.0.2"
   },
   "dependencies": {
     "cacache": "^20.0.1",

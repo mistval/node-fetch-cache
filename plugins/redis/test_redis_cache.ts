@@ -427,11 +427,11 @@ describe('REDIS Plugin Tests', function() {
   
   describe('REDIS Data tests', () => {
     it('Supports request objects', async () => {
-      let request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
+      let request = new StandardFetchRequest(TWO_HUNDRED_URL, { body: 'test', method: 'POST' });
       response = await defaultCachedFetch(request);
       assert.strictEqual(response.returnedFromCache, false);
   
-      request = new StandardFetchRequest('https://google.com', { body: 'test', method: 'POST' });
+      request = new StandardFetchRequest(TWO_HUNDRED_URL, { body: 'test', method: 'POST' });
       response = await defaultCachedFetch(request);
       assert.strictEqual(response.returnedFromCache, true);
     });

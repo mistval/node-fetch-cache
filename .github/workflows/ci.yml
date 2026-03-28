@@ -26,10 +26,10 @@ jobs:
     - run: npm ci
     - run: npm run tsc
     - run: npm run buildcjs
-    - run: npm run test:typecheck
     - run: npm link
     - run: npm link node-fetch-cache
       working-directory: plugins/redis
+    - run: npm run test:typecheck
     - run: npm run coverage
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3

@@ -435,7 +435,7 @@ describe('Data tests', () => {
   it('Refuses to consume body twice', async () => {
     response = await defaultCachedFetch(TEXT_BODY_URL);
     await response.text();
-    await assert.rejects(async () => response.text(), /Body has already been read/);
+    await assert.rejects(async () => response.text(), /Body has already been read|Body is unusable/);
   });
 
   it('Can get text body', async () => {

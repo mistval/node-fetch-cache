@@ -14,7 +14,7 @@
       "env": {
         "HTTP_BIN_BASE_URL": "http://localhost:3000"
       },
-      "runtimeVersion": "20"
+      "runtimeVersion": "24"
     }
   ]
 }

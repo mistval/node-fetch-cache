@@ -63,6 +63,17 @@ const JSON_BODY_EXPECTED = `{
 let defaultCachedFetch: typeof FetchCache;
 let defaultCache: MemoryCache;
 
+async function runPingLoop() {
+  while (true) {
+    console.time('HTTP bin container response time');
+    await fetch(TWO_HUNDRED_URL);
+    console.timeEnd('HTTP bin container response time');
+    await wait(100);
+  }
+}
+
+runPingLoop();
+
 function post(body: FetchBodyInit): FetchInit {
   return { method: 'POST', body: body || null, duplex: 'half' };
 }

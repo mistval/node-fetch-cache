@@ -60,6 +60,17 @@ const JSON_BODY_EXPECTED = `{
 }
 `;
 
+async function runPingLoop() {
+  while (true) {
+    console.time('HTTP bin container response time');
+    await fetch(TWO_HUNDRED_URL);
+    console.timeEnd('HTTP bin container response time');
+    await wait(100);
+  }
+}
+
+runPingLoop();
+
 let defaultCachedFetch: typeof FetchCache;
 let defaultCache: RedisCache;
 

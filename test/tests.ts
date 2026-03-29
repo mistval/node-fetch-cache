@@ -421,6 +421,26 @@ describe('Data tests', () => {
     assert.strictEqual(response.returnedFromCache, true);
   });
 
+  it('Supports request objects with large bodies', async () => {
+    let request = new StandardFetchRequest(TWO_HUNDRED_URL, { body: new Uint8Array(10_000_000), method: 'POST' });
+    response = await defaultCachedFetch(request);
+    assert.strictEqual(response.returnedFromCache, false);
+
+    request = new StandardFetchRequest(TWO_HUNDRED_URL, { body: new Uint8Array(10_000_000), method: 'POST' });
+    response = await defaultCachedFetch(request);
+    assert.strictEqual(response.returnedFromCache, true);
+  });
+
+  it('Supports request objects file stream bodies', async () => {
+    let request = new StandardFetchRequest(TWO_HUNDRED_URL, { body: fs.createReadStream(path.join(__dirname, 'expected_png.png')), method: 'POST', duplex: 'half' });
+    response = await defaultCachedFetch(request);
+    assert.strictEqual(response.returnedFromCache, false);
+
+    request = new StandardFetchRequest(TWO_HUNDRED_URL, { body: fs.createReadStream(path.join(__dirname, 'expected_png.png')), method: 'POST', duplex: 'half' });
+    response = await defaultCachedFetch(request);
+    assert.strictEqual(response.returnedFromCache, true);
+  });
+
   it('Supports request objects with custom headers', async () => {
     const request1 = new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { XXX: 'YYY' } });
     const request2 = new StandardFetchRequest(TWO_HUNDRED_URL, { headers: { XXX: 'ZZZ' } });

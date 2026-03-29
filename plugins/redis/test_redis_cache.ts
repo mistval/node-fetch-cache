@@ -63,7 +63,12 @@ const JSON_BODY_EXPECTED = `{
 async function runPingLoop() {
   while (true) {
     console.time('HTTP bin container response time');
-    await fetch(TWO_HUNDRED_URL);
+    try {
+      await fetch(TWO_HUNDRED_URL);
+    } catch (err) {
+      console.log('HTTP bin error ', (err as any).message);
+    }
+    
     console.timeEnd('HTTP bin container response time');
     await wait(100);
   }

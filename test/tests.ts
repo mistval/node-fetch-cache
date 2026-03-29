@@ -22,8 +22,6 @@ async function runPingLoop() {
     if (difference > 1000) {
       console.log('HTTP bin container response time:', endTime - startTime, 'ms');
     }
-
-    await wait(100);
   }
 }
 

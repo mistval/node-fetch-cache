@@ -26,7 +26,7 @@ type NFCCustomizations = {
 
 type NFCOptions = Partial<NFCCustomizations>;
 
-async function getUrlFromRequestArguments(resource: Request | string) {
+function getUrlFromRequestArguments(resource: Request | string) {
   if (resource instanceof Request) {
     return resource.url;
   }
@@ -51,10 +51,16 @@ async function getResponse(
     resource = originalResource.clone()
   }
 
+  console.log('Calculating cache key...');
+  console.time('Cache key calculated in');
   const cacheKey = await fetchCustomization.calculateCacheKey(resource, init);
+  console.timeEnd('Cache key calculated in');
   const ejectSelfFromCache = async () => fetchCustomization.cache.remove(cacheKey);
 
+  console.log('Checking cache for key:', cacheKey);
+  console.time('Cache checked in');
   const cachedValue = await fetchCustomization.cache.get(cacheKey);
+  console.timeEnd('Cache checked in');
   if (cachedValue) {
     return new NFCResponse(
       cachedValue.bodyStream,
@@ -64,14 +70,17 @@ async function getResponse(
     );
   }
 
-  if (await hasOnlyIfCachedOption(resource, init)) {
+  if (hasOnlyIfCachedOption(resource, init)) {
     return NFCResponse.cacheMissResponse(
-      await getUrlFromRequestArguments(resource),
+      getUrlFromRequestArguments(resource),
     );
   }
 
   return fetchCustomization.synchronizationStrategy.doWithExclusiveLock(cacheKey, async () => {
+    console.log('Re-checking cache for key inside lock (to prevent dog-piling):', cacheKey);
+    console.time('Cache re-checked in');
     const cachedValue = await fetchCustomization.cache.get(cacheKey);
+    console.timeEnd('Cache re-checked in');
     if (cachedValue) {
       return new NFCResponse(
         cachedValue.bodyStream,
@@ -85,20 +94,29 @@ async function getResponse(
       resource = originalResource.clone()
     }
     
+    console.log('No cache value found for key, performing fetch:', cacheKey);
+    console.time('Fetch performed in');
     const fetchResponse = await fetch(resource, init);
+    console.timeEnd('Fetch performed in');
     const serializedMeta = NFCResponse.serializeMetaFromNodeFetchResponse(fetchResponse);
 
+    console.log('Deciding whether to cache response...');
+    console.time('Cache strategy executed in');
     const shouldCache = await fetchCustomization.shouldCacheResponse(fetchResponse.clone());
+    console.timeEnd('Cache strategy executed in');
 
     let bodyStream = fetchResponse.body;
     assert(bodyStream, 'No body stream found in fetch response');
 
     if (shouldCache) {
+      console.log('Caching response for key:', cacheKey);
+      console.time('Response cached in');
       const cacheSetResult = await fetchCustomization.cache.set(
         cacheKey,
         bodyStream as ReadableStream,
         serializedMeta,
       );
+      console.timeEnd('Response cached in');
 
       bodyStream = cacheSetResult.bodyStream;
     }

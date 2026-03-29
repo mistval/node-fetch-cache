@@ -15,7 +15,7 @@ function headerEntryIsCacheControlOnlyIfCached(pair: [string, string]) {
   return headerKeyIsCacheControl(pair[0]) && headerValueContainsOnlyIfCached(pair[1]);
 }
 
-export async function hasOnlyIfCachedOption(resource: FetchResource, init: FetchInit) {
+export function hasOnlyIfCachedOption(resource: FetchResource, init: FetchInit) {
   const initHeaderEntries = Object.entries(init?.headers ?? {});
   const initHeaderEntriesContainsCacheControlOnlyIfCached = initHeaderEntries.some(
     pair => headerEntryIsCacheControlOnlyIfCached(pair as [string, string]),

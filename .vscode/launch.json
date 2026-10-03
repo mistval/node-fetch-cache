@@ -8,10 +8,17 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Root Tests",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "test:debug"],
-      "console": "integratedTerminal",
-      "stopOnEntry": true
+
+      "program": "${workspaceFolder}/node_modules/mocha/bin/mocha.js",
+      "args": [
+        "--spec", "test/tests.ts",
+        "--timeout", "10000",
+        "--exit"
+      ],
+      "runtimeArgs": [
+        "--import", "tsx"
+      ],
+      "stopOnEntry": false
     },
     {
       "type": "node",
@@ -27,7 +34,6 @@
       "runtimeArgs": [
         "--import", "tsx"
       ],
-      "console": "integratedTerminal",
       "stopOnEntry": false
     }
   ]

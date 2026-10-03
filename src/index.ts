@@ -1,4 +1,4 @@
-import { Request as NodeFetchRequestType } from 'node-fetch';
+import { Request as NodeFetchRequest } from 'node-fetch';
 import assert from 'assert';
 import { FormData } from 'formdata-node';
 import { getNFCResponseClass as getNFCResponseClass } from './classes/response.js';
@@ -28,7 +28,7 @@ type NFCCustomizations = {
 
 type NFCOptions = Partial<NFCCustomizations>;
 
-async function getUrlFromRequestArguments(resource: NodeFetchRequestType | string) {
+async function getUrlFromRequestArguments(resource: NodeFetchRequest | string) {
   const { NodeFetchRequest } = await getNodeFetch();
 
   if (resource instanceof NodeFetchRequest) {
@@ -157,7 +157,7 @@ export {
   calculateCacheKey as getCacheKey,
   calculateCacheKey,
   FormData,
-  type NodeFetchRequestType as NodeFetchRequest,
+  NodeFetchRequest,
   type NFCOptions,
   type CacheKeyCalculator,
   type INodeFetchCacheCache,

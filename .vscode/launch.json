@@ -7,14 +7,19 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug Tests Local Server",
+      "name": "Debug Root Tests",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "test:debug"],
-      "console": "integratedTerminal",
-      "env": {
-        "HTTP_BIN_BASE_URL": "http://localhost:3000"
-      },
-      "runtimeVersion": "20"
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Redis Tests",
+      "runtimeExecutable": "npm",
+      "cwd": "${workspaceFolder}/plugins/redis",
+      "runtimeArgs": ["run", "test:debug"],
+      "console": "integratedTerminal"
     }
   ]
 }

@@ -16,7 +16,7 @@
     "test:debug": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --inspect --spec test/tests.ts --timeout 10000 --exit",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test npm test",
     "prepublishOnly": "cross-env rm -rf dist && npm run tsc && npm run buildcjs && npm test",
-    "prepare": "node -e \"try { const h = await import('husky'); (h.default || h.install)(); } catch {}\""
+    "prepare": "node -e \"import('husky').then(h => (h.default || h.install)()).catch(() => {})\""
   },
   "repository": {
     "type": "git",

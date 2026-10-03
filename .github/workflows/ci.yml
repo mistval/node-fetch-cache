@@ -27,7 +27,7 @@ jobs:
     - run: npm run buildcjs
     - run: npm run coverage
     - run: npm prune --omit=dev
-    - run: npm link
+    - run: npm link --ignore-scripts
     - run: npm i node-fetch-cache@5.1 --prefix plugins/redis
     - run: npm link node-fetch-cache
       working-directory: plugins/redis
@@ -76,7 +76,7 @@ jobs:
     - run: npm run buildcjs
     - run: npm test
     - run: npm prune --omit=dev
-    - run: npm link
+    - run: npm link --ignore-scripts
     - run: npm i node-fetch-cache@5.1 --prefix plugins/redis
     - run: npm link node-fetch-cache
       working-directory: plugins/redis

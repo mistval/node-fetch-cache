@@ -9,8 +9,8 @@
   },
   "types": "./dist/redis_cache.d.ts",
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=\"--import tsx --no-experimental-require-module\" mocha --spec test_redis_cache.ts --timeout 10000 --exit",
-    "test:debug": "cross-env NODE_OPTIONS=\"--import tsx --no-experimental-require-module\" mocha --inspect --spec test_redis_cache.ts --timeout 10000 --exit",
+    "test": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --spec test_redis_cache.ts --timeout 10000 --exit",
+    "test:debug": "cross-env NODE_OPTIONS=\"--import tsx\" mocha --inspect --spec test_redis_cache.ts --timeout 10000 --exit",
     "coverage": "c8 --reporter=lcov --reporter=text --reporter=html --exclude=dist --exclude=test_redis_cache.ts npm test",
     "tsc": "tsc",
     "buildcjs": "cross-env rollup ./dist/redis_cache.js --file ./dist/redis_cache.cjs --format cjs",
@@ -42,7 +42,7 @@
     "c8": "^12.0.0",
     "cross-env": "^7.0.3",
     "dotenv": "^18.0.5",
-    "mocha": "^11.8.0",
+    "mocha": "^10.8.2",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   }

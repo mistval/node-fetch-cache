@@ -53,7 +53,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.19.0, 18.x, 20.x, 22.x, 25.x]
+        node-version: [18.19.0, 18.x, 20.x, 22.x, 26.x]
 
     services:
       httpbin:

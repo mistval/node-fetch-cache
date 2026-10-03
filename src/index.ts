@@ -1,4 +1,4 @@
-import type { Request as NodeFetchRequestType } from 'node-fetch';
+import { Request as NodeFetchRequestType } from 'node-fetch';
 import assert from 'assert';
 import { FormData } from 'formdata-node';
 import { getNFCResponseClass as getNFCResponseClass } from './classes/response.js';

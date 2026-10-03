@@ -10,16 +10,25 @@
       "name": "Debug Root Tests",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "test:debug"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "stopOnEntry": true
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Debug Redis Tests",
-      "runtimeExecutable": "npm",
       "cwd": "${workspaceFolder}/plugins/redis",
-      "runtimeArgs": ["run", "test:debug"],
-      "console": "integratedTerminal"
+      "program": "${workspaceFolder}/plugins/redis/node_modules/mocha/bin/mocha.js",
+      "args": [
+        "--spec", "test_redis_cache.ts",
+        "--timeout", "10000",
+        "--exit"
+      ],
+      "runtimeArgs": [
+        "--import", "tsx"
+      ],
+      "console": "integratedTerminal",
+      "stopOnEntry": false
     }
   ]
 }

@@ -8,7 +8,7 @@ import assert from 'assert';
 import { Agent } from 'http';
 import { rimraf } from 'rimraf';
 import { FormData } from 'formdata-node';
-import standardFetch from 'node-fetch';
+import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
 import FetchCache, {
   MemoryCache,
   FileSystemCache,
@@ -17,7 +17,6 @@ import FetchCache, {
   NFCResponse,
   calculateCacheKey,
   ISynchronizationStrategy,
-  NodeFetchRequest as StandardFetchRequest,
 } from '../src/index.js';
 
 const httpBinBaseUrl = 'http://localhost:3000';

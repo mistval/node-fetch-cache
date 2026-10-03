@@ -7,14 +7,34 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug Tests Local Server",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "test:debug"],
-      "console": "integratedTerminal",
-      "env": {
-        "HTTP_BIN_BASE_URL": "http://localhost:3000"
-      },
-      "runtimeVersion": "20"
+      "name": "Debug Root Tests",
+
+      "program": "${workspaceFolder}/node_modules/mocha/bin/mocha.js",
+      "args": [
+        "--spec", "test/tests.ts",
+        "--timeout", "10000",
+        "--exit"
+      ],
+      "runtimeArgs": [
+        "--import", "tsx"
+      ],
+      "stopOnEntry": false
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Redis Tests",
+      "cwd": "${workspaceFolder}/plugins/redis",
+      "program": "${workspaceFolder}/plugins/redis/node_modules/mocha/bin/mocha.js",
+      "args": [
+        "--spec", "test_redis_cache.ts",
+        "--timeout", "10000",
+        "--exit"
+      ],
+      "runtimeArgs": [
+        "--import", "tsx"
+      ],
+      "stopOnEntry": false
     }
   ]
 }

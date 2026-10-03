@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import assert from 'assert';
 import { Agent } from 'http';
-import { FormData } from 'formdata-node';
 import standardFetch, { Request as StandardFetchRequest } from 'node-fetch';
 import FetchCache, {
   cacheStrategies,
@@ -14,7 +13,8 @@ import FetchCache, {
   NFCResponse,
   calculateCacheKey,
   ISynchronizationStrategy,
-} from '../../src/index.js';
+  FormData,
+} from 'node-fetch-cache';
 import { RedisCache } from './redis_cache.js';
 import { Redis } from 'ioredis';
 
